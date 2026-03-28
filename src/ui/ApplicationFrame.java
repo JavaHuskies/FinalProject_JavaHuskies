@@ -91,9 +91,8 @@ public class ApplicationFrame extends JFrame {
         int mh = cfg.getInt("app.window.min.height", 680);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(w, h);
         setMinimumSize(new Dimension(mw, mh));
-        setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setBackground(ThemeService.COLOR_BG_PRIMARY);
 
         try {

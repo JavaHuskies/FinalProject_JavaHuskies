@@ -41,21 +41,21 @@ import ui.components.ImageBackgroundPanel;
 public class StaffLoginPanel extends ImageBackgroundPanel {
 
     // ── Layout constants ──────────────────────────────────────────────────────
-    private static final int   CARD_W       = 400;
-    private static final int   CARD_H       = 420;
-    private static final int   CARD_ARC     = 20;
-    private static final Color CARD_BG      = new Color(10, 10, 26, 210);
-    private static final Color CARD_BORDER  = new Color(80, 80, 140, 180);
-    private static final Color ACCENT       = ThemeService.COLOR_ACCENT_PURPLE;
-    private static final Color TEXT_PRIMARY = ThemeService.COLOR_TEXT_PRIMARY;
-    private static final Color TEXT_MUTED   = ThemeService.COLOR_TEXT_MUTED;
-    private static final Color FIELD_BG     = new Color(20, 20, 46, 230);
-    private static final Color FIELD_BORDER = new Color(60, 60, 110, 200);
-    private static final Color FIELD_FOCUS  = new Color(100, 120, 220, 180);
-    private static final Color ERR_COLOR    = new Color(220, 80, 80);
-    private static final Color BTN_NORMAL   = new Color(70, 90, 200);
-    private static final Color BTN_HOVER    = new Color(90, 110, 230);
-    private static final Color BTN_PRESS    = new Color(50, 70, 170);
+    private static final int   cardW       = 480;
+    private static final int   cardH       = 560;
+    private static final int   cardArc     = 20;
+    private static final Color cardBg      = new Color(10, 10, 26, 210);
+    private static final Color cardBorder  = new Color(80, 80, 140, 180);
+    private static final Color accent      = ThemeService.COLOR_ACCENT_PURPLE;
+    private static final Color textPrimary = ThemeService.COLOR_TEXT_PRIMARY;
+    private static final Color textMuted   = ThemeService.COLOR_TEXT_MUTED;
+    private static final Color fieldBg     = new Color(20, 20, 46, 230);
+    private static final Color fieldBorder = new Color(60, 60, 110, 200);
+    private static final Color fieldFocus  = new Color(100, 120, 220, 180);
+    private static final Color errColor    = new Color(220, 80, 80);
+    private static final Color btnNormal   = new Color(70, 90, 200);
+    private static final Color btnHover    = new Color(90, 110, 230);
+    private static final Color btnPress    = new Color(50, 70, 170);
 
     // ── Services / frame ─────────────────────────────────────────────────────
     private final ApplicationFrame frame;
@@ -64,15 +64,17 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
     // ── UI components ─────────────────────────────────────────────────────────
     private JTextField     usernameField;
     private JPasswordField passwordField;
+    private JLabel         passwordPlaceholder;
     private JLabel         errorLabel;
     private JLabel         showHideLabel;
     private JButton        loginButton;
+    private JButton        backButton;
     private JLabel         guestLink;
 
     // ── State ─────────────────────────────────────────────────────────────────
     private boolean passwordVisible = false;
-    private boolean btnHovered      = false;
-    private boolean btnPressed      = false;
+    private boolean isBtnHovered    = false;
+    private boolean isBtnPressed    = false;
 
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -96,10 +98,23 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         passwordField = createStyledPasswordField();
         add(passwordField);
 
+        passwordPlaceholder = new JLabel("Password");
+        passwordPlaceholder.setForeground(ThemeService.COLOR_TEXT_SECONDARY);
+        passwordPlaceholder.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
+        add(passwordPlaceholder);
+        passwordField.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override public void focusGained(java.awt.event.FocusEvent e) {
+                passwordPlaceholder.setVisible(false);
+            }
+            @Override public void focusLost(java.awt.event.FocusEvent e) {
+                passwordPlaceholder.setVisible(passwordField.getPassword().length == 0);
+            }
+        });
+
         showHideLabel = new JLabel("\uD83D\uDC41");
-        showHideLabel.setForeground(TEXT_MUTED);
+        showHideLabel.setForeground(textPrimary);
         showHideLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        showHideLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        showHideLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 22));
         showHideLabel.setToolTipText("Show / hide password");
         showHideLabel.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) { togglePasswordVisibility(); }
@@ -107,7 +122,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         add(showHideLabel);
 
         errorLabel = new JLabel(" ");
-        errorLabel.setForeground(ERR_COLOR);
+        errorLabel.setForeground(errColor);
         errorLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(errorLabel);
@@ -115,8 +130,23 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         loginButton = createLoginButton();
         add(loginButton);
 
+        backButton = new JButton("\u2190  Back");
+        backButton.setForeground(textMuted);
+        backButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        backButton.setOpaque(false);
+        backButton.setContentAreaFilled(false);
+        backButton.setBorderPainted(false);
+        backButton.setFocusPainted(false);
+        backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        backButton.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) { backButton.setForeground(textPrimary); }
+            @Override public void mouseExited(MouseEvent e)  { backButton.setForeground(textMuted); }
+        });
+        backButton.addActionListener(e -> frame.showPanel(ApplicationFrame.PANEL_SPLASH));
+        add(backButton);
+
         guestLink = new JLabel("Guest? Register or log in here");
-        guestLink.setForeground(ACCENT);
+        guestLink.setForeground(accent);
         guestLink.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         guestLink.setHorizontalAlignment(SwingConstants.CENTER);
         guestLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -124,8 +154,8 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
             @Override public void mouseClicked(MouseEvent e) {
                 frame.showPanel(ApplicationFrame.PANEL_GUEST_LOGIN);
             }
-            @Override public void mouseEntered(MouseEvent e) { guestLink.setForeground(TEXT_PRIMARY); }
-            @Override public void mouseExited(MouseEvent e)  { guestLink.setForeground(ACCENT); }
+            @Override public void mouseEntered(MouseEvent e) { guestLink.setForeground(textPrimary); }
+            @Override public void mouseExited(MouseEvent e)  { guestLink.setForeground(accent); }
         });
         add(guestLink);
     }
@@ -135,27 +165,28 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
     @Override
     public void doLayout() {
         super.doLayout();
-        int cx = (getWidth()  - CARD_W) / 2;
-        int cy = (getHeight() - CARD_H) / 2;
+        int cx = (getWidth()  - cardW) / 2;
+        int cy = (getHeight() - cardH) / 2;
 
         int fieldX    = cx + 40;
-        int fieldW    = CARD_W - 80;
-        int fieldH    = 40;
-        int titleBase = cy + 90;
+        int fieldW    = cardW - 80;
+        int fieldH    = 46;
+
+        // Stack from card top with fixed gaps — resolution independent
+        int titleBase = cy + 110;
+        int pwY       = titleBase + fieldH + 20;
+        int errY      = pwY + fieldH + 10;
+        int btnY      = errY + 28;
+        int linkY     = btnY + 58;
 
         usernameField.setBounds(fieldX, titleBase, fieldW, fieldH);
-
-        int pwY = titleBase + fieldH + 16;
-        passwordField.setBounds(fieldX, pwY, fieldW - 34, fieldH);
-        showHideLabel.setBounds(fieldX + fieldW - 30, pwY + 12, 24, 18);
-
-        int errY = pwY + fieldH + 8;
-        errorLabel.setBounds(cx, errY, CARD_W, 18);
-
-        int btnY = errY + 26;
-        loginButton.setBounds(fieldX, btnY, fieldW, 44);
-
-        guestLink.setBounds(cx, btnY + 56, CARD_W, 20);
+        passwordField.setBounds(fieldX, pwY, fieldW - 40, fieldH);
+        passwordPlaceholder.setBounds(fieldX + 12, pwY, fieldW - 60, fieldH);
+        showHideLabel.setBounds(fieldX + fieldW - 34, pwY + 10, 28, 28);
+        errorLabel.setBounds(cx, errY, cardW, 18);
+        loginButton.setBounds(fieldX, btnY, fieldW, 48);
+        backButton.setBounds(cx, linkY, cardW / 2, 24);
+        guestLink.setBounds(cx + cardW / 2, linkY, cardW / 2, 24);
     }
 
     // ── Paint ─────────────────────────────────────────────────────────────────
@@ -168,26 +199,26 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        int cx = (getWidth()  - CARD_W) / 2;
-        int cy = (getHeight() - CARD_H) / 2;
+        int cx = (getWidth()  - cardW) / 2;
+        int cy = (getHeight() - cardH) / 2;
 
-        RoundRectangle2D card = new RoundRectangle2D.Double(cx, cy, CARD_W, CARD_H, CARD_ARC, CARD_ARC);
-        g2.setColor(CARD_BG);
+        RoundRectangle2D card = new RoundRectangle2D.Double(cx, cy, cardW, cardH, cardArc, cardArc);
+        g2.setColor(cardBg);
         g2.fill(card);
-        g2.setColor(CARD_BORDER);
+        g2.setColor(cardBorder);
         g2.draw(card);
 
-        g2.setColor(ACCENT);
-        g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
-        drawCenteredString(g2, "Deep Thought Entertainment Group", cx, cy + 32, CARD_W);
+        g2.setColor(accent);
+        g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 18));
+        drawCenteredString(g2, "Deep Thought Entertainment Group", cx, cy + 40, cardW);
 
-        g2.setColor(TEXT_PRIMARY);
-        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 22));
-        drawCenteredString(g2, "Staff Portal", cx, cy + 60, CARD_W);
+        g2.setColor(textPrimary);
+        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 32));
+        drawCenteredString(g2, "Staff Portal", cx, cy + 78, cardW);
 
-        g2.setColor(TEXT_MUTED);
-        g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
-        drawCenteredString(g2, "Sign in with your network credentials", cx, cy + 82, CARD_W);
+        g2.setColor(textMuted);
+        g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
+        drawCenteredString(g2, "Sign in with your network credentials", cx, cy + 104, cardW);
 
         g2.dispose();
     }
@@ -200,7 +231,8 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
 
         clearError();
 
-        if (username.isEmpty() || password.isEmpty()) {
+        if (username.isEmpty() || password.isEmpty()
+                || username.equals("Username")) {
             showError("Username and password are required.");
             return;
         }
@@ -208,7 +240,6 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         loginButton.setEnabled(false);
         loginButton.setText("Authenticating…");
 
-        // BCrypt is CPU-bound — run off the EDT
         new Thread(() -> {
             try {
                 // ── TODO (Anan): replace stub with PersistenceService lookup ──
@@ -285,6 +316,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
     public void onShow() {
         clearError();
         passwordField.setText("");
+        passwordPlaceholder.setVisible(true);
         SwingUtilities.invokeLater(() -> usernameField.requestFocusInWindow());
     }
 
@@ -295,7 +327,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(FIELD_BG);
+                g2.setColor(fieldBg);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
                 g2.dispose();
                 super.paintComponent(g);
@@ -303,29 +335,29 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
             @Override protected void paintBorder(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(isFocusOwner() ? FIELD_FOCUS : FIELD_BORDER);
+                g2.setColor(isFocusOwner() ? fieldFocus : fieldBorder);
                 g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
                 g2.dispose();
             }
         };
         f.setOpaque(false);
-        f.setForeground(TEXT_MUTED);
-        f.setCaretColor(TEXT_PRIMARY);
-        f.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        f.setCaretColor(textPrimary);
+        f.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
         f.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 12));
+        f.setForeground(ThemeService.COLOR_TEXT_SECONDARY);
         f.setText(placeholder);
 
         f.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override public void focusGained(java.awt.event.FocusEvent e) {
                 if (f.getText().equals(placeholder)) {
                     f.setText("");
-                    f.setForeground(TEXT_PRIMARY);
+                    f.setForeground(textPrimary);
                 }
             }
             @Override public void focusLost(java.awt.event.FocusEvent e) {
                 if (f.getText().isEmpty()) {
                     f.setText(placeholder);
-                    f.setForeground(TEXT_MUTED);
+                    f.setForeground(ThemeService.COLOR_TEXT_SECONDARY);
                 }
             }
         });
@@ -337,7 +369,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(FIELD_BG);
+                g2.setColor(fieldBg);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
                 g2.dispose();
                 super.paintComponent(g);
@@ -345,15 +377,15 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
             @Override protected void paintBorder(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(isFocusOwner() ? FIELD_FOCUS : FIELD_BORDER);
+                g2.setColor(isFocusOwner() ? fieldFocus : fieldBorder);
                 g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
                 g2.dispose();
             }
         };
         f.setOpaque(false);
-        f.setForeground(TEXT_PRIMARY);
-        f.setCaretColor(TEXT_PRIMARY);
-        f.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        f.setForeground(textPrimary);
+        f.setCaretColor(textPrimary);
+        f.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
         f.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 12));
         f.setEchoChar('\u2022');
         return f;
@@ -364,7 +396,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                Color bg = btnPressed ? BTN_PRESS : btnHovered ? BTN_HOVER : BTN_NORMAL;
+                Color bg = isBtnPressed ? btnPress : isBtnHovered ? btnHover : btnNormal;
                 g2.setColor(isEnabled() ? bg : new Color(50, 50, 90));
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
                 g2.setColor(new Color(255, 255, 255, 40));
@@ -374,7 +406,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
             }
         };
         btn.setForeground(Color.WHITE);
-        btn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        btn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
         btn.setOpaque(false);
         btn.setContentAreaFilled(false);
         btn.setBorderPainted(false);
@@ -382,10 +414,10 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.addActionListener((ActionEvent e) -> attemptLogin());
         btn.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e)  { btnHovered = true;  btn.repaint(); }
-            @Override public void mouseExited(MouseEvent e)   { btnHovered = false; btnPressed = false; btn.repaint(); }
-            @Override public void mousePressed(MouseEvent e)  { btnPressed = true;  btn.repaint(); }
-            @Override public void mouseReleased(MouseEvent e) { btnPressed = false; btn.repaint(); }
+            @Override public void mouseEntered(MouseEvent e)  { isBtnHovered = true;  btn.repaint(); }
+            @Override public void mouseExited(MouseEvent e)   { isBtnHovered = false; isBtnPressed = false; btn.repaint(); }
+            @Override public void mousePressed(MouseEvent e)  { isBtnPressed = true;  btn.repaint(); }
+            @Override public void mouseReleased(MouseEvent e) { isBtnPressed = false; btn.repaint(); }
         });
         return btn;
     }

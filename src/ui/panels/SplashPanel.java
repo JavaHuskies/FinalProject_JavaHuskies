@@ -39,20 +39,24 @@ public class SplashPanel extends ImageBackgroundPanel {
     private void buildUI() {
         JPanel content = new JPanel(new GridBagLayout());
         content.setOpaque(false);
+        // Wide enough to display the full title without clipping
+        content.setPreferredSize(new Dimension(1100, 420));
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
+        gbc.gridx  = 0;
+        gbc.fill   = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.CENTER;
 
         // Title
         JLabel title = new JLabel("Deep Thought Entertainment Group");
-        title.setFont(new Font("SansSerif", Font.PLAIN, 32));
+        title.setFont(new Font("SansSerif", Font.PLAIN, 48));
         title.setForeground(ThemeService.COLOR_TEXT_PRIMARY);
         title.setHorizontalAlignment(SwingConstants.CENTER);
 
         // Tagline
         JLabel tagline = new JLabel(
             "\u201cThe answer is 42. The system is everything else.\u201d");
-        tagline.setFont(new Font("SansSerif", Font.ITALIC, 14));
+        tagline.setFont(new Font("SansSerif", Font.ITALIC, 20));
         tagline.setForeground(ThemeService.COLOR_TEXT_MUTED);
         tagline.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -60,19 +64,19 @@ public class SplashPanel extends ImageBackgroundPanel {
         JPanel cards = new JPanel(new FlowLayout(FlowLayout.CENTER, 24, 0));
         cards.setOpaque(false);
         cards.add(buildEntryCard("\uD83C\uDFE2",
-            "Staff Login",    "Internal portal",
+            "Staff Login",  "Internal portal",
             ApplicationFrame.PANEL_STAFF_LOGIN));
         cards.add(buildEntryCard("\uD83C\uDF0C",
-            "Guest Portal",   "Book \u00B7 Play \u00B7 Explore",
+            "Guest Portal", "Book \u00B7 Play \u00B7 Explore",
             ApplicationFrame.PANEL_GUEST_LOGIN));
-        cards.add(buildEntryCard("\u2699\uFE0F",
-            "System Admin",   "Network access",
+        cards.add(buildEntryCard("\u2699",
+            "System Admin", "Network access",
             ApplicationFrame.PANEL_NETWORK_ADMIN));
 
         // Version
         JLabel version = new JLabel(
             "v1.0.0  \u00B7  INFO 5100  \u00B7  Northeastern University");
-        version.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        version.setFont(new Font("SansSerif", Font.PLAIN, 14));
         version.setForeground(ThemeService.COLOR_TEXT_MUTED);
         version.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -94,25 +98,26 @@ public class SplashPanel extends ImageBackgroundPanel {
     private JPanel buildEntryCard(String icon, String label,
                                    String subtitle, String targetPanel) {
         JPanel card = new JPanel(new GridBagLayout());
-        card.setPreferredSize(new Dimension(160, 140));
+        card.setPreferredSize(new Dimension(220, 200));
         card.setBackground(ThemeService.COLOR_BG_TERTIARY);
         card.setBorder(BorderFactory.createLineBorder(
             ThemeService.COLOR_BORDER, 1));
         card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
+        gbc.gridx  = 0;
         gbc.anchor = GridBagConstraints.CENTER;
 
         JLabel iconLabel = new JLabel(icon);
-        iconLabel.setFont(new Font("SansSerif", Font.PLAIN, 28));
+        iconLabel.setFont(new Font("SansSerif", Font.PLAIN, 42));
+        iconLabel.setForeground(ThemeService.COLOR_TEXT_PRIMARY);
 
         JLabel nameLabel = new JLabel(label);
-        nameLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        nameLabel.setFont(new Font("SansSerif", Font.PLAIN, 18));
         nameLabel.setForeground(ThemeService.COLOR_TEXT_PRIMARY);
 
         JLabel subLabel = new JLabel(subtitle);
-        subLabel.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        subLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
         subLabel.setForeground(ThemeService.COLOR_TEXT_MUTED);
 
         gbc.gridy = 0; gbc.insets = new Insets(16, 16, 8, 16);
@@ -122,7 +127,6 @@ public class SplashPanel extends ImageBackgroundPanel {
         gbc.gridy = 2; gbc.insets = new Insets(0, 16, 16, 16);
         card.add(subLabel, gbc);
 
-        // Hover + click
         card.addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) {
                 card.setBackground(ThemeService.COLOR_BG_SECONDARY);
