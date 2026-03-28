@@ -1,5 +1,4 @@
 
-
 package ui;
 
 import model.Claims;
@@ -7,6 +6,7 @@ import service.ConfigService;
 import service.SessionManager;
 import service.ThemeService;
 import ui.panels.HeaderPanel;
+import ui.panels.SidebarPanel;
 import ui.panels.SplashPanel;
 import ui.panels.StaffLoginPanel;
 
@@ -61,8 +61,8 @@ public class ApplicationFrame extends JFrame {
     // -------------------------------------------------------------------------
     private final CardLayout  cardLayout    = new CardLayout();
     private final JPanel      cardContainer = new JPanel(cardLayout);
-    private       HeaderPanel headerPanel;
-    private       JPanel      sidebarPanel;
+    private       HeaderPanel  headerPanel;
+    private       SidebarPanel sidebarPanel;
 
     // Registered panels map — name -> panel
     private final Map<String, JPanel> panels = new HashMap<>();
@@ -134,9 +134,8 @@ public class ApplicationFrame extends JFrame {
 
     private void initLayout() {
         headerPanel  = new HeaderPanel(this);
-        sidebarPanel = new JPanel();
-        sidebarPanel.setBackground(ThemeService.colorBgPrimary);
-        sidebarPanel.setPreferredSize(new Dimension(180, getHeight()));
+        sidebarPanel = new SidebarPanel(this);
+        sidebarPanel.setPreferredSize(new Dimension(200, getHeight()));
 
         headerPanel.setVisible(false);
         sidebarPanel.setVisible(false);
@@ -181,7 +180,7 @@ public class ApplicationFrame extends JFrame {
 
         if (!isPublicScreen && SessionManager.isLoggedIn()) {
             headerPanel.refresh();
-            sidebarPanel.repaint();
+            sidebarPanel.setActivePanel(name);
         }
 
         cardLayout.show(cardContainer, name);
@@ -223,6 +222,8 @@ public class ApplicationFrame extends JFrame {
 
         showPanel(target);
         headerPanel.refresh();
+        sidebarPanel.refresh();
+        sidebarPanel.setActivePanel(target);
         log.info("Routed role " + role + " to panel: " + target);
     }
 
@@ -232,6 +233,7 @@ public class ApplicationFrame extends JFrame {
     public void logout() {
         SessionManager.logout();
         headerPanel.setVisible(false);
+        sidebarPanel.setActivePanel("");
         sidebarPanel.setVisible(false);
         showPanel(panelSplash);
         log.info("User logged out");
