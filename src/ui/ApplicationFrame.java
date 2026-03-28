@@ -1,12 +1,14 @@
 
+
 package ui;
 
 import model.Claims;
 import service.ConfigService;
 import service.SessionManager;
 import service.ThemeService;
-import ui.components.ImageBackgroundPanel;
-import ui.panels.*;
+import ui.panels.HeaderPanel;
+import ui.panels.SplashPanel;
+import ui.panels.StaffLoginPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,39 +30,39 @@ import java.util.logging.Logger;
  */
 public class ApplicationFrame extends JFrame {
 
-    private static final Logger LOG = Logger.getLogger(ApplicationFrame.class.getName());
+    private static final Logger log = Logger.getLogger(ApplicationFrame.class.getName());
 
     // -------------------------------------------------------------------------
     // Panel name constants — use these everywhere, never hardcode strings
     // -------------------------------------------------------------------------
-    public static final String PANEL_SPLASH              = "splash";
-    public static final String PANEL_STAFF_LOGIN         = "staffLogin";
-    public static final String PANEL_GUEST_LOGIN         = "guestLogin";
-    public static final String PANEL_GUEST_REGISTER      = "guestRegister";
-    public static final String PANEL_NETWORK_ADMIN       = "networkAdmin";
-    public static final String PANEL_ENTERPRISE_ADMIN    = "enterpriseAdmin";
-    public static final String PANEL_ORG_DIRECTOR        = "orgDirector";
-    public static final String PANEL_WORK_REQUESTS       = "workRequests";
-    public static final String PANEL_CREATIVE_LEAD       = "creativeLead";
-    public static final String PANEL_TECHNOLOGY_LEAD     = "technologyLead";
-    public static final String PANEL_MARKETING_LEAD      = "marketingLead";
-    public static final String PANEL_COMPLIANCE_OFFICER  = "complianceOfficer";
-    public static final String PANEL_DATA_ANALYST        = "dataAnalyst";
-    public static final String PANEL_REPORTING           = "reporting";
-    public static final String PANEL_GUEST_PORTAL        = "guestPortal";
-    public static final String PANEL_GUEST_BOOKINGS      = "guestBookings";
-    public static final String PANEL_GUEST_CASINO        = "guestCasino";
-    public static final String PANEL_GUEST_COMPLAINTS    = "guestComplaints";
-    public static final String PANEL_AI_GUIDE            = "aiGuide";
-    public static final String PANEL_MAP                 = "map";
+    public static final String panelSplash             = "splash";
+    public static final String panelStaffLogin         = "staffLogin";
+    public static final String panelGuestLogin         = "guestLogin";
+    public static final String panelGuestRegister      = "guestRegister";
+    public static final String panelNetworkAdmin       = "networkAdmin";
+    public static final String panelEnterpriseAdmin    = "enterpriseAdmin";
+    public static final String panelOrgDirector        = "orgDirector";
+    public static final String panelWorkRequests       = "workRequests";
+    public static final String panelCreativeLead       = "creativeLead";
+    public static final String panelTechnologyLead     = "technologyLead";
+    public static final String panelMarketingLead      = "marketingLead";
+    public static final String panelComplianceOfficer  = "complianceOfficer";
+    public static final String panelDataAnalyst        = "dataAnalyst";
+    public static final String panelReporting          = "reporting";
+    public static final String panelGuestPortal        = "guestPortal";
+    public static final String panelGuestBookings      = "guestBookings";
+    public static final String panelGuestCasino        = "guestCasino";
+    public static final String panelGuestComplaints    = "guestComplaints";
+    public static final String panelAiGuide            = "aiGuide";
+    public static final String panelMap                = "map";
 
     // -------------------------------------------------------------------------
     // Layout components
     // -------------------------------------------------------------------------
-    private final CardLayout cardLayout    = new CardLayout();
-    private final JPanel     cardContainer = new JPanel(cardLayout);
-    private       JPanel     headerPanel;
-    private       JPanel     sidebarPanel;
+    private final CardLayout  cardLayout    = new CardLayout();
+    private final JPanel      cardContainer = new JPanel(cardLayout);
+    private       HeaderPanel headerPanel;
+    private       JPanel      sidebarPanel;
 
     // Registered panels map — name -> panel
     private final Map<String, JPanel> panels = new HashMap<>();
@@ -76,7 +78,7 @@ public class ApplicationFrame extends JFrame {
         initPanels();
         initLayout();
         initDemoModeShortcut();
-        showPanel(PANEL_SPLASH);
+        showPanel(panelSplash);
     }
 
     // -------------------------------------------------------------------------
@@ -85,66 +87,62 @@ public class ApplicationFrame extends JFrame {
 
     private void initWindow() {
         ConfigService cfg = ConfigService.getInstance();
-        int w  = cfg.getInt("app.window.width",      1280);
-        int h  = cfg.getInt("app.window.height",     800);
         int mw = cfg.getInt("app.window.min.width",  1024);
         int mh = cfg.getInt("app.window.min.height", 680);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(mw, mh));
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setBackground(ThemeService.COLOR_BG_PRIMARY);
+        setBackground(ThemeService.colorBgPrimary);
 
         try {
             ImageIcon icon = new ImageIcon(
-                getClass().getResource("/resources/images/deep_field.jpg"));
+                getClass().getResource("/resources/images/deep_field.png"));
             setIconImage(icon.getImage());
         } catch (Exception e) {
-            LOG.fine("App icon not found — skipping");
+            log.fine("App icon not found — skipping");
         }
     }
 
     private void initPanels() {
         // Public panels — no session required
-        register(PANEL_SPLASH,           new SplashPanel(this));
-        register(PANEL_STAFF_LOGIN,      new StaffLoginPanel(this));
-//        register(PANEL_GUEST_LOGIN,      new GuestLoginPanel(this));
-//        register(PANEL_GUEST_REGISTER,   new GuestRegistrationPanel(this));
+        register(panelSplash,      new SplashPanel(this));
+        register(panelStaffLogin,  new StaffLoginPanel(this));
+//        register(panelGuestLogin,     new GuestLoginPanel(this));
+//        register(panelGuestRegister,  new GuestRegistrationPanel(this));
 
         // Staff panels — session + role required
-//        register(PANEL_NETWORK_ADMIN,      new NetworkAdminPanel(this));
-//        register(PANEL_ENTERPRISE_ADMIN,   new EnterpriseAdminPanel(this));
-//        register(PANEL_ORG_DIRECTOR,       new OrgDirectorPanel(this));
-//        register(PANEL_WORK_REQUESTS,      new WorkRequestPanel(this));
-//        register(PANEL_CREATIVE_LEAD,      new CreativeLeadPanel(this));
-//        register(PANEL_TECHNOLOGY_LEAD,    new TechnologyLeadPanel(this));
-//        register(PANEL_MARKETING_LEAD,     new MarketingLeadPanel(this));
-//        register(PANEL_COMPLIANCE_OFFICER, new ComplianceOfficerPanel(this));
-//        register(PANEL_DATA_ANALYST,       new DataAnalystPanel(this));
-//        register(PANEL_REPORTING,          new ReportingPanel(this));
-//        register(PANEL_AI_GUIDE,           new AIGuidePanel(this));
+//        register(panelNetworkAdmin,      new NetworkAdminPanel(this));
+//        register(panelEnterpriseAdmin,   new EnterpriseAdminPanel(this));
+//        register(panelOrgDirector,       new OrgDirectorPanel(this));
+//        register(panelWorkRequests,      new WorkRequestPanel(this));
+//        register(panelCreativeLead,      new CreativeLeadPanel(this));
+//        register(panelTechnologyLead,    new TechnologyLeadPanel(this));
+//        register(panelMarketingLead,     new MarketingLeadPanel(this));
+//        register(panelComplianceOfficer, new ComplianceOfficerPanel(this));
+//        register(panelDataAnalyst,       new DataAnalystPanel(this));
+//        register(panelReporting,         new ReportingPanel(this));
+//        register(panelAiGuide,           new AIGuidePanel(this));
 
         // Guest panels — guest session required
-//        register(PANEL_GUEST_PORTAL,     new GuestPortalPanel(this));
-//        register(PANEL_GUEST_BOOKINGS,   new GuestBookingsPanel(this));
-//        register(PANEL_GUEST_CASINO,     new GuestCasinoPanel(this));
-//        register(PANEL_GUEST_COMPLAINTS, new GuestComplaintsPanel(this));
-//        register(PANEL_MAP,              new MapPanel(this));
+//        register(panelGuestPortal,     new GuestPortalPanel(this));
+//        register(panelGuestBookings,   new GuestBookingsPanel(this));
+//        register(panelGuestCasino,     new GuestCasinoPanel(this));
+//        register(panelGuestComplaints, new GuestComplaintsPanel(this));
+//        register(panelMap,             new MapPanel(this));
     }
 
     private void initLayout() {
-        headerPanel  = new JPanel();
+        headerPanel  = new HeaderPanel(this);
         sidebarPanel = new JPanel();
-        headerPanel.setBackground(ThemeService.COLOR_BG_SECONDARY);
-        sidebarPanel.setBackground(ThemeService.COLOR_BG_PRIMARY);
-        headerPanel.setPreferredSize(new Dimension(getWidth(), 48));
+        sidebarPanel.setBackground(ThemeService.colorBgPrimary);
         sidebarPanel.setPreferredSize(new Dimension(180, getHeight()));
 
         headerPanel.setVisible(false);
         sidebarPanel.setVisible(false);
 
         JPanel root = new JPanel(new BorderLayout());
-        root.setBackground(ThemeService.COLOR_BG_PRIMARY);
+        root.setBackground(ThemeService.colorBgPrimary);
         root.add(headerPanel,   BorderLayout.NORTH);
         root.add(sidebarPanel,  BorderLayout.WEST);
         root.add(cardContainer, BorderLayout.CENTER);
@@ -165,29 +163,29 @@ public class ApplicationFrame extends JFrame {
      * Shows the named panel and updates header/sidebar visibility.
      * This is the primary navigation method — panels call this to navigate.
      *
-     * @param name one of the PANEL_* constants defined above
+     * @param name one of the panel* constants defined above
      */
     public void showPanel(String name) {
         if (!panels.containsKey(name)) {
-            LOG.warning("Unknown panel: " + name);
+            log.warning("Unknown panel: " + name);
             return;
         }
 
-        boolean isPublicScreen = name.equals(PANEL_SPLASH)
-            || name.equals(PANEL_STAFF_LOGIN)
-            || name.equals(PANEL_GUEST_LOGIN)
-            || name.equals(PANEL_GUEST_REGISTER);
+        boolean isPublicScreen = name.equals(panelSplash)
+            || name.equals(panelStaffLogin)
+            || name.equals(panelGuestLogin)
+            || name.equals(panelGuestRegister);
 
         headerPanel.setVisible(!isPublicScreen);
         sidebarPanel.setVisible(!isPublicScreen);
 
         if (!isPublicScreen && SessionManager.isLoggedIn()) {
-            headerPanel.repaint();
+            headerPanel.refresh();
             sidebarPanel.repaint();
         }
 
         cardLayout.show(cardContainer, name);
-        LOG.fine("Navigated to panel: " + name);
+        log.fine("Navigated to panel: " + name);
     }
 
     /**
@@ -196,7 +194,7 @@ public class ApplicationFrame extends JFrame {
      */
     public void routeByRole() {
         if (!SessionManager.isLoggedIn()) {
-            showPanel(PANEL_SPLASH);
+            showPanel(panelSplash);
             return;
         }
 
@@ -206,25 +204,26 @@ public class ApplicationFrame extends JFrame {
             case Claims.roleNetworkAdmin,
                  Claims.roleSystemAdmin,
                  Claims.roleGroupCeo,
-                 Claims.roleGroupCfo        -> PANEL_NETWORK_ADMIN;
+                 Claims.roleGroupCfo        -> panelNetworkAdmin;
             case Claims.roleEnterpriseAdmin,
                  Claims.roleEntPresident,
-                 Claims.roleEntCoo          -> PANEL_ENTERPRISE_ADMIN;
-            case Claims.roleOrgDirector     -> PANEL_ORG_DIRECTOR;
-            case Claims.roleCreativeLead    -> PANEL_CREATIVE_LEAD;
-            case Claims.roleTechnologyLead  -> PANEL_TECHNOLOGY_LEAD;
-            case Claims.roleMarketingLead   -> PANEL_MARKETING_LEAD;
-            case Claims.roleComplianceOfficer -> PANEL_COMPLIANCE_OFFICER;
-            case Claims.roleDataAnalyst     -> PANEL_DATA_ANALYST;
-            case Claims.roleGuest           -> PANEL_GUEST_PORTAL;
+                 Claims.roleEntCoo          -> panelEnterpriseAdmin;
+            case Claims.roleOrgDirector     -> panelOrgDirector;
+            case Claims.roleCreativeLead    -> panelCreativeLead;
+            case Claims.roleTechnologyLead  -> panelTechnologyLead;
+            case Claims.roleMarketingLead   -> panelMarketingLead;
+            case Claims.roleComplianceOfficer -> panelComplianceOfficer;
+            case Claims.roleDataAnalyst     -> panelDataAnalyst;
+            case Claims.roleGuest           -> panelGuestPortal;
             default -> {
-                LOG.warning("Unrecognised role: " + role + " — routing to splash");
-                yield PANEL_SPLASH;
+                log.warning("Unrecognised role: " + role + " — routing to splash");
+                yield panelSplash;
             }
         };
 
         showPanel(target);
-        LOG.info("Routed role " + role + " to panel: " + target);
+        headerPanel.refresh();
+        log.info("Routed role " + role + " to panel: " + target);
     }
 
     /**
@@ -234,8 +233,8 @@ public class ApplicationFrame extends JFrame {
         SessionManager.logout();
         headerPanel.setVisible(false);
         sidebarPanel.setVisible(false);
-        showPanel(PANEL_SPLASH);
-        LOG.info("User logged out");
+        showPanel(panelSplash);
+        log.info("User logged out");
     }
 
     // -------------------------------------------------------------------------
@@ -363,7 +362,7 @@ public class ApplicationFrame extends JFrame {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) {
-                LOG.fine("Could not set system look and feel");
+                log.fine("Could not set system look and feel");
             }
             new ApplicationFrame().setVisible(true);
         });

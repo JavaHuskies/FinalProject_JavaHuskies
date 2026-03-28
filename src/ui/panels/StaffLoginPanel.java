@@ -46,9 +46,9 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
     private static final int   cardArc     = 20;
     private static final Color cardBg      = new Color(10, 10, 26, 210);
     private static final Color cardBorder  = new Color(80, 80, 140, 180);
-    private static final Color accent      = ThemeService.COLOR_ACCENT_PURPLE;
-    private static final Color textPrimary = ThemeService.COLOR_TEXT_PRIMARY;
-    private static final Color textMuted   = ThemeService.COLOR_TEXT_MUTED;
+    private static final Color accent      = ThemeService.colorAccentPurple;
+    private static final Color textPrimary = ThemeService.colorTextPrimary;
+    private static final Color textMuted   = ThemeService.colorTextMuted;
     private static final Color fieldBg     = new Color(20, 20, 46, 230);
     private static final Color fieldBorder = new Color(60, 60, 110, 200);
     private static final Color fieldFocus  = new Color(100, 120, 220, 180);
@@ -99,7 +99,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         add(passwordField);
 
         passwordPlaceholder = new JLabel("Password");
-        passwordPlaceholder.setForeground(ThemeService.COLOR_TEXT_SECONDARY);
+        passwordPlaceholder.setForeground(ThemeService.colorTextSecondary);
         passwordPlaceholder.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
         add(passwordPlaceholder);
         passwordField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -142,7 +142,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
             @Override public void mouseEntered(MouseEvent e) { backButton.setForeground(textPrimary); }
             @Override public void mouseExited(MouseEvent e)  { backButton.setForeground(textMuted); }
         });
-        backButton.addActionListener(e -> frame.showPanel(ApplicationFrame.PANEL_SPLASH));
+        backButton.addActionListener(e -> frame.showPanel(ApplicationFrame.panelSplash));
         add(backButton);
 
         guestLink = new JLabel("Guest? Register or log in here");
@@ -152,7 +152,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         guestLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         guestLink.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
-                frame.showPanel(ApplicationFrame.PANEL_GUEST_LOGIN);
+                frame.showPanel(ApplicationFrame.panelGuestLogin);
             }
             @Override public void mouseEntered(MouseEvent e) { guestLink.setForeground(textPrimary); }
             @Override public void mouseExited(MouseEvent e)  { guestLink.setForeground(accent); }
@@ -344,7 +344,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         f.setCaretColor(textPrimary);
         f.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
         f.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 12));
-        f.setForeground(ThemeService.COLOR_TEXT_SECONDARY);
+        f.setForeground(ThemeService.colorTextSecondary);
         f.setText(placeholder);
 
         f.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -357,7 +357,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
             @Override public void focusLost(java.awt.event.FocusEvent e) {
                 if (f.getText().isEmpty()) {
                     f.setText(placeholder);
-                    f.setForeground(ThemeService.COLOR_TEXT_SECONDARY);
+                    f.setForeground(ThemeService.colorTextSecondary);
                 }
             }
         });

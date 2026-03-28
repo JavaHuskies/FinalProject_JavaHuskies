@@ -21,53 +21,53 @@ import java.util.logging.Logger;
  * Singleton service managing JWST imagery and UI theming.
  *
  * Enterprise-to-image mapping:
- *   MAGRATHEA_STUDIOS          -> pillars_of_creation.png
- *   STARSHIP_TITANIC_LEISURE   -> cartwheel_galaxy.png
- *   GALACTIC_BROADCASTING      -> stephans_quintet.png
- *   SIRIUS_CYBERNETICS         -> southern_ring_nebula.png
+ *   magratheaStudios        -> pillars_of_creation.png
+ *   starshipTitanicLeisure  -> cartwheel_galaxy.png
+ *   galacticBroadcasting    -> stephans_quintet.png
+ *   siriusCybernetics       -> southern_ring_nebula.png
  *
  * Public pool (splash, login, guest portal) -> random each session from all 6 images.
  *
  * Usage:
  *   ThemeService ts = ThemeService.getInstance();
- *   BufferedImage img = ts.getEnterpriseImage("MAGRATHEA_STUDIOS");
- *   ImageBackgroundPanel panel = ts.createPanel("sidebar", "MAGRATHEA_STUDIOS");
+ *   BufferedImage img = ts.getEnterpriseImage("magratheaStudios");
+ *   ImageBackgroundPanel panel = ts.createPanel("sidebar", "magratheaStudios");
  */
 public class ThemeService {
 
-    private static final Logger LOG = Logger.getLogger(ThemeService.class.getName());
+    private static final Logger log = Logger.getLogger(ThemeService.class.getName());
     private static ThemeService instance;
 
     // Enterprise ID constants — match enterprise_id values in database
-    public static final String MAGRATHEA_STUDIOS         = "MAGRATHEA_STUDIOS";
-    public static final String STARSHIP_TITANIC_LEISURE  = "STARSHIP_TITANIC_LEISURE";
-    public static final String GALACTIC_BROADCASTING     = "GALACTIC_BROADCASTING";
-    public static final String SIRIUS_CYBERNETICS        = "SIRIUS_CYBERNETICS";
+    public static final String magratheaStudios        = "magratheaStudios";
+    public static final String starshipTitanicLeisure  = "starshipTitanicLeisure";
+    public static final String galacticBroadcasting    = "galacticBroadcasting";
+    public static final String siriusCybernetics       = "siriusCybernetics";
 
     // Image resource paths — must match files in src/resources/images/
-    private static final String RES_PATH = "/resources/images/";
-    private static final String IMG_PILLARS    = "pillars_of_creation.png";
-    private static final String IMG_CARTWHEEL  = "cartwheel_galaxy.png";
-    private static final String IMG_QUINTET    = "stephans_quintet.png";
-    private static final String IMG_RING       = "southern_ring_nebula.png";
-    private static final String IMG_DEEP_FIELD = "deep_field.png";
-    private static final String IMG_CARINA     = "carina_nebula.png";
+    private static final String resPath       = "/resources/images/";
+    private static final String imgPillars    = "pillars_of_creation.png";
+    private static final String imgCartwheel  = "cartwheel_galaxy.png";
+    private static final String imgQuintet    = "stephans_quintet.png";
+    private static final String imgRing       = "southern_ring_nebula.png";
+    private static final String imgDeepField  = "deep_field.png";
+    private static final String imgCarina     = "carina_nebula.png";
 
     // Cached image map — loaded once at startup
     private final Map<String, BufferedImage> imageCache = new HashMap<>();
 
     // Fixed enterprise -> image filename mapping
     private final Map<String, String> enterpriseImageMap = Map.of(
-        MAGRATHEA_STUDIOS,        IMG_PILLARS,
-        STARSHIP_TITANIC_LEISURE, IMG_CARTWHEEL,
-        GALACTIC_BROADCASTING,    IMG_QUINTET,
-        SIRIUS_CYBERNETICS,       IMG_RING
+        magratheaStudios,       imgPillars,
+        starshipTitanicLeisure, imgCartwheel,
+        galacticBroadcasting,   imgQuintet,
+        siriusCybernetics,      imgRing
     );
 
     // Full pool for public/guest/splash randomization
     private final List<String> publicPool = Arrays.asList(
-        IMG_PILLARS, IMG_CARTWHEEL, IMG_QUINTET,
-        IMG_RING, IMG_DEEP_FIELD, IMG_CARINA
+        imgPillars, imgCartwheel, imgQuintet,
+        imgRing, imgDeepField, imgCarina
     );
 
     // Session image for public-facing panels — selected once at startup
@@ -100,7 +100,7 @@ public class ThemeService {
     public BufferedImage getEnterpriseImage(String enterpriseId) {
         String filename = enterpriseImageMap.get(enterpriseId);
         if (filename == null) {
-            LOG.warning("Unknown enterpriseId: " + enterpriseId + " — using public image");
+            log.warning("Unknown enterpriseId: " + enterpriseId + " — using public image");
             return sessionPublicImage;
         }
         BufferedImage img = imageCache.get(filename);
@@ -175,25 +175,25 @@ public class ThemeService {
     // Color palette — Dark H2G2 UI theme
     // -------------------------------------------------------------------------
 
-    public static final Color COLOR_BG_PRIMARY    = new Color(10,  10,  26);
-    public static final Color COLOR_BG_SECONDARY  = new Color(18,  18,  42);
-    public static final Color COLOR_BG_TERTIARY   = new Color(26,  26,  58);
-    public static final Color COLOR_ACCENT_PURPLE  = new Color(123, 111, 196);
-    public static final Color COLOR_ACCENT_TEAL    = new Color(93,  202, 165);
-    public static final Color COLOR_TEXT_PRIMARY   = new Color(200, 184, 248);
-    public static final Color COLOR_TEXT_SECONDARY = new Color(144, 144, 192);
-    public static final Color COLOR_TEXT_MUTED     = new Color(85,  85,  100);
-    public static final Color COLOR_BORDER         = new Color(42,  42,  90);
-    public static final Color COLOR_SIDEBAR_ACTIVE = new Color(26,  26,  58);
+    public static final Color colorBgPrimary     = new Color(10,  10,  26);
+    public static final Color colorBgSecondary   = new Color(18,  18,  42);
+    public static final Color colorBgTertiary    = new Color(26,  26,  58);
+    public static final Color colorAccentPurple  = new Color(123, 111, 196);
+    public static final Color colorAccentTeal    = new Color(93,  202, 165);
+    public static final Color colorTextPrimary   = new Color(200, 184, 248);
+    public static final Color colorTextSecondary = new Color(144, 144, 192);
+    public static final Color colorTextMuted     = new Color(85,  85,  100);
+    public static final Color colorBorder        = new Color(42,  42,  90);
+    public static final Color colorSidebarActive = new Color(26,  26,  58);
 
     /** Returns the accent color for the given enterprise */
     public static Color getEnterpriseAccent(String enterpriseId) {
         return switch (enterpriseId) {
-            case MAGRATHEA_STUDIOS        -> new Color(160, 100, 220); // Purple
-            case STARSHIP_TITANIC_LEISURE -> new Color(220, 120, 80);  // Coral
-            case GALACTIC_BROADCASTING    -> new Color(80,  160, 220); // Blue
-            case SIRIUS_CYBERNETICS       -> new Color(80,  200, 150); // Teal
-            default                       -> COLOR_ACCENT_PURPLE;
+            case magratheaStudios       -> new Color(160, 100, 220); // purple
+            case starshipTitanicLeisure -> new Color(220, 120, 80);  // coral
+            case galacticBroadcasting   -> new Color(80,  160, 220); // blue
+            case siriusCybernetics      -> new Color(80,  200, 150); // teal
+            default                     -> colorAccentPurple;
         };
     }
 
@@ -203,27 +203,27 @@ public class ThemeService {
 
     private void loadAllImages() {
         String[] allImages = {
-            IMG_PILLARS, IMG_CARTWHEEL, IMG_QUINTET,
-            IMG_RING, IMG_DEEP_FIELD, IMG_CARINA
+            imgPillars, imgCartwheel, imgQuintet,
+            imgRing, imgDeepField, imgCarina
         };
         for (String filename : allImages) {
-            try (InputStream is = getClass().getResourceAsStream(RES_PATH + filename)) {
+            try (InputStream is = getClass().getResourceAsStream(resPath + filename)) {
                 if (is == null) {
-                    LOG.warning("Image not found: " + RES_PATH + filename
+                    log.warning("Image not found: " + resPath + filename
                         + " — place images in src/resources/images/");
                     continue;
                 }
                 BufferedImage img = ImageIO.read(is);
                 if (img != null) {
                     imageCache.put(filename, img);
-                    LOG.info("Loaded: " + filename
+                    log.info("Loaded: " + filename
                         + " (" + img.getWidth() + "x" + img.getHeight() + ")");
                 }
             } catch (IOException e) {
-                LOG.log(Level.WARNING, "Failed to load image: " + filename, e);
+                log.log(Level.WARNING, "Failed to load image: " + filename, e);
             }
         }
-        LOG.info("ThemeService: loaded " + imageCache.size() + "/" + allImages.length + " images");
+        log.info("ThemeService: loaded " + imageCache.size() + "/" + allImages.length + " images");
     }
 
     private boolean isPublicContext(String context) {
