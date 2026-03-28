@@ -1,0 +1,48 @@
+# =============================================================================
+# Deep Thought Entertainment Group — Configuration Template
+# =============================================================================
+# Copy this file to config.properties and fill in your values.
+# config.properties is gitignored — never commit credentials.
+# =============================================================================
+
+db.driver=org.sqlite.JDBC
+db.url=jdbc:sqlite:deepthought.db
+
+jwt.secret=
+jwt.expiry.ms=28800000
+
+smtp.host=smtp.gmail.com
+smtp.port=587
+smtp.auth=true
+smtp.starttls=true
+smtp.user=
+smtp.password=
+smtp.from=
+smtp.from.name=Deep Thought Entertainment Group
+
+claude.api.key=
+claude.model=claude-sonnet-4-20250514
+claude.max.tokens=1024
+claude.api.url=https://api.anthropic.com/v1/messages
+
+maps.api.key=
+maps.base.url=https://maps.googleapis.com/maps/api
+
+app.name=Deep Thought Entertainment Group
+app.version=1.0.0
+app.window.width=1280
+app.window.height=800
+app.window.min.width=1024
+app.window.min.height=680
+app.demo.mode.enabled=true
+
+app.mock.services=false
+app.mock.ai=false
+app.mock.email=false
+app.mock.maps=false
+
+db.seed.always=false
+db.seed.guests=20
+db.seed.work.requests=100
+db.seed.bookings=50
+db.seed.casino.sessions=30
