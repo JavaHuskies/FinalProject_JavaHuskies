@@ -157,8 +157,11 @@ public class AuthService {
     }
 
     /**
-     * Convenience — returns true if the token is non-null, valid, and not expired.
+     * Convenience check — returns true if the token is non-null, valid, and not expired.
      * Use this for quick gate checks before calling validateJWT for the full claims.
+     *
+     * @param token JWT string to check
+     * @return true if the token passes validateJWT; false otherwise
      */
     public boolean isTokenValid(String token) {
         return validateJWT(token) != null;
@@ -245,9 +248,13 @@ public class AuthService {
     }
 
     /**
-     * Returns a human-readable description of why a password fails policy.
-     * Use this to populate form validation error messages.
-     */
+    * Returns a human-readable description of the first policy rule a password violates.
+    * Returns null if the password satisfies all rules.
+    * Use this to populate form validation error messages.
+    *
+    * @param password plaintext password to evaluate
+    * @return error message string, or null if policy is satisfied
+    */
     public String getPasswordPolicyMessage(String password) {
         if (password == null || password.length() < 8)
             return "Password must be at least 8 characters.";

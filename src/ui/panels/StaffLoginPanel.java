@@ -77,7 +77,12 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
     private boolean isBtnPressed    = false;
 
     // ─────────────────────────────────────────────────────────────────────────
-
+	/**
+	 * Constructs the staff login panel with JWST background and login form.
+	 * Database lookup is stubbed until PersistenceService is live — see attemptLogin().
+	 *
+	 * @param frame the parent ApplicationFrame used for panel navigation
+	 */
     public StaffLoginPanel(ApplicationFrame frame) {
         super(ThemeService.getInstance().getPublicImage(),
               ImageBackgroundPanel.Treatment.FULL_OVERLAY, 0.72f, Color.BLACK);
@@ -321,7 +326,10 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         g2.drawString(text, x + (width - fm.stringWidth(text)) / 2, y);
     }
 
-    /** Called by ApplicationFrame.showPanel() — resets state and focuses username. */
+	/**
+	 * Called by ApplicationFrame.showPanel() when this panel is made visible.
+	 * Resets the error label, clears the password field, and focuses the username field.
+	 */
     public void onShow() {
         clearError();
         passwordField.setText("");

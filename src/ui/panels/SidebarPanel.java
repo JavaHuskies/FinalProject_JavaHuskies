@@ -56,7 +56,12 @@ public class SidebarPanel extends ImageBackgroundPanel {
     private record NavSection(String title, List<NavItem> items) {}
 
     // ─────────────────────────────────────────────────────────────────────────
-
+	/**
+	 * Constructs the sidebar panel with FADE_RIGHT treatment.
+	 * Call refresh() after login to populate navigation items.
+	 *
+	 * @param frame the parent ApplicationFrame used for panel navigation
+	 */
     public SidebarPanel(ApplicationFrame frame) {
         super(ThemeService.getInstance().getPublicImage(),
               ImageBackgroundPanel.Treatment.FADE_RIGHT, 0.0f, Color.BLACK);
@@ -115,6 +120,13 @@ public class SidebarPanel extends ImageBackgroundPanel {
 
     // ── Nav structure by role ─────────────────────────────────────────────────
 
+	/**
+	 * Builds the navigation section list for the given role.
+	 * Only panels the role is permitted to access are included.
+	 *
+	 * @param role current session role — use Claims role constants
+	 * @return ordered list of NavSections to render in the sidebar
+	 */
     private List<NavSection> buildNavForRole(String role) {
         if (role == null) return List.of();
 
@@ -153,7 +165,12 @@ public class SidebarPanel extends ImageBackgroundPanel {
         return sections;
     }
 
-    /** Returns the home dashboard panel for the given role. */
+	/**
+	 * Returns the home dashboard panel constant for the given role.
+	 *
+	 * @param role current session role — use Claims role constants
+	 * @return ApplicationFrame panel constant for the role's home panel
+	 */
     private String resolveDashboardPanel(String role) {
         return switch (role) {
             case Claims.roleNetworkAdmin,
@@ -172,7 +189,7 @@ public class SidebarPanel extends ImageBackgroundPanel {
             default                         -> ApplicationFrame.panelSplash;
         };
     }
-
+	/** Returns true if the role is at network level (networkAdmin, systemAdmin, groupCeo, groupCfo). */
     private boolean isNetworkLevel(String role) {
         return Claims.roleNetworkAdmin.equals(role)
             || Claims.roleSystemAdmin.equals(role)
@@ -180,6 +197,7 @@ public class SidebarPanel extends ImageBackgroundPanel {
             || Claims.roleGroupCfo.equals(role);
     }
 
+	/** Returns true if the role is at enterprise level (enterpriseAdmin, entPresident, entCoo). */
     private boolean isEnterpriseLevel(String role) {
         return Claims.roleEnterpriseAdmin.equals(role)
             || Claims.roleEntPresident.equals(role)

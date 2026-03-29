@@ -198,7 +198,9 @@ public class ApplicationFrame extends JFrame {
 
     /**
      * Routes the user to their home panel based on their JWT role claim.
-     * Call this immediately after a successful login.
+     * Also refreshes the header and sidebar to reflect the new session.
+     * Falls back to the splash panel if the session is invalid or the role
+     * is unrecognised. Call this immediately after a successful login.
      */
     public void routeByRole() {
         if (!SessionManager.isLoggedIn()) {

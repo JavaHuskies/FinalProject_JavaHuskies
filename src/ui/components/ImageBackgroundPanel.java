@@ -37,11 +37,23 @@ public class ImageBackgroundPanel extends JPanel {
     private float overlayOpacity;
     private Color overlayColor;
 
-    // Default: full overlay, 70% opacity black
+    /**
+     * Default constructor — full overlay treatment, 70% opacity black.
+     * Use when no image is available yet; call setBackgroundImage() later.
+     */
     public ImageBackgroundPanel() {
         this(null, Treatment.FULL_OVERLAY, 0.70f, new Color(0, 0, 0));
     }
 
+    /**
+     * Constructs a panel with the specified image and overlay treatment.
+     * Prefer ThemeService.createPanel() over calling this directly.
+     *
+     * @param image          JWST BufferedImage to render, or null for fallback
+     * @param treatment      rendering style — see Treatment enum
+     * @param overlayOpacity overlay darkness from 0.0 (none) to 1.0 (opaque)
+     * @param overlayColor   base color of the overlay (typically Color.BLACK)
+     */    
     public ImageBackgroundPanel(BufferedImage image, Treatment treatment,
                                  float overlayOpacity, Color overlayColor) {
         this.bgImage = image;
@@ -57,11 +69,21 @@ public class ImageBackgroundPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * Swaps the rendering treatment and repaints.
+     *
+     * @param treatment new Treatment to apply
+     */ 
     public void setTreatment(Treatment treatment) {
         this.treatment = treatment;
         repaint();
     }
 
+    /**
+     * Adjusts the overlay opacity and repaints. Value is clamped to [0.0, 1.0].
+     *
+     * @param opacity new opacity — 0.0 transparent, 1.0 fully opaque
+     */
     public void setOverlayOpacity(float opacity) {
         this.overlayOpacity = Math.min(1.0f, Math.max(0.0f, opacity));
         repaint();

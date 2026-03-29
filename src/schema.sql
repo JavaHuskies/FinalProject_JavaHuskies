@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS user (
     role            TEXT NOT NULL CHECK (role IN (
                         'networkAdmin', 'systemAdmin',
                         'enterpriseAdmin', 'groupCeo', 'groupCfo',
-                        'entPresident', 'entCoo',
+                        'enterprisePresident', 'enterpriseCoo',
                         'orgDirector', 'creativeLead', 'technologyLead',
                         'marketingLead', 'complianceOfficer', 'dataAnalyst'
                     )),

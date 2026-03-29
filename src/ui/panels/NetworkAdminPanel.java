@@ -50,6 +50,11 @@ public class NetworkAdminPanel extends JPanel {
 
     // ─────────────────────────────────────────────────────────────────────────
 
+	/**
+	 * Constructs the Network Admin dashboard and builds all UI components.
+	 *
+	 * @param frame the parent ApplicationFrame used for panel navigation
+	 */
     public NetworkAdminPanel(ApplicationFrame frame) {
         this.frame = frame;
         setBackground(new java.awt.Color(10, 10, 26));
@@ -59,6 +64,11 @@ public class NetworkAdminPanel extends JPanel {
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
+	/**
+	 * Called by ApplicationFrame.showPanel() when this panel is made visible.
+	 * Guards session against required roles, then refreshes the header and data.
+	 * Redirects to staff login if the session is invalid or role is insufficient.
+	 */
     public void onShow() {
         if (!SessionManager.guardAny(
                 Claims.roleNetworkAdmin, Claims.roleSystemAdmin,
@@ -177,6 +187,10 @@ public class NetworkAdminPanel extends JPanel {
 
     // ── Data loading ──────────────────────────────────────────────────────────
 
+	/**
+	 * Populates all three tabs with current data.
+	 * Replace mock rows with PersistenceService queries when available.
+	 */
     private void loadData() {
         loadEnterprises();
         loadUsers();
@@ -278,6 +292,13 @@ public class NetworkAdminPanel extends JPanel {
 
     // ── Component builders ────────────────────────────────────────────────────
 
+	/**
+	 * Builds a single stat card displaying a metric label and value.
+	 *
+	 * @param label display label (e.g. "Enterprises")
+	 * @param value initial display value (e.g. "4")
+	 * @return styled JPanel stat card
+	 */
     private JPanel buildStatCard(String label, String value) {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(bgSecondary);
@@ -305,6 +326,13 @@ public class NetworkAdminPanel extends JPanel {
         return card;
     }
 
+	/**
+	 * Builds a styled toolbar button with hover effect.
+	 *
+	 * @param label  button display text
+	 * @param action ActionListener to fire on click
+	 * @return configured JButton
+	 */
     private JButton buildToolbarButton(String label,
             java.awt.event.ActionListener action) {
         JButton btn = new JButton(label);

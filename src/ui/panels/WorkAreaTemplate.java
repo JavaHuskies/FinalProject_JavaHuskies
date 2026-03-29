@@ -62,6 +62,12 @@ public class WorkAreaTemplate extends JPanel {
 
     // ─────────────────────────────────────────────────────────────────────────
 
+	/**
+	 * Constructs the work area panel and builds all UI components.
+	 * Copy this file and update requiredRole, pageTitle, and pageSubtitle.
+	 *
+	 * @param frame the parent ApplicationFrame used for panel navigation
+	 */
     public WorkAreaTemplate(ApplicationFrame frame) {
         this.frame = frame;
         setBackground(new java.awt.Color(10, 10, 26));
@@ -232,6 +238,13 @@ public class WorkAreaTemplate extends JPanel {
 
     // ── Component builders ────────────────────────────────────────────────────
 
+	/**
+	 * Builds a single stat card displaying a metric label and value.
+	 *
+	 * @param label display label (e.g. "Stat One")
+	 * @param value initial display value — use "—" for placeholder
+	 * @return styled JPanel stat card
+	 */
     private JPanel buildStatCard(String label, String value) {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(bgSecondary);
@@ -258,6 +271,13 @@ public class WorkAreaTemplate extends JPanel {
         return card;
     }
 
+	/**
+	 * Builds a styled toolbar button with hover effect.
+	 * Wire an ActionListener after calling this method.
+	 *
+	 * @param label button display text
+	 * @return configured JButton
+	 */
     private JButton buildToolbarButton(String label) {
         JButton btn = new JButton(label);
         btn.setBackground(bgTertiary);

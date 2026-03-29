@@ -52,9 +52,7 @@ public class Claims {
         this.expiration   = expiration;
     }
 
-    // -------------------------------------------------------------------------
-    // Validity
-    // -------------------------------------------------------------------------
+    // ── Validity ──────────────────────────────────────────────────────────────
 
     /** Returns true if the token exists and has not expired */
     public boolean isValid() {
@@ -104,9 +102,7 @@ public class Claims {
         return isValid() && isNetworkAdmin();
     }
 
-    // -------------------------------------------------------------------------
-    // Getters
-    // -------------------------------------------------------------------------
+    // ── Getters ───────────────────────────────────────────────────────────────
 
     public String getUserId()       { return userId; }
     public String getRole()         { return role; }

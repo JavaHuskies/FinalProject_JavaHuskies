@@ -95,7 +95,10 @@ public class ThemeService {
 
     /**
      * Returns the designated JWST image for the given enterprise ID.
-     * Falls back to session public image if enterprise ID is unrecognised.
+     * Falls back to the session public image if the enterprise ID is unrecognised.
+     *
+     * @param enterpriseId one of the ThemeService enterprise ID constants
+     * @return the mapped BufferedImage, or the session public image as fallback
      */
     public BufferedImage getEnterpriseImage(String enterpriseId) {
         String filename = enterpriseImageMap.get(enterpriseId);
@@ -110,6 +113,8 @@ public class ThemeService {
     /**
      * Returns the session-random image for splash, login, and guest portal.
      * Consistent for the lifetime of the application session.
+     *
+     * @return the session public BufferedImage selected at startup
      */
     public BufferedImage getPublicImage() {
         return sessionPublicImage;
@@ -132,6 +137,8 @@ public class ThemeService {
 
     /**
      * Creates a themed ImageBackgroundPanel for the given context and enterprise.
+     * Public contexts (splash, login, guest) use the session public image.
+     * Enterprise contexts use the mapped JWST image for the given enterprise.
      *
      * context values:
      *   "splash"    -> public image, FULL_OVERLAY, 68% opacity
@@ -141,7 +148,11 @@ public class ThemeService {
      *   "guest"     -> public image, FULL_OVERLAY, 65% opacity
      *   "dashboard" -> enterprise image, DIMMED, 88% opacity
      *   default     -> enterprise image, FULL_OVERLAY, 70% opacity
-     */
+     * 
+     * @param enterpriseId one of the ThemeService enterprise ID constants,
+     *                     or null for public contexts
+     * @return configured ImageBackgroundPanel ready to add to a layout
+    */
     public ImageBackgroundPanel createPanel(String context, String enterpriseId) {
         boolean usePublic = isPublicContext(context);
         BufferedImage img = usePublic
@@ -166,7 +177,13 @@ public class ThemeService {
         };
     }
 
-    /** Convenience — creates a panel without enterprise context (public contexts) */
+    /**
+    * Convenience overload — creates a panel without enterprise context.
+    * Intended for public contexts (splash, login, guest) where no enterprise is active.
+    *
+    * @param context one of: "splash", "login", or "guest"
+    * @return configured ImageBackgroundPanel using the session public image
+    */
     public ImageBackgroundPanel createPanel(String context) {
         return createPanel(context, null);
     }
@@ -186,7 +203,13 @@ public class ThemeService {
     public static final Color colorBorder        = new Color(42,  42,  90);
     public static final Color colorSidebarActive = new Color(26,  26,  58);
 
-    /** Returns the accent color for the given enterprise */
+    /**
+     * Returns the UI accent color mapped to the given enterprise.
+     * Falls back to colorAccentPurple for unrecognised IDs.
+     *
+     * @param enterpriseId one of the ThemeService enterprise ID constants
+     * @return the enterprise accent Color
+     */
     public static Color getEnterpriseAccent(String enterpriseId) {
         return switch (enterpriseId) {
             case magratheaStudios       -> new Color(160, 100, 220); // purple

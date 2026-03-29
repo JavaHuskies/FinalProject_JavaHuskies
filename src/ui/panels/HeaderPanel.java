@@ -51,6 +51,11 @@ public class HeaderPanel extends ImageBackgroundPanel {
 
     // ─────────────────────────────────────────────────────────────────────────
 
+	/**
+	 * Constructs the header panel with STRIP treatment and initializes all components.
+	 *
+	 * @param frame the parent ApplicationFrame used for logout navigation
+	 */
     public HeaderPanel(ApplicationFrame frame) {
         super(ThemeService.getInstance().getPublicImage(),
               ImageBackgroundPanel.Treatment.STRIP, 0.0f, Color.BLACK);
@@ -180,10 +185,13 @@ public class HeaderPanel extends ImageBackgroundPanel {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    /**
-     * Converts camelCase role constant to a readable display string.
-     * e.g. "orgDirector" -> "Org Director"
-     */
+	/**
+	 * Converts a camelCase role constant to a readable display string.
+	 * Example: "orgDirector" → "Org Director"
+	 *
+	 * @param role camelCase role string
+	 * @return space-separated display string with first letter capitalised
+	 */
     private static String formatRole(String role) {
         if (role == null || role.isBlank()) return "";
         StringBuilder sb = new StringBuilder();
@@ -195,10 +203,13 @@ public class HeaderPanel extends ImageBackgroundPanel {
         return sb.toString();
     }
 
-    /**
-     * Converts camelCase org ID to a readable display string.
-     * e.g. "slartibartfastPictures" -> "Slartibartfast Pictures"
-     */
+	/**
+	 * Converts a camelCase org ID to a readable display string.
+	 * Example: "slartibartfastPictures" → "Slartibartfast Pictures"
+	 *
+	 * @param org camelCase org ID string
+	 * @return space-separated display string with first letter capitalised
+	 */
     private static String formatOrg(String org) {
         return formatRole(org); // same camelCase splitting logic
     }

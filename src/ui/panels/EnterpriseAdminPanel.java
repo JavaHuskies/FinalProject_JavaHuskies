@@ -46,6 +46,11 @@ public class EnterpriseAdminPanel extends JPanel {
 
     // ─────────────────────────────────────────────────────────────────────────
 
+	/**
+	 * Constructs the Enterprise Admin dashboard and builds all UI components.
+	 *
+	 * @param frame the parent ApplicationFrame used for panel navigation
+	 */
     public EnterpriseAdminPanel(ApplicationFrame frame) {
         this.frame = frame;
         setBackground(new Color(10, 10, 26));
@@ -55,6 +60,11 @@ public class EnterpriseAdminPanel extends JPanel {
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
+	/**
+	 * Called by ApplicationFrame.showPanel() when this panel is made visible.
+	 * Guards session against required roles, then refreshes the header and data.
+	 * Redirects to staff login if the session is invalid or role is insufficient.
+	 */
     public void onShow() {
         if (!SessionManager.guardAny(
                 Claims.roleEnterpriseAdmin, Claims.roleEntPresident, Claims.roleEntCoo,
@@ -290,6 +300,13 @@ public class EnterpriseAdminPanel extends JPanel {
 
     // ── Component builders ────────────────────────────────────────────────────
 
+	/**
+	 * Builds a single stat card displaying a metric label and value.
+	 *
+	 * @param label display label (e.g. "Organizations")
+	 * @param value initial display value (e.g. "2")
+	 * @return styled JPanel stat card
+	 */
     private JPanel buildStatCard(String label, String value) {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(bgSecondary);
@@ -317,6 +334,13 @@ public class EnterpriseAdminPanel extends JPanel {
         return card;
     }
 
+	/**
+	 * Builds a styled toolbar button with hover effect.
+	 *
+	 * @param label  button display text
+	 * @param action ActionListener to fire on click
+	 * @return configured JButton
+	 */
     private JButton buildToolbarButton(String label,
             java.awt.event.ActionListener action) {
         JButton btn = new JButton(label);
@@ -372,6 +396,13 @@ public class EnterpriseAdminPanel extends JPanel {
         return sp;
     }
 
+	/**
+	 * Converts a camelCase identifier to a space-separated display string.
+	 * Example: "magratheaStudios" → "Magrathea Studios"
+	 *
+	 * @param s camelCase string to format
+	 * @return human-readable display string, or empty string if input is blank
+	 */
     private static String formatCamelCase(String s) {
         if (s == null || s.isBlank()) return "";
         StringBuilder sb = new StringBuilder();

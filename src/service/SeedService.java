@@ -106,8 +106,8 @@ public class SeedService {
             // Group level
             { "grpceo",    "slartibartfastPictures",         "magratheaStudios",       "Zaphod", "Beeblebrox","grpceo@deepthought.com",   "groupCeo"           },
             // Enterprise level
-            { "entadmin",  "magratheaThemeWorlds",           "starshipTitanicLeisure", "Trillian","McMillan", "entadmin@deepthought.com", "enterpriseAdmin"    },
-            { "entpres",   "milliwaysEntertainment",         "starshipTitanicLeisure", "Slartibartfast","—", "entpres@deepthought.com",   "entPresident"       },
+            { "enterpriseAdmin",  "magratheaThemeWorlds",           "starshipTitanicLeisure", "Trillian","McMillan", "entadmin@deepthought.com", "enterpriseAdmin"    },
+            { "enterprisePresident",   "milliwaysEntertainment",         "starshipTitanicLeisure", "Slartibartfast","—", "entpres@deepthought.com",   "entPresident"       },
             // Org level — one per org for coverage
             { "orgdir1",   "infiniteImprobabilityStreaming", "galacticBroadcasting",   "Marvin", "Android",  "orgdir1@deepthought.com",   "orgDirector"        },
             { "creative1", "bistromathAnimation",            "magratheaStudios",       "Fenchurch","—",      "creative1@deepthought.com", "creativeLead"       },

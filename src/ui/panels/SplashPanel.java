@@ -28,6 +28,11 @@ public class SplashPanel extends ImageBackgroundPanel {
 
     private final ApplicationFrame frame;
 
+	/**
+	 * Constructs the splash panel with JWST background and three entry cards.
+	 *
+	 * @param frame the parent ApplicationFrame used for panel navigation
+	 */
     public SplashPanel(ApplicationFrame frame) {
         super(ThemeService.getInstance().getPublicImage(),
               Treatment.FULL_OVERLAY, 0.68f, Color.BLACK);
@@ -94,6 +99,16 @@ public class SplashPanel extends ImageBackgroundPanel {
         add(content);
     }
 
+	/**
+	 * Builds a single entry card with icon, label, subtitle, and hover styling.
+	 * Clicking the card navigates to the specified panel.
+	 *
+	 * @param icon        emoji or symbol character to display at the top of the card
+	 * @param label       primary card label (e.g. "Staff Login")
+	 * @param subtitle    secondary descriptor displayed below the label
+	 * @param targetPanel ApplicationFrame panel constant to navigate to on click
+	 * @return configured JPanel card ready to add to the card row
+	 */
     private JPanel buildEntryCard(String icon, String label,
                                    String subtitle, String targetPanel) {
         JPanel card = new JPanel(new GridBagLayout());

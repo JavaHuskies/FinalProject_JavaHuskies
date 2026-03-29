@@ -140,12 +140,22 @@ public class SessionManager {
         return activeClaims != null ? activeClaims.getEmail() : null;
     }
 
-    /** Returns true if the current user has exactly the specified role */
+    /**
+    * Returns true if the current user has exactly the specified role.
+    *
+    * @param role role string to test — use Claims role constants
+    * @return true if the current session role matches exactly
+    */
     public static boolean hasRole(String role) {
         return role != null && role.equals(getRole());
     }
 
-    /** Returns true if the current user has any of the specified roles */
+    /**
+    * Returns true if the current user has any of the specified roles.
+    *
+    * @param roles one or more role strings to test — use Claims role constants
+    * @return true if the current session role matches any entry in roles
+    */
     public static boolean hasAnyRole(String... roles) {
         String current = getRole();
         if (current == null) return false;
@@ -243,16 +253,19 @@ public class SessionManager {
     }
 
     /**
-     * Multi-role guard — returns true if the session is valid and the user
-     * has any of the specified roles.
-     *
-     * Usage:
-     *   if (!SessionManager.guardAny(Claims.ROLE_NETWORK_ADMIN,
-     *                                Claims.ROLE_ENTERPRISE_ADMIN)) {
-     *       mainShell.showPanel("login");
-     *       return;
-     *   }
-     */
+    * Multi-role guard — returns true if the session is valid and the user
+    * has any of the specified roles.
+    *
+    * Usage:
+    *   if (!SessionManager.guardAny(Claims.ROLE_NETWORK_ADMIN,
+    *                                Claims.ROLE_ENTERPRISE_ADMIN)) {
+    *       mainShell.showPanel("login");
+    *       return;
+    *   }
+    *
+    * @param requiredRoles one or more Claims role constants — access granted if any match
+    * @return true if the session is active and the user holds at least one required role
+    */
     public static boolean guardAny(String... requiredRoles) {
         if (!isLoggedIn()) {
             LOG.warning("Guard failed — no active session");
