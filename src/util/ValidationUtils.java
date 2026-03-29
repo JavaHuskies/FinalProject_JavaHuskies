@@ -158,9 +158,10 @@ public final class ValidationUtils {
     /**
      * Delegates password policy validation to {@link AuthService}.
      * <p>
-     * The policy message is retrieved from
-     * {@link AuthService#getPasswordPolicyMessage(String)} and is included in the
-     * failing result so panels can display it without duplicating the policy text.
+     * Calls {@link AuthService#getPasswordPolicyMessage(String)} — if a
+     * non-null message is returned the password violates policy and the
+     * message is surfaced as the failing result. A null return means all
+     * rules are satisfied.
      *
      * @param value the plain-text password candidate to check
      * @return a passing result if the password meets policy;
@@ -170,8 +171,9 @@ public final class ValidationUtils {
         ValidationResult blank = requireNonBlank(value, "Password");
         if (!blank.valid) return blank;
         AuthService auth = AuthService.getInstance();
-        if (!auth.enforcePasswordPolicy(value)) {
-            return ValidationResult.fail(auth.getPasswordPolicyMessage(value));
+        String policyError = auth.getPasswordPolicyMessage(value);
+        if (policyError != null) {
+            return ValidationResult.fail(policyError);
         }
         return ValidationResult.pass();
     }
