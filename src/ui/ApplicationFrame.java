@@ -9,6 +9,8 @@ import ui.panels.HeaderPanel;
 import ui.panels.SidebarPanel;
 import ui.panels.SplashPanel;
 import ui.panels.StaffLoginPanel;
+import ui.panels.NetworkAdminPanel;
+import ui.panels.EnterpriseAdminPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -112,8 +114,8 @@ public class ApplicationFrame extends JFrame {
 //        register(panelGuestRegister,  new GuestRegistrationPanel(this));
 
         // Staff panels — session + role required
-//        register(panelNetworkAdmin,      new NetworkAdminPanel(this));
-//        register(panelEnterpriseAdmin,   new EnterpriseAdminPanel(this));
+        register(panelNetworkAdmin, new NetworkAdminPanel(this));
+        register(panelEnterpriseAdmin, new EnterpriseAdminPanel(this));
 //        register(panelOrgDirector,       new OrgDirectorPanel(this));
 //        register(panelWorkRequests,      new WorkRequestPanel(this));
 //        register(panelCreativeLead,      new CreativeLeadPanel(this));
@@ -184,6 +186,13 @@ public class ApplicationFrame extends JFrame {
         }
 
         cardLayout.show(cardContainer, name);
+        // onShow() dispatch — add each panel as it is registered
+        if (name.equals(panelNetworkAdmin)) {
+            ((NetworkAdminPanel) panels.get(panelNetworkAdmin)).onShow();
+        }
+        if (name.equals(panelEnterpriseAdmin)) {
+            ((EnterpriseAdminPanel) panels.get(panelEnterpriseAdmin)).onShow();
+        }
         log.fine("Navigated to panel: " + name);
     }
 

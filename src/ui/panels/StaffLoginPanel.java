@@ -225,11 +225,11 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
 
     // ── Login action ──────────────────────────────────────────────────────────
 
-    private void attemptLogin() {
-        String username = usernameField.getText().trim();
-        String password = new String(passwordField.getPassword());
+	private void attemptLogin() {
+	        String username = usernameField.getText().trim();
+	        String password = new String(passwordField.getPassword());
 
-        clearError();
+	        clearError();
 
         if (username.isEmpty() || password.isEmpty()
                 || username.equals("Username")) {
@@ -242,7 +242,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
 
         new Thread(() -> {
             try {
-                // ── TODO (Anan): replace stub with PersistenceService lookup ──
+                // ── TODO (Anan): replace entire stub block with PersistenceService ──
                 // UserRecord user = PersistenceService.getInstance().findUserByUsername(username);
                 // if (user == null || !auth.verifyPassword(password, user.getPasswordHash())) {
                 //     throw new SecurityException("Invalid username or password.");
@@ -253,18 +253,27 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
                 // Claims claims = auth.validateJWT(token);
                 // SessionManager.login(token, claims);
 
-                // ── Stub — remove once PersistenceService is live ─────────────
-                if (!"admin".equals(username) || !"admin".equals(password)) {
+                // ── Stub credentials — remove once PersistenceService is live ──
+                String token;
+                if ("netadmin".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("netadmin", Claims.roleNetworkAdmin,
+                        "slartibartfastPictures", "magratheaStudios",
+                        "netadmin@deepthought.com");
+                } else if ("grpceo".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("grpceo", Claims.roleGroupCeo,
+                        "slartibartfastPictures", "magratheaStudios",
+                        "grpceo@deepthought.com");
+                } else if ("admin".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("admin", Claims.roleNetworkAdmin,
+                        "magratheaStudios", "magratheaStudios",
+                        "admin@deepthought.com");
+                } else {
                     throw new SecurityException("Invalid username or password.");
                 }
-                String token = auth.issueJWT(
-                    "demo-001", Claims.roleNetworkAdmin,
-                    "magratheaStudios", "magratheaStudios",
-                    "admin@deepthought.com"
-                );
+                // ── End stub ──────────────────────────────────────────────────
+
                 Claims claims = auth.validateJWT(token);
                 SessionManager.login(token, claims);
-                // ── End stub ──────────────────────────────────────────────────
 
                 SwingUtilities.invokeLater(() -> {
                     loginButton.setEnabled(true);

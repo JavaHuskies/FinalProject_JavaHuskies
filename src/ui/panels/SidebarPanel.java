@@ -35,13 +35,14 @@ import javax.swing.JPanel;
 public class SidebarPanel extends ImageBackgroundPanel {
 
     // ── Layout constants ──────────────────────────────────────────────────────
-    private static final int   sidebarW      = 200;
+    private static final int   sidebarW      = 250;
     private static final int   sectionPadTop = 20;
     private static final int   itemH         = 38;
+    private static final Color sectionOverlay = new Color(8, 8, 20, 180);
     private static final Color sectionColor  = new Color(85, 85, 110);
     private static final Color itemColor     = new Color(144, 144, 192);
     private static final Color itemHover     = new Color(200, 184, 248);
-    private static final Color activeBg      = new Color(26, 26, 58);
+    private static final Color activeBg      = new Color(26, 26, 58, 200);
     private static final Color borderColor   = new Color(42, 42, 90);
 
     // ── Services / frame ─────────────────────────────────────────────────────
@@ -187,17 +188,34 @@ public class SidebarPanel extends ImageBackgroundPanel {
 
     // ── Component builders ────────────────────────────────────────────────────
 
-    private JLabel buildSectionLabel(String title) {
+    private JPanel buildSectionLabel(String title) {
+        JPanel panel = new JPanel(null) {
+            @Override protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                    RenderingHints.VALUE_ANTIALIAS_ON);
+                // Dark pill overlay spanning full row width
+                g2.setColor(sectionOverlay);
+                g2.fillRect(0, sectionPadTop - 2,
+                            getWidth(), getHeight() - sectionPadTop + 2);
+                g2.dispose();
+            }
+        };
+        panel.setOpaque(false);
+	panel.setAlignmentX(LEFT_ALIGNMENT);
+        panel.setMaximumSize(new Dimension(sidebarW, sectionPadTop + 24));
+        panel.setPreferredSize(new Dimension(sidebarW, sectionPadTop + 24));
+
         JLabel label = new JLabel(title.toUpperCase());
-        label.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
-        label.setForeground(sectionColor);
-        label.setMaximumSize(new Dimension(sidebarW, 28));
-        label.setPreferredSize(new Dimension(sidebarW, 28));
-        label.setBorder(javax.swing.BorderFactory.createEmptyBorder(
-            sectionPadTop, 14, 4, 14));
-        label.setOpaque(false);
-        return label;
+        label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+        label.setForeground(new Color(180, 170, 210));   // light lavender — readable on dark
+        label.setBounds(14, sectionPadTop, sidebarW - 28, 20);
+        panel.add(label);
+
+        return panel;
     }
+
 
     private JPanel buildNavItem(NavItem item, Color accentColor) {
         boolean isActive = item.panelName().equals(activePanel);
@@ -205,25 +223,32 @@ public class SidebarPanel extends ImageBackgroundPanel {
         JPanel row = new JPanel(null) {
             @Override protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 if (item.panelName().equals(activePanel)) {
-                    Graphics2D g2 = (Graphics2D) g.create();
+                    // Active: full-width dark bg + accent left border
                     g2.setColor(activeBg);
                     g2.fillRect(0, 0, getWidth(), getHeight());
                     g2.setColor(accentColor);
                     g2.fillRect(0, 0, 3, getHeight());
-                    g2.dispose();
+                } else {
+                    // Inactive: tight pill overlay behind text only
+                    g2.setColor(new Color(8, 8, 20, 210));
+                    g2.fillRoundRect(8, 6, getWidth() - 16, getHeight() - 12, 8, 8);
                 }
+                g2.dispose();
             }
         };
         row.setOpaque(false);
+	row.setAlignmentX(LEFT_ALIGNMENT);
         row.setMaximumSize(new Dimension(sidebarW, itemH));
         row.setPreferredSize(new Dimension(sidebarW, itemH));
         row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         JLabel nameLabel = new JLabel(item.label());
-        nameLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        nameLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
         nameLabel.setForeground(isActive ? ThemeService.colorTextPrimary : itemColor);
-        nameLabel.setBounds(14, 0, sidebarW - 14, itemH);
+        nameLabel.setBounds(14, 0, sidebarW - 28, itemH);
         row.add(nameLabel);
 
         row.addMouseListener(new MouseAdapter() {

@@ -32,10 +32,10 @@ import javax.swing.SwingConstants;
 public class HeaderPanel extends ImageBackgroundPanel {
 
     // ── Layout constants ──────────────────────────────────────────────────────
-    private static final int    headerH        = 48;
-    private static final int    sidePad        = 20;
+    private static final int   headerH    = 48;
+    private static final int   sidePad    = 24;
+    private static final int   rightPad   = 32;
     private static final Color  borderColor    = new Color(42, 42, 90);
-    private static final Color  logoBg         = new Color(255, 255, 255, 0);
     private static final Color  btnBg          = new Color(42, 42, 90);
     private static final Color  btnBgHover     = new Color(60, 60, 120);
     private static final Color  btnFg          = new Color(160, 144, 224);
@@ -121,9 +121,9 @@ public class HeaderPanel extends ImageBackgroundPanel {
         logoLabel.setBounds(sidePad, 0, 340, headerH);
 
         // Logout button — right-anchored
-        int btnW = 72;
+        int btnW = 100;
         int btnH = 26;
-        int btnX = w - sidePad - btnW;
+        int btnX = w - rightPad - btnW;
         int btnY = (headerH - btnH) / 2;
         logoutButton.setBounds(btnX, btnY, btnW, btnH);
 
