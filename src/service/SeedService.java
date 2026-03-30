@@ -6,10 +6,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
@@ -21,7 +19,12 @@ import java.util.logging.Logger;
  *   3. seedUsers()     — inserts stub admin users with BCrypt hashes computed
  *                        at runtime via AuthService (INSERT OR IGNORE)
  *
- * Call SeedService.initialize(connection) from PersistenceService on startup.
+ * <p>TRANSITIONAL: This class is a bootstrap shim only. Once Anan delivers
+ * PersistenceService, the startup call in ApplicationFrame switches from
+ * SeedService.initialize() to PersistenceService.initializeSchema().
+ * See handoff doc — SeedService section.
+ *
+ * Call SeedService.initialize(connection) from ApplicationFrame on startup.
  */
 public class SeedService {
 
@@ -33,9 +36,10 @@ public class SeedService {
     // ── Public entry point ────────────────────────────────────────────────────
 
     /**
-     * Runs schema + seed in sequence. Safe to call on every launch.
+     * Runs schema + seed scripts then inserts stub users.
+     * Safe to call on every launch — all operations use INSERT OR IGNORE.
      *
-     * @param conn open JDBC connection from PersistenceService
+     * @param conn open JDBC connection
      */
     public static void initialize(Connection conn) {
         try {
@@ -54,6 +58,10 @@ public class SeedService {
     /**
      * Reads a SQL script from the classpath root and executes each statement.
      * Statements are split on semicolons; blank lines and comments are skipped.
+     *
+     * @param conn         open JDBC connection
+     * @param resourceName filename of the SQL script on the classpath root
+     * @throws Exception if the script is not found or a statement fails
      */
     private static void runScript(Connection conn, String resourceName)
             throws Exception {
@@ -91,30 +99,60 @@ public class SeedService {
     // ── User seed ─────────────────────────────────────────────────────────────
 
     /**
-     * Inserts stub admin users if they don't already exist.
+     * Inserts stub users if they don't already exist.
      * Passwords are hashed at runtime — never hardcoded in SQL.
+     * All role values match the CHECK constraint in schema.sql and the
+     * Claims role constants.
+     *
+     * @param conn open JDBC connection
+     * @throws SQLException if any insert fails
      */
     private static void seedUsers(Connection conn) throws SQLException {
         AuthService auth = AuthService.getInstance();
         String hash = auth.hashPassword(defaultPassword);
 
-        // user_id, org_id, enterprise_id, first_name, last_name, email, role
+        // columns: user_id, org_id, enterprise_id, first_name, last_name, email, role
         Object[][] users = {
-            // Network level
-            { "admin",     "slartibartfastPictures",         "magratheaStudios",       "Arthur", "Dent",     "admin@deepthought.com",     "networkAdmin"       },
-            { "netadmin",  "slartibartfastPictures",         "magratheaStudios",       "Ford",   "Prefect",  "netadmin@deepthought.com",  "networkAdmin"       },
-            // Group level
-            { "grpceo",    "slartibartfastPictures",         "magratheaStudios",       "Zaphod", "Beeblebrox","grpceo@deepthought.com",   "groupCeo"           },
-            // Enterprise level
-            { "enterpriseAdmin",  "magratheaThemeWorlds",           "starshipTitanicLeisure", "Trillian","McMillan", "entadmin@deepthought.com", "enterpriseAdmin"    },
-            { "enterprisePresident",   "milliwaysEntertainment",         "starshipTitanicLeisure", "Slartibartfast","—", "entpres@deepthought.com",   "entPresident"       },
-            // Org level — one per org for coverage
-            { "orgdir1",   "infiniteImprobabilityStreaming", "galacticBroadcasting",   "Marvin", "Android",  "orgdir1@deepthought.com",   "orgDirector"        },
-            { "creative1", "bistromathAnimation",            "magratheaStudios",       "Fenchurch","—",      "creative1@deepthought.com", "creativeLead"       },
-            { "tech1",     "megadodoLicensing",              "siriusCybernetics",      "Eddie",  "Ship",     "tech1@deepthought.com",     "technologyLead"     },
-            { "mktg1",     "panGalacticBroadcast",          "galacticBroadcasting",   "Veet",   "Voojagig", "mktg1@deepthought.com",     "marketingLead"      },
-            { "comply1",   "milliwaysEntertainment",         "starshipTitanicLeisure", "Wonko",  "Sane",     "comply1@deepthought.com",   "complianceOfficer"  },
-            { "analyst1",  "hooloovooRetail",                "siriusCybernetics",      "Deep",   "Thought",  "analyst1@deepthought.com",  "dataAnalyst"        },
+
+            // ── Network level ─────────────────────────────────────────────────
+            { "admin",    "slartibartfastPictures", "magratheaStudios",
+              "Arthur",  "Dent",        "admin@deepthought.com",    "networkAdmin"       },
+            { "netadmin", "slartibartfastPictures", "magratheaStudios",
+              "Ford",    "Prefect",     "netadmin@deepthought.com", "networkAdmin"       },
+
+            // ── Group level ───────────────────────────────────────────────────
+            { "grpceo",   "slartibartfastPictures", "magratheaStudios",
+              "Zaphod",  "Beeblebrox",  "grpceo@deepthought.com",   "groupCeo"           },
+            { "grpcfo",   "slartibartfastPictures", "magratheaStudios",
+              "Humma",   "Kavula",      "grpcfo@deepthought.com",   "groupCfo"           },
+
+            // ── Enterprise level ──────────────────────────────────────────────
+            { "entadmin", "magratheaThemeWorlds",   "starshipTitanicLeisure",
+              "Trillian","McMillan",    "entadmin@deepthought.com", "enterpriseAdmin"    },
+            { "entpres",  "milliwaysEntertainment", "starshipTitanicLeisure",
+              "Slartibartfast", "—",   "entpres@deepthought.com",  "enterprisePresident"},
+
+            // ── Org level ─────────────────────────────────────────────────────
+            { "orgdir1",  "infiniteImprobabilityStreaming", "galacticBroadcasting",
+              "Marvin",  "Android",     "orgdir1@deepthought.com",  "orgDirector"        },
+            { "creative1","bistromathAnimation",    "magratheaStudios",
+              "Fenchurch","—",          "creative1@deepthought.com","creativeLead"       },
+            { "tech1",    "megadodoLicensing",      "siriusCybernetics",
+              "Eddie",   "Ship",        "tech1@deepthought.com",    "technologyLead"     },
+            { "mktg1",    "panGalacticBroadcast",   "galacticBroadcasting",
+              "Veet",    "Voojagig",    "mktg1@deepthought.com",    "marketingLead"      },
+            { "analyst1", "hooloovooRetail",         "siriusCybernetics",
+              "Deep",    "Thought",     "analyst1@deepthought.com", "dataAnalyst"        },
+
+            // ── Compliance Officers — one per enterprise ───────────────────────
+            { "comply1",  "slartibartfastPictures", "magratheaStudios",
+              "Wonko",   "Sane",        "comply1@deepthought.com",  "complianceOfficer"  },
+            { "comply2",  "milliwaysEntertainment", "starshipTitanicLeisure",
+              "Effrafax","Wug",         "comply2@deepthought.com",  "complianceOfficer"  },
+            { "comply3",  "infiniteImprobabilityStreaming", "galacticBroadcasting",
+              "Prak",    "—",           "comply3@deepthought.com",  "complianceOfficer"  },
+            { "comply4",  "megadodoLicensing",      "siriusCybernetics",
+              "Agrajag", "—",           "comply4@deepthought.com",  "complianceOfficer"  },
         };
 
         String sql = """
@@ -132,7 +170,7 @@ public class SeedService {
                 ps.setString(4, (String) u[3]); // first_name
                 ps.setString(5, (String) u[4]); // last_name
                 ps.setString(6, (String) u[5]); // email
-                ps.setString(7, hash);           // password_hash (same for all seeds)
+                ps.setString(7, hash);           // password_hash
                 ps.setString(8, (String) u[6]); // role
                 ps.executeUpdate();
             }
