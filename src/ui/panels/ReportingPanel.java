@@ -1,24 +1,18 @@
+// ReportingPanel.java
 package ui.panels;
 
-import model.Claims;
 import service.SessionManager;
 import service.ThemeService;
 import ui.ApplicationFrame;
+import ui.util.TableExportUtil;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
-/**
- * Reporting dashboard — accessible by dataAnalyst, enterpriseAdmin,
- * networkAdmin, and systemAdmin roles.
- *
- * Layout: stats row + toolbar + tabbed pane (KPIs | Trends | Raw Data)
- */
-public class ReportingPanel extends JPanel {
+public class ReportingPanel extends WorkAreaTemplate {
 
-    // Colors
     private static final Color bgPrimary     = ThemeService.colorBgPrimary;
     private static final Color bgSecondary   = ThemeService.colorBgSecondary;
     private static final Color bgTertiary    = ThemeService.colorBgTertiary;
@@ -27,49 +21,34 @@ public class ReportingPanel extends JPanel {
     private static final Color textMuted     = ThemeService.colorTextMuted;
     private static final Color borderColor   = ThemeService.colorBorder;
 
-    private static final String mockTip = "Mock data — replace with PersistenceService query";
-
-    // Frame
-    private final ApplicationFrame frame;
-
-    // Components
     private JLabel titleLabel;
     private JLabel subtitleLabel;
     private JPanel statsRow;
-    private JTabbedPane tabs;
 
     private JTable kpiTable;
     private JTable trendTable;
     private JTable rawTable;
 
+    private JTabbedPane tabs;
+
     public ReportingPanel(ApplicationFrame frame) {
-        this.frame = frame;
-        setBackground(bgPrimary);
-        setLayout(new BorderLayout(0, 0));
+        super(frame);
+        setLayout(new BorderLayout());
         buildComponents();
     }
 
-    // Lifecycle
+    @Override
     public void onShow() {
-        if (!SessionManager.guardAny(
-                Claims.roleDataAnalyst,
-                Claims.roleEnterpriseAdmin,
-                Claims.roleNetworkAdmin,
-                Claims.roleSystemAdmin)) {
-            frame.showPanel(ApplicationFrame.panelStaffLogin);
-            return;
-        }
         updateHeader();
         loadData();
     }
 
-    // Build UI
     private void buildComponents() {
+
         JPanel wrapper = new JPanel(new BorderLayout(0, 16));
         wrapper.setBackground(bgPrimary);
         wrapper.setBorder(new EmptyBorder(32, 80, 24, 80));
 
-        // Header
         JPanel header = new JPanel(new BorderLayout(0, 4));
         header.setBackground(bgPrimary);
         header.setBorder(new EmptyBorder(0, 0, 16, 0));
@@ -85,7 +64,6 @@ public class ReportingPanel extends JPanel {
         header.add(titleLabel, BorderLayout.NORTH);
         header.add(subtitleLabel, BorderLayout.SOUTH);
 
-        // Stats row
         statsRow = new JPanel(new GridLayout(1, 3, 12, 0));
         statsRow.setBackground(bgPrimary);
         statsRow.setBorder(new EmptyBorder(0, 0, 20, 0));
@@ -93,14 +71,61 @@ public class ReportingPanel extends JPanel {
         statsRow.add(buildStatCard("Avg. Resolution Time", "—"));
         statsRow.add(buildStatCard("Active Issues", "—"));
 
-        // Toolbar
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         toolbar.setBackground(bgPrimary);
         toolbar.setBorder(new EmptyBorder(0, 0, 12, 0));
-        toolbar.add(buildToolbarButton("Export"));
-        toolbar.add(buildToolbarButton("Refresh"));
 
-        // Tabs
+        JButton btnExport = buildToolbarButton("Export");
+        JButton btnRefresh = buildToolbarButton("Refresh");
+
+        toolbar.add(btnExport);
+        toolbar.add(btnRefresh);
+
+        btnRefresh.addActionListener(e -> loadData());
+
+        btnExport.addActionListener(e -> {
+
+            String[] options = { "KPIs", "Trends", "Raw Data" };
+            String choice = (String) JOptionPane.showInputDialog(
+                    this,
+                    "Select dataset to export:",
+                    "Export",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    options,
+                    options[0]
+            );
+
+            if (choice == null) return;
+
+            JTable selectedTable = switch (choice) {
+                case "KPIs" -> kpiTable;
+                case "Trends" -> trendTable;
+                case "Raw Data" -> rawTable;
+                default -> null;
+            };
+
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Export " + choice + " to CSV");
+            chooser.setSelectedFile(new java.io.File(
+                    choice.toLowerCase().replace(" ", "_") + ".csv"
+            ));
+
+            if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                boolean ok = TableExportUtil.exportToCsv(
+                        selectedTable,
+                        chooser.getSelectedFile().getAbsolutePath()
+                );
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        ok ? "Export successful!" : "Export failed.",
+                        "Export",
+                        ok ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE
+                );
+            }
+        });
+
         tabs = new JTabbedPane();
         tabs.setBackground(bgSecondary);
         tabs.setForeground(textMuted);
@@ -111,13 +136,11 @@ public class ReportingPanel extends JPanel {
         tabs.addTab("Trends", buildTrendTab());
         tabs.addTab("Raw Data", buildRawTab());
 
-        // Main content
         JPanel mainContent = new JPanel(new BorderLayout(0, 0));
         mainContent.setBackground(bgPrimary);
         mainContent.add(toolbar, BorderLayout.NORTH);
         mainContent.add(tabs, BorderLayout.CENTER);
 
-        // Assemble
         JPanel top = new JPanel(new BorderLayout(0, 0));
         top.setBackground(bgPrimary);
         top.add(header, BorderLayout.NORTH);
@@ -129,16 +152,13 @@ public class ReportingPanel extends JPanel {
         add(wrapper, BorderLayout.CENTER);
     }
 
-    // Tab builders
     private JScrollPane buildKpiTab() {
         String[] cols = { "Metric", "Value", "Change" };
         DefaultTableModel model = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         kpiTable = styledTable(model);
-        JScrollPane sp = styledScroll(kpiTable);
-        sp.setToolTipText(mockTip);
-        return sp;
+        return styledScroll(kpiTable);
     }
 
     private JScrollPane buildTrendTab() {
@@ -147,9 +167,7 @@ public class ReportingPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         trendTable = styledTable(model);
-        JScrollPane sp = styledScroll(trendTable);
-        sp.setToolTipText(mockTip);
-        return sp;
+        return styledScroll(trendTable);
     }
 
     private JScrollPane buildRawTab() {
@@ -158,12 +176,9 @@ public class ReportingPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         rawTable = styledTable(model);
-        JScrollPane sp = styledScroll(rawTable);
-        sp.setToolTipText(mockTip);
-        return sp;
+        return styledScroll(rawTable);
     }
 
-    // Data loading
     private void loadData() {
         loadKpis();
         loadTrends();
@@ -205,17 +220,6 @@ public class ReportingPanel extends JPanel {
         subtitleLabel.setText("Enterprise: " + SessionManager.getEnterpriseId());
     }
 
-    // Helpers
-    private void setStatValue(int index, String value) {
-        JPanel card = (JPanel) statsRow.getComponent(index);
-        for (Component c : card.getComponents()) {
-            if (c instanceof JLabel lbl && lbl.getFont().getSize() >= 22) {
-                lbl.setText(value);
-                break;
-            }
-        }
-    }
-
     private JPanel buildStatCard(String label, String value) {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(bgSecondary);
@@ -240,27 +244,6 @@ public class ReportingPanel extends JPanel {
         card.add(valueLbl, gbc);
 
         return card;
-    }
-
-    private JButton buildToolbarButton(String label) {
-        JButton btn = new JButton(label);
-        btn.setBackground(bgTertiary);
-        btn.setForeground(textPrimary);
-        btn.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        btn.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(borderColor, 1),
-                new EmptyBorder(6, 14, 6, 14)));
-        btn.setFocusPainted(false);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override public void mouseEntered(java.awt.event.MouseEvent e) {
-                btn.setBackground(bgSecondary);
-            }
-            @Override public void mouseExited(java.awt.event.MouseEvent e) {
-                btn.setBackground(bgTertiary);
-            }
-        });
-        return btn;
     }
 
     private JTable styledTable(DefaultTableModel model) {

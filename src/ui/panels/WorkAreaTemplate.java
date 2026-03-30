@@ -75,6 +75,10 @@ public class WorkAreaTemplate extends JPanel {
         buildComponents();
     }
 
+    protected ApplicationFrame getFrame() {
+    return frame;
+}
+
     // ── Utility — defined first so it can be used anywhere below ─────────────
 
     /** Splits a camelCase string into readable display text. */
@@ -278,7 +282,7 @@ public class WorkAreaTemplate extends JPanel {
 	 * @param label button display text
 	 * @return configured JButton
 	 */
-    private JButton buildToolbarButton(String label) {
+    protected JButton buildToolbarButton(String label) {
         JButton btn = new JButton(label);
         btn.setBackground(bgTertiary);
         btn.setForeground(textPrimary);
@@ -298,6 +302,7 @@ public class WorkAreaTemplate extends JPanel {
         });
         return btn;
     }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.

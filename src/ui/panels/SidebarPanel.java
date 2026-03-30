@@ -227,21 +227,43 @@ public class SidebarPanel extends ImageBackgroundPanel {
         nameLabel.setBounds(14, 0, sidebarW - 28, itemH);
         row.add(nameLabel);
 
-        row.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) {
-                if (!item.panelName().equals(activePanel)) {
-                    nameLabel.setForeground(itemHover);
-                }
+boolean isGuest = SessionManager.guard(Claims.roleGuest);
+boolean isReports = item.label().equalsIgnoreCase("Reports");
+
+if (isGuest && isReports) {
+
+    // Disable hover effects
+    row.setCursor(Cursor.getDefaultCursor());
+    nameLabel.setForeground(new Color(120, 120, 120)); // muted
+    row.setToolTipText("Guests cannot access Reports");
+
+    // Block all mouse interactions
+    row.addMouseListener(new MouseAdapter() {
+        @Override public void mouseEntered(MouseEvent e) { /* no-op */ }
+        @Override public void mouseExited(MouseEvent e) { /* no-op */ }
+        @Override public void mouseClicked(MouseEvent e) { /* no-op */ }
+    });
+
+} else {
+
+    // Normal staff behavior
+    row.addMouseListener(new MouseAdapter() {
+        @Override public void mouseEntered(MouseEvent e) {
+            if (!item.panelName().equals(activePanel)) {
+                nameLabel.setForeground(itemHover);
             }
-            @Override public void mouseExited(MouseEvent e) {
-                nameLabel.setForeground(
-                        item.panelName().equals(activePanel)
-                                ? ThemeService.colorTextPrimary : itemColor);
-            }
-            @Override public void mouseClicked(MouseEvent e) {
-                frame.showPanel(item.panelName());
-            }
-        });
+        }
+        @Override public void mouseExited(MouseEvent e) {
+            nameLabel.setForeground(
+                    item.panelName().equals(activePanel)
+                            ? ThemeService.colorTextPrimary : itemColor);
+        }
+        @Override public void mouseClicked(MouseEvent e) {
+            frame.showPanel(item.panelName());
+        }
+    });
+}
+
 
         return row;
     }
