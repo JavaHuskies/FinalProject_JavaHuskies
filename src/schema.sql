@@ -79,11 +79,14 @@ CREATE TABLE IF NOT EXISTS work_request (
     description     TEXT,
     request_type    TEXT NOT NULL CHECK (request_type IN (
                         'ContentRequest', 'LicensingRequest',
-                        'BroadcastRequest', 'MarketingRequest',
-                        'EventRequest', 'ComplianceRequest'
+                        'BroadcastRequest', 'BookingRequest',
+                        'ComplianceRequest'
                     )),
-    status          TEXT NOT NULL DEFAULT 'pending' CHECK (status IN (
-                        'pending', 'inReview', 'active', 'closed', 'rejected'
+    status          TEXT NOT NULL DEFAULT 'draft' CHECK (status IN (
+                        'draft', 'submitted',
+                        'outboundApproved', 'inboundApproved',
+                        'feasibilityReview', 'feasibilityComplete',
+                        'approved', 'rejected', 'closed'
                     )),
     origin_org_id   TEXT NOT NULL REFERENCES organization(org_id),
     target_org_id   TEXT NOT NULL REFERENCES organization(org_id),
@@ -93,7 +96,22 @@ CREATE TABLE IF NOT EXISTS work_request (
     updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- ── 7. Work Request Comment ───────────────────────────────────────────────────
+-- ── 7. Status Change ─────────────────────────────────────────────────────────
+-- Audit trail for all work request status transitions.
+-- Rollback records are appended with is_rollback = 1 — prior records are
+-- never deleted, preserving the full history.
+CREATE TABLE IF NOT EXISTS status_change (
+    status_change_id    TEXT PRIMARY KEY,
+    request_id          TEXT NOT NULL REFERENCES work_request(request_id),
+    previous_status     TEXT NOT NULL,
+    new_status          TEXT NOT NULL,
+    changed_by_id       TEXT NOT NULL REFERENCES user(user_id),
+    changed_at          TEXT NOT NULL DEFAULT (datetime('now')),
+    reason              TEXT,
+    is_rollback         INTEGER NOT NULL DEFAULT 0
+);
+
+-- ── 8. Work Request Comment ───────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS work_request_comment (
     comment_id      TEXT PRIMARY KEY,
     request_id      TEXT NOT NULL REFERENCES work_request(request_id),
@@ -102,7 +120,7 @@ CREATE TABLE IF NOT EXISTS work_request_comment (
     created_at      TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- ── 8. Booking ────────────────────────────────────────────────────────────────
+-- ── 9. Booking ────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS booking (
     booking_id      TEXT PRIMARY KEY,
     guest_id        TEXT NOT NULL REFERENCES guest(guest_id),
@@ -117,7 +135,7 @@ CREATE TABLE IF NOT EXISTS booking (
     created_at      TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- ── 9. Complaint ──────────────────────────────────────────────────────────────
+-- ── 10. Complaint ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS complaint (
     complaint_id    TEXT PRIMARY KEY,
     guest_id        TEXT NOT NULL REFERENCES guest(guest_id),
@@ -130,7 +148,7 @@ CREATE TABLE IF NOT EXISTS complaint (
     created_at      TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- ── 10. Casino Session ────────────────────────────────────────────────────────
+-- ── 11. Casino Session ────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS casino_session (
     session_id      TEXT PRIMARY KEY,
     guest_id        TEXT NOT NULL REFERENCES guest(guest_id),
@@ -140,7 +158,7 @@ CREATE TABLE IF NOT EXISTS casino_session (
     credits_end     INTEGER
 );
 
--- ── 11. Game Round ────────────────────────────────────────────────────────────
+-- ── 12. Game Round ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS game_round (
     round_id        TEXT PRIMARY KEY,
     session_id      TEXT NOT NULL REFERENCES casino_session(session_id),
@@ -151,7 +169,7 @@ CREATE TABLE IF NOT EXISTS game_round (
     played_at       TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- ── 12. Report ────────────────────────────────────────────────────────────────
+-- ── 13. Report ────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS report (
     report_id       TEXT PRIMARY KEY,
     title           TEXT NOT NULL,
@@ -165,11 +183,11 @@ CREATE TABLE IF NOT EXISTS report (
     data_json       TEXT
 );
 
--- ── 13. Notification Log ──────────────────────────────────────────────────────
+-- ── 14. Notification Log ──────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS notification_log (
     log_id          TEXT PRIMARY KEY,
     recipient       TEXT NOT NULL,
-    channel         TEXT NOT NULL CHECK (channel IN ('email', 'sms')),
+    channel         TEXT NOT NULL CHECK (channel IN ('email')),
     subject         TEXT,
     body            TEXT,
     status          TEXT NOT NULL DEFAULT 'sent' CHECK (status IN (
@@ -187,6 +205,8 @@ CREATE INDEX IF NOT EXISTS idx_user_enterprise       ON user(enterprise_id);
 CREATE INDEX IF NOT EXISTS idx_wr_origin             ON work_request(origin_org_id);
 CREATE INDEX IF NOT EXISTS idx_wr_target             ON work_request(target_org_id);
 CREATE INDEX IF NOT EXISTS idx_wr_submitted_by       ON work_request(submitted_by);
+CREATE INDEX IF NOT EXISTS idx_sc_request            ON status_change(request_id);
+CREATE INDEX IF NOT EXISTS idx_sc_changed_by         ON status_change(changed_by_id);
 CREATE INDEX IF NOT EXISTS idx_wrc_request           ON work_request_comment(request_id);
 CREATE INDEX IF NOT EXISTS idx_booking_guest         ON booking(guest_id);
 CREATE INDEX IF NOT EXISTS idx_complaint_guest       ON complaint(guest_id);
