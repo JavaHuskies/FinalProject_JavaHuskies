@@ -36,12 +36,17 @@ public class SidebarPanel extends ImageBackgroundPanel {
     private final ApplicationFrame frame;
     private String activePanel = "";
 
-    private record NavItem(String label, String panelName) {}
-    private record NavSection(String title, List<NavItem> items) {}
+    private record NavItem(String label, String panelName) {
+
+    }
+
+    private record NavSection(String title, List<NavItem> items) {
+
+    }
 
     public SidebarPanel(ApplicationFrame frame) {
         super(ThemeService.getInstance().getPublicImage(),
-              ImageBackgroundPanel.Treatment.FADE_RIGHT, 0.0f, Color.BLACK);
+                ImageBackgroundPanel.Treatment.FADE_RIGHT, 0.0f, Color.BLACK);
         this.frame = frame;
         setPreferredSize(new Dimension(sidebarW, 0));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -84,7 +89,9 @@ public class SidebarPanel extends ImageBackgroundPanel {
     }
 
     private List<NavSection> buildNavForRole(String role) {
-        if (role == null) return List.of();
+        if (role == null) {
+            return List.of();
+        }
 
         List<NavSection> sections = new ArrayList<>();
 
@@ -137,7 +144,9 @@ public class SidebarPanel extends ImageBackgroundPanel {
             tools.add(new NavItem("Reports", ApplicationFrame.panelReporting));
         }
         tools.add(new NavItem("H2G2 Guide", ApplicationFrame.panelAiGuide));
-        if (!tools.isEmpty()) sections.add(new NavSection("Tools", tools));
+        if (!tools.isEmpty()) {
+            sections.add(new NavSection("Tools", tools));
+        }
 
         // ─────────────────────────────────────────────
         // STAFF ADMIN
@@ -149,7 +158,14 @@ public class SidebarPanel extends ImageBackgroundPanel {
         if (isNetworkLevel(role)) {
             admin.add(new NavItem("Network View", ApplicationFrame.panelNetworkAdmin));
         }
-        if (!admin.isEmpty()) sections.add(new NavSection("Admin", admin));
+
+        if (Claims.roleGroupCfo.equals(role)) {
+            admin.add(new NavItem("CFO Dashboard", ApplicationFrame.panelCfo));
+        }
+
+        if (!admin.isEmpty()) {
+            sections.add(new NavSection("Admin", admin));
+        }
 
         // ─────────────────────────────────────────────
         // STAFF CASINO SECTION (NEW)
@@ -163,21 +179,26 @@ public class SidebarPanel extends ImageBackgroundPanel {
 
     private String resolveDashboardPanel(String role) {
         return switch (role) {
-            case Claims.roleNetworkAdmin,
-                 Claims.roleSystemAdmin,
-                 Claims.roleGroupCeo,
-                 Claims.roleGroupCfo -> ApplicationFrame.panelNetworkAdmin;
-            case Claims.roleEnterpriseAdmin,
-                 Claims.roleEntPresident,
-                 Claims.roleEntCoo -> ApplicationFrame.panelEnterpriseAdmin;
-            case Claims.roleOrgDirector -> ApplicationFrame.panelOrgDirector;
-            case Claims.roleCreativeLead -> ApplicationFrame.panelCreativeLead;
-            case Claims.roleTechnologyLead -> ApplicationFrame.panelTechnologyLead;
-            case Claims.roleMarketingLead -> ApplicationFrame.panelMarketingLead;
-            case Claims.roleComplianceOfficer -> ApplicationFrame.panelComplianceOfficer;
-            case Claims.roleDataAnalyst -> ApplicationFrame.panelDataAnalyst;
-            case Claims.roleGuest -> ApplicationFrame.panelGuestCasino;
-            default -> ApplicationFrame.panelSplash;
+            case Claims.roleNetworkAdmin, Claims.roleSystemAdmin, Claims.roleGroupCeo, Claims.roleGroupCfo ->
+                ApplicationFrame.panelNetworkAdmin;
+            case Claims.roleEnterpriseAdmin, Claims.roleEntPresident, Claims.roleEntCoo ->
+                ApplicationFrame.panelEnterpriseAdmin;
+            case Claims.roleOrgDirector ->
+                ApplicationFrame.panelOrgDirector;
+            case Claims.roleCreativeLead ->
+                ApplicationFrame.panelCreativeLead;
+            case Claims.roleTechnologyLead ->
+                ApplicationFrame.panelTechnologyLead;
+            case Claims.roleMarketingLead ->
+                ApplicationFrame.panelMarketingLead;
+            case Claims.roleComplianceOfficer ->
+                ApplicationFrame.panelComplianceOfficer;
+            case Claims.roleDataAnalyst ->
+                ApplicationFrame.panelDataAnalyst;
+            case Claims.roleGuest ->
+                ApplicationFrame.panelGuestCasino;
+            default ->
+                ApplicationFrame.panelSplash;
         };
     }
 
@@ -196,7 +217,8 @@ public class SidebarPanel extends ImageBackgroundPanel {
 
     private JPanel buildSectionLabel(String title) {
         JPanel panel = new JPanel(null) {
-            @Override protected void paintComponent(Graphics g) {
+            @Override
+            protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -225,7 +247,8 @@ public class SidebarPanel extends ImageBackgroundPanel {
         boolean isActive = item.panelName().equals(activePanel);
 
         JPanel row = new JPanel(null) {
-            @Override protected void paintComponent(Graphics g) {
+            @Override
+            protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -264,24 +287,37 @@ public class SidebarPanel extends ImageBackgroundPanel {
             row.setToolTipText("Guests cannot access Reports");
 
             row.addMouseListener(new MouseAdapter() {
-                @Override public void mouseEntered(MouseEvent e) {}
-                @Override public void mouseExited(MouseEvent e) {}
-                @Override public void mouseClicked(MouseEvent e) {}
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                }
             });
 
         } else {
             row.addMouseListener(new MouseAdapter() {
-                @Override public void mouseEntered(MouseEvent e) {
+                @Override
+                public void mouseEntered(MouseEvent e) {
                     if (!item.panelName().equals(activePanel)) {
                         nameLabel.setForeground(itemHover);
                     }
                 }
-                @Override public void mouseExited(MouseEvent e) {
+
+                @Override
+                public void mouseExited(MouseEvent e) {
                     nameLabel.setForeground(
                             item.panelName().equals(activePanel)
-                                    ? ThemeService.colorTextPrimary : itemColor);
+                            ? ThemeService.colorTextPrimary : itemColor);
                 }
-                @Override public void mouseClicked(MouseEvent e) {
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
                     frame.showPanel(item.panelName());
                 }
             });

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import ui.panels.CasinoPanel;
+import ui.panels.CfoPanel;
 import ui.panels.DataAnalystPanel;
 
 /**
@@ -128,7 +129,7 @@ public class ApplicationFrame extends JFrame {
         register(panelDataAnalyst, new DataAnalystPanel(this));
         register(panelReporting, new ReportingPanel(this));
 //        register(panelAiGuide,           new AIGuidePanel(this));
-//        register(panelCfo, new CfoPanel(this));  // JR — uncomment when CfoPanel delivered
+        register(panelCfo, new CfoPanel(this));
         // Guest panels — guest session required
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
 //        register(panelGuestBookings,   new GuestBookingsPanel(this));
@@ -216,9 +217,9 @@ public class ApplicationFrame extends JFrame {
             ((CasinoPanel) panels.get("casino")).onShow();
         }
 
-        // if (name.equals(panelCfo)) {
-        //     ((CfoPanel) panels.get(panelCfo)).onShow();  // uncomment when CfoPanel delivered
-        // }
+         if (name.equals(panelCfo)) {
+            ((CfoPanel) panels.get(panelCfo)).onShow(); 
+        }
         log.fine("Navigated to panel: " + name);
     }
 
