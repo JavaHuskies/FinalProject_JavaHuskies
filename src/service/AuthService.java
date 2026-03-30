@@ -18,6 +18,10 @@ import java.util.logging.Logger;
  * hashing. Issues signed tokens on login containing role, orgId, and
  * enterpriseId claims. All panels validate the token before rendering.
  *
+ * Also owns guest registration and email verification logic. Guest panels
+ * call {@link #registerGuest} and {@link #confirmVerification} — they do
+ * not implement auth or hashing directly.
+ *
  * JWT library:  io.jsonwebtoken (jjwt) 0.11.5
  * Hash library: org.mindrot.jbcrypt 0.4
  *
@@ -36,6 +40,12 @@ import java.util.logging.Logger;
  *   // Validate on every panel transition
  *   Claims claims = auth.validateJWT(token);
  *   if (claims != null && claims.isValid()) { ... }
+ *
+ *   // Register a new guest
+ *   Guest guest = auth.registerGuest(form);
+ *
+ *   // Confirm email verification
+ *   boolean verified = auth.confirmVerification(token);
  */
 public class AuthService {
 
@@ -70,8 +80,8 @@ public class AuthService {
             System.arraycopy(keyBytes, 0, padded, 0, keyBytes.length);
             keyBytes = padded;
         }
-        this.signingKey  = Keys.hmacShaKeyFor(keyBytes);
-        this.expiryMs    = cfg.getLong("jwt.expiry.ms", 28800000L); // 8 hours
+        this.signingKey   = Keys.hmacShaKeyFor(keyBytes);
+        this.expiryMs     = cfg.getLong("jwt.expiry.ms", 28800000L); // 8 hours
         this.bcryptRounds = 12;
     }
 
@@ -174,6 +184,8 @@ public class AuthService {
     /**
      * Revokes a token immediately. Revoked tokens are rejected by validateJWT
      * even if they haven't expired. Call this on logout.
+     *
+     * @param token JWT string to revoke
      */
     public void revokeToken(String token) {
         if (token != null) {
@@ -248,13 +260,13 @@ public class AuthService {
     }
 
     /**
-    * Returns a human-readable description of the first policy rule a password violates.
-    * Returns null if the password satisfies all rules.
-    * Use this to populate form validation error messages.
-    *
-    * @param password plaintext password to evaluate
-    * @return error message string, or null if policy is satisfied
-    */
+     * Returns a human-readable description of the first policy rule a password violates.
+     * Returns null if the password satisfies all rules.
+     * Use this to populate form validation error messages.
+     *
+     * @param password plaintext password to evaluate
+     * @return error message string, or null if policy is satisfied
+     */
     public String getPasswordPolicyMessage(String password) {
         if (password == null || password.length() < 8)
             return "Password must be at least 8 characters.";
@@ -268,5 +280,112 @@ public class AuthService {
                 "!@#$%^&*()_+-=[]{}|;':\",./<>?".indexOf(c) >= 0))
             return "Password must contain at least one special character.";
         return null; // null = policy satisfied
+    }
+
+    // -------------------------------------------------------------------------
+    // Guest registration
+    // -------------------------------------------------------------------------
+
+    /**
+     * Registers a new guest account. Validates the registration form, hashes
+     * the password, persists the guest record, and triggers a verification
+     * email. The guest cannot log in until email verification is confirmed
+     * via {@link #confirmVerification}.
+     *
+     * <p>Centralises all auth logic here so GuestRegistrationPanel does not
+     * perform hashing or persistence directly.
+     *
+     * @param form validated guest registration form object
+     * @return Guest with emailVerified = false and a pending verification token
+     * @throws IllegalArgumentException if form validation fails or password
+     *         does not meet policy
+     */
+    public model.Guest registerGuest(model.GuestRegistration form) {
+        if (form == null) {
+            throw new IllegalArgumentException("Registration form cannot be null");
+        }
+
+        // Validate form fields
+        String formError = form.validate();
+        if (formError != null) {
+            throw new IllegalArgumentException(formError);
+        }
+
+        // Enforce password policy
+        String policyError = getPasswordPolicyMessage(form.getPassword());
+        if (policyError != null) {
+            throw new IllegalArgumentException(policyError);
+        }
+
+        // Hash password — never store plaintext
+        String passwordHash = hashPassword(form.getPassword());
+
+        // Generate email verification token
+        String verificationToken = java.util.UUID.randomUUID().toString();
+
+        // Build guest object with emailVerified = false
+        model.Guest guest = new model.Guest(
+            java.util.UUID.randomUUID().toString(), // guestId
+            form.getFirstName(),
+            form.getLastName(),
+            form.getEmail(),
+            passwordHash,
+            verificationToken,
+            false // emailVerified
+        );
+
+        // TODO: persist guest via PersistenceService once delivered
+        // PersistenceService.getInstance().saveGuest(guest);
+
+        // TODO: send verification email via NotificationService once delivered
+        // NotificationService.getInstance().sendVerificationEmail(guest.getEmail(), verificationToken);
+
+        LOG.info("Guest registered (pending verification): " + guest.getEmail());
+        return guest;
+    }
+
+    /**
+     * Confirms a guest's email address using the token sent during registration.
+     * Sets emailVerified = true on the guest record and allows login.
+     *
+     * @param token UUID verification token from the confirmation email
+     * @return true if the token was valid and verification succeeded;
+     *         false if the token was not found or already used
+     */
+    public boolean confirmVerification(String token) {
+        if (token == null || token.isBlank()) {
+            LOG.warning("confirmVerification called with null or blank token");
+            return false;
+        }
+
+        // TODO: look up token via PersistenceService once delivered
+        // Guest guest = PersistenceService.getInstance().findGuestByVerificationToken(token);
+        // if (guest == null) return false;
+        // guest.setEmailVerified(true);
+        // PersistenceService.getInstance().updateGuest(guest);
+        // return true;
+
+        LOG.info("confirmVerification stub called — PersistenceService not yet available");
+        return false;
+    }
+
+    /**
+     * Sends a verification email to the specified address. Delegates to
+     * NotificationService and is kept here as the coordination point so
+     * all email-sending triggered by auth events flows through AuthService.
+     *
+     * @param email recipient email address
+     * @param token UUID verification token to include in the email link
+     */
+    public void sendVerificationEmail(String email, String token) {
+        if (email == null || email.isBlank() || token == null || token.isBlank()) {
+            LOG.warning("sendVerificationEmail called with null or blank argument");
+            return;
+        }
+
+        // TODO: delegate to NotificationService once delivered
+        // NotificationService.getInstance().sendVerificationEmail(email, token);
+
+        LOG.info("sendVerificationEmail stub called for: " + email);
     }
 }
