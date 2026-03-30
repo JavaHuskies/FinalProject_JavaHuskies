@@ -170,8 +170,13 @@ public class SessionManagerTest {
 
     // ── Helper ────────────────────────────────────────────────────────────────
 
+    /**
+     * Issues a JWT for the given user and logs them into SessionManager.
+     * Email defaults to userId@deepthought.local for test purposes.
+     */
     private void loginAs(String userId, String role, String orgId, String enterpriseId) {
-        String token = auth.issueJWT(userId, role, orgId, enterpriseId);
+        String token = auth.issueJWT(userId, role, orgId, enterpriseId,
+                                     userId + "@deepthought.local");
         model.Claims claims = auth.validateJWT(token);
         SessionManager.login(token, claims);
     }
