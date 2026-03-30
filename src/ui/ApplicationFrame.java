@@ -11,6 +11,9 @@ import ui.panels.SplashPanel;
 import ui.panels.StaffLoginPanel;
 import ui.panels.NetworkAdminPanel;
 import ui.panels.EnterpriseAdminPanel;
+import ui.panels.ComplianceOfficerPanel;
+import ui.panels.ReportingPanel;
+import ui.panels.GuestCasinoPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -122,15 +125,15 @@ public class ApplicationFrame extends JFrame {
 //        register(panelCreativeLead,      new CreativeLeadPanel(this));
 //        register(panelTechnologyLead,    new TechnologyLeadPanel(this));
 //        register(panelMarketingLead,     new MarketingLeadPanel(this));
-//        register(panelComplianceOfficer, new ComplianceOfficerPanel(this));
+        register(panelComplianceOfficer, new ComplianceOfficerPanel(this));
 //        register(panelDataAnalyst,       new DataAnalystPanel(this));
-//        register(panelReporting,         new ReportingPanel(this));
+       register(panelReporting,         new ReportingPanel(this));
 //        register(panelAiGuide,           new AIGuidePanel(this));
 //        register(panelCfo, new CfoPanel(this));  // JR — uncomment when CfoPanel delivered
         // Guest panels — guest session required
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
 //        register(panelGuestBookings,   new GuestBookingsPanel(this));
-//        register(panelGuestCasino,     new GuestCasinoPanel(this));
+        register(panelGuestCasino,     new GuestCasinoPanel(this));
 //        register(panelGuestComplaints, new GuestComplaintsPanel(this));
 //        register(panelMap,             new MapPanel(this));
     }
@@ -194,6 +197,19 @@ public class ApplicationFrame extends JFrame {
         if (name.equals(panelEnterpriseAdmin)) {
             ((EnterpriseAdminPanel) panels.get(panelEnterpriseAdmin)).onShow();
         }
+        
+        if (name.equals(panelComplianceOfficer)) {
+            ((ComplianceOfficerPanel) panels.get(panelComplianceOfficer)).onShow();
+        }
+
+        if (name.equals(panelReporting)) {
+            ((ReportingPanel) panels.get(panelReporting)).onShow();
+        }
+
+        if (name.equals(panelGuestCasino)) {
+            ((GuestCasinoPanel) panels.get(panelGuestCasino)).onShow();
+        }
+
         // if (name.equals(panelCfo)) {
         //     ((CfoPanel) panels.get(panelCfo)).onShow();  // uncomment when CfoPanel delivered
         // }
