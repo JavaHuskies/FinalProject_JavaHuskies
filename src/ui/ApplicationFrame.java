@@ -20,6 +20,7 @@ import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import ui.panels.CasinoPanel;
 import ui.panels.DataAnalystPanel;
 
 /**
@@ -132,6 +133,8 @@ public class ApplicationFrame extends JFrame {
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
 //        register(panelGuestBookings,   new GuestBookingsPanel(this));
         register(panelGuestCasino, new GuestCasinoPanel(this));
+        register("casino", new CasinoPanel(this));
+
 //        register(panelGuestComplaints, new GuestComplaintsPanel(this));
 //        register(panelMap,             new MapPanel(this));
     }
@@ -202,13 +205,15 @@ public class ApplicationFrame extends JFrame {
         if (name.equals(panelReporting)) {
             ((ReportingPanel) panels.get(panelReporting)).onShow();
         }
-
+        if (name.equals(panelDataAnalyst)) {
+            ((DataAnalystPanel) panels.get(panelDataAnalyst)).onShow();
+        }
         if (name.equals(panelGuestCasino)) {
             ((GuestCasinoPanel) panels.get(panelGuestCasino)).onShow();
         }
 
-        if (name.equals(panelDataAnalyst)) {
-            ((DataAnalystPanel) panels.get(panelDataAnalyst)).onShow();
+        if (name.equals("casino")) {
+            ((CasinoPanel) panels.get("casino")).onShow();
         }
 
         // if (name.equals(panelCfo)) {

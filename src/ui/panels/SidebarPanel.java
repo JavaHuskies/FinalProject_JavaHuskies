@@ -88,6 +88,9 @@ public class SidebarPanel extends ImageBackgroundPanel {
 
         List<NavSection> sections = new ArrayList<>();
 
+        // ─────────────────────────────────────────────
+        // GUEST ROLE
+        // ─────────────────────────────────────────────
         if (Claims.roleGuest.equals(role)) {
             List<NavItem> guest = new ArrayList<>();
             guest.add(new NavItem("Casino", ApplicationFrame.panelGuestCasino));
@@ -95,14 +98,26 @@ public class SidebarPanel extends ImageBackgroundPanel {
             return sections;
         }
 
+        // ─────────────────────────────────────────────
+        // COMPLIANCE OFFICER ROLE
+        // ─────────────────────────────────────────────
         if (Claims.roleComplianceOfficer.equals(role)) {
             List<NavItem> workspace = new ArrayList<>();
             workspace.add(new NavItem("Compliance Dashboard", ApplicationFrame.panelComplianceOfficer));
             workspace.add(new NavItem("Reports", ApplicationFrame.panelReporting));
             sections.add(new NavSection("Workspace", workspace));
+
+            // Add Casino for staff
+            List<NavItem> casino = new ArrayList<>();
+            casino.add(new NavItem("Casino", "casino"));
+            sections.add(new NavSection("Casino", casino));
+
             return sections;
         }
 
+        // ─────────────────────────────────────────────
+        // STAFF WORKSPACE
+        // ─────────────────────────────────────────────
         List<NavItem> workspace = new ArrayList<>();
         workspace.add(new NavItem("Dashboard", resolveDashboardPanel(role)));
         workspace.add(new NavItem("Work Requests", ApplicationFrame.panelWorkRequests));
@@ -114,6 +129,9 @@ public class SidebarPanel extends ImageBackgroundPanel {
         }
         sections.add(new NavSection("Workspace", workspace));
 
+        // ─────────────────────────────────────────────
+        // STAFF TOOLS
+        // ─────────────────────────────────────────────
         List<NavItem> tools = new ArrayList<>();
         if (SessionManager.canAccessReports()) {
             tools.add(new NavItem("Reports", ApplicationFrame.panelReporting));
@@ -121,6 +139,9 @@ public class SidebarPanel extends ImageBackgroundPanel {
         tools.add(new NavItem("H2G2 Guide", ApplicationFrame.panelAiGuide));
         if (!tools.isEmpty()) sections.add(new NavSection("Tools", tools));
 
+        // ─────────────────────────────────────────────
+        // STAFF ADMIN
+        // ─────────────────────────────────────────────
         List<NavItem> admin = new ArrayList<>();
         if (isEnterpriseLevel(role) || isNetworkLevel(role)) {
             admin.add(new NavItem("Enterprise View", ApplicationFrame.panelEnterpriseAdmin));
@@ -129,6 +150,13 @@ public class SidebarPanel extends ImageBackgroundPanel {
             admin.add(new NavItem("Network View", ApplicationFrame.panelNetworkAdmin));
         }
         if (!admin.isEmpty()) sections.add(new NavSection("Admin", admin));
+
+        // ─────────────────────────────────────────────
+        // STAFF CASINO SECTION (NEW)
+        // ─────────────────────────────────────────────
+        List<NavItem> casino = new ArrayList<>();
+        casino.add(new NavItem("Casino", "casino"));
+        sections.add(new NavSection("Casino", casino));
 
         return sections;
     }
@@ -227,43 +255,37 @@ public class SidebarPanel extends ImageBackgroundPanel {
         nameLabel.setBounds(14, 0, sidebarW - 28, itemH);
         row.add(nameLabel);
 
-boolean isGuest = SessionManager.guard(Claims.roleGuest);
-boolean isReports = item.label().equalsIgnoreCase("Reports");
+        boolean isGuest = SessionManager.guard(Claims.roleGuest);
+        boolean isReports = item.label().equalsIgnoreCase("Reports");
 
-if (isGuest && isReports) {
+        if (isGuest && isReports) {
+            row.setCursor(Cursor.getDefaultCursor());
+            nameLabel.setForeground(new Color(120, 120, 120));
+            row.setToolTipText("Guests cannot access Reports");
 
-    // Disable hover effects
-    row.setCursor(Cursor.getDefaultCursor());
-    nameLabel.setForeground(new Color(120, 120, 120)); // muted
-    row.setToolTipText("Guests cannot access Reports");
+            row.addMouseListener(new MouseAdapter() {
+                @Override public void mouseEntered(MouseEvent e) {}
+                @Override public void mouseExited(MouseEvent e) {}
+                @Override public void mouseClicked(MouseEvent e) {}
+            });
 
-    // Block all mouse interactions
-    row.addMouseListener(new MouseAdapter() {
-        @Override public void mouseEntered(MouseEvent e) { /* no-op */ }
-        @Override public void mouseExited(MouseEvent e) { /* no-op */ }
-        @Override public void mouseClicked(MouseEvent e) { /* no-op */ }
-    });
-
-} else {
-
-    // Normal staff behavior
-    row.addMouseListener(new MouseAdapter() {
-        @Override public void mouseEntered(MouseEvent e) {
-            if (!item.panelName().equals(activePanel)) {
-                nameLabel.setForeground(itemHover);
-            }
+        } else {
+            row.addMouseListener(new MouseAdapter() {
+                @Override public void mouseEntered(MouseEvent e) {
+                    if (!item.panelName().equals(activePanel)) {
+                        nameLabel.setForeground(itemHover);
+                    }
+                }
+                @Override public void mouseExited(MouseEvent e) {
+                    nameLabel.setForeground(
+                            item.panelName().equals(activePanel)
+                                    ? ThemeService.colorTextPrimary : itemColor);
+                }
+                @Override public void mouseClicked(MouseEvent e) {
+                    frame.showPanel(item.panelName());
+                }
+            });
         }
-        @Override public void mouseExited(MouseEvent e) {
-            nameLabel.setForeground(
-                    item.panelName().equals(activePanel)
-                            ? ThemeService.colorTextPrimary : itemColor);
-        }
-        @Override public void mouseClicked(MouseEvent e) {
-            frame.showPanel(item.panelName());
-        }
-    });
-}
-
 
         return row;
     }
