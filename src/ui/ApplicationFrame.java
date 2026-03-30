@@ -56,6 +56,7 @@ public class ApplicationFrame extends JFrame {
     public static final String panelGuestCasino        = "guestCasino";
     public static final String panelGuestComplaints    = "guestComplaints";
     public static final String panelAiGuide            = "aiGuide";
+    public static final String panelCfo                = "cfo";
     public static final String panelMap                = "map";
 
     // -------------------------------------------------------------------------
@@ -125,7 +126,7 @@ public class ApplicationFrame extends JFrame {
 //        register(panelDataAnalyst,       new DataAnalystPanel(this));
 //        register(panelReporting,         new ReportingPanel(this));
 //        register(panelAiGuide,           new AIGuidePanel(this));
-
+//        register(panelCfo, new CfoPanel(this));  // JR — uncomment when CfoPanel delivered
         // Guest panels — guest session required
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
 //        register(panelGuestBookings,   new GuestBookingsPanel(this));
@@ -193,6 +194,9 @@ public class ApplicationFrame extends JFrame {
         if (name.equals(panelEnterpriseAdmin)) {
             ((EnterpriseAdminPanel) panels.get(panelEnterpriseAdmin)).onShow();
         }
+        // if (name.equals(panelCfo)) {
+        //     ((CfoPanel) panels.get(panelCfo)).onShow();  // uncomment when CfoPanel delivered
+        // }
         log.fine("Navigated to panel: " + name);
     }
 
@@ -202,19 +206,17 @@ public class ApplicationFrame extends JFrame {
      * Falls back to the splash panel if the session is invalid or the role
      * is unrecognised. Call this immediately after a successful login.
      */
-    public void routeByRole() {
+public void routeByRole() {
         if (!SessionManager.isLoggedIn()) {
             showPanel(panelSplash);
             return;
         }
-
         String role = SessionManager.getRole();
-
         String target = switch (role) {
             case Claims.roleNetworkAdmin,
                  Claims.roleSystemAdmin,
-                 Claims.roleGroupCeo,
-                 Claims.roleGroupCfo        -> panelNetworkAdmin;
+                 Claims.roleGroupCeo        -> panelNetworkAdmin;
+            case Claims.roleGroupCfo        -> panelCfo;
             case Claims.roleEnterpriseAdmin,
                  Claims.roleEntPresident,
                  Claims.roleEntCoo          -> panelEnterpriseAdmin;
@@ -230,7 +232,6 @@ public class ApplicationFrame extends JFrame {
                 yield panelSplash;
             }
         };
-
         showPanel(target);
         headerPanel.refresh();
         sidebarPanel.refresh();
@@ -276,6 +277,7 @@ public class ApplicationFrame extends JFrame {
             Claims.roleEnterpriseAdmin,
             Claims.roleEntPresident,
             Claims.roleEntCoo,
+            Claims.roleGroupCfo,
             Claims.roleOrgDirector,
             Claims.roleCreativeLead,
             Claims.roleTechnologyLead,
