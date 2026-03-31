@@ -15,11 +15,13 @@ import ui.panels.ReportingPanel;
 import ui.panels.GuestCasinoPanel;
 
 import javax.swing.*;
+import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import service.SeedService;
 import ui.panels.CasinoPanel;
 import ui.panels.CfoPanel;
 import ui.panels.DataAnalystPanel;
@@ -36,6 +38,11 @@ import ui.panels.DataAnalystPanel;
  * rather than hardcoded strings.
  */
 public class ApplicationFrame extends JFrame {
+
+    // -------------------------------------------------------------------------
+    // Database (SQLite connector)
+    // -------------------------------------------------------------------------
+    private JdbcConnectionSource connectionSource;
 
     private static final Logger log = Logger.getLogger(ApplicationFrame.class.getName());
 
@@ -81,11 +88,26 @@ public class ApplicationFrame extends JFrame {
     public ApplicationFrame() {
         super(ConfigService.getInstance().get("app.name",
                 "Deep Thought Entertainment Group"));
+        initDatabase();
         initWindow();
         initPanels();
         initLayout();
         initDemoModeShortcut();
         showPanel(panelSplash);
+    }
+
+    // -------------------------------------------------------------------------
+    // Connect to the database
+    // -------------------------------------------------------------------------
+    private void initDatabase() {
+        try {
+            ConfigService config = ConfigService.getInstance();
+            // JdbcConnectionSource implements AutoCloseable
+            connectionSource = new JdbcConnectionSource(config.get("db.url"));
+            SeedService.initialize(connectionSource);
+        } catch (Exception e) {
+            // TODO: Display an error dialog
+        }
     }
 
     // -------------------------------------------------------------------------
