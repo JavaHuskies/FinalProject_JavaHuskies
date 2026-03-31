@@ -75,6 +75,10 @@ public class WorkAreaTemplate extends JPanel {
         buildComponents();
     }
 
+    protected ApplicationFrame getFrame() {
+    return frame;
+}
+
     // ── Utility — defined first so it can be used anywhere below ─────────────
 
     /** Splits a camelCase string into readable display text. */
@@ -278,7 +282,7 @@ public class WorkAreaTemplate extends JPanel {
 	 * @param label button display text
 	 * @return configured JButton
 	 */
-    private JButton buildToolbarButton(String label) {
+    protected JButton buildToolbarButton(String label) {
         JButton btn = new JButton(label);
         btn.setBackground(bgTertiary);
         btn.setForeground(textPrimary);
@@ -297,6 +301,33 @@ public class WorkAreaTemplate extends JPanel {
             }
         });
         return btn;
+    }
+
+        // ── Extension helpers for subclasses ─────────────────────────────────────
+
+    /** Allow subclasses to add buttons/controls to the toolbar row. */
+    protected JPanel getToolbar() {
+        return toolbar;
+    }
+
+    /** Allow subclasses to add components below the table, etc. */
+    protected JPanel getMainContent() {
+        return mainContent;
+    }
+
+    /** Access to the table so subclasses can replace the model. */
+    protected JTable getDataTable() {
+        return dataTable;
+    }
+
+    /** Allow subclasses to change the visible title text. */
+    protected void setPageTitle(String title) {
+        titleLabel.setText(title);
+    }
+
+    /** Allow subclasses to change the visible subtitle text. */
+    protected void setPageSubtitle(String subtitle) {
+        subtitleLabel.setText(subtitle);
     }
 
     /**

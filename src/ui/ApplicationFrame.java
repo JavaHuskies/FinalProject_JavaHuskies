@@ -1,4 +1,3 @@
-
 package ui;
 
 import model.Claims;
@@ -11,6 +10,9 @@ import ui.panels.SplashPanel;
 import ui.panels.StaffLoginPanel;
 import ui.panels.NetworkAdminPanel;
 import ui.panels.EnterpriseAdminPanel;
+import ui.panels.ComplianceOfficerPanel;
+import ui.panels.ReportingPanel;
+import ui.panels.GuestCasinoPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,17 +20,20 @@ import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import ui.panels.CasinoPanel;
+import ui.panels.CfoPanel;
+import ui.panels.DataAnalystPanel;
 
 /**
- * Top-level JFrame — the application window.
- * Owns the CardLayout container and all registered panels.
- * Handles role-based routing after login and demo mode switching.
+ * Top-level JFrame — the application window. Owns the CardLayout container and
+ * all registered panels. Handles role-based routing after login and demo mode
+ * switching.
  *
- * All panels receive a reference to this frame in their constructor
- * so they can trigger navigation via frame.showPanel(String name).
+ * All panels receive a reference to this frame in their constructor so they can
+ * trigger navigation via frame.showPanel(String name).
  *
- * Panel name constants are defined as static strings below —
- * always use these rather than hardcoded strings.
+ * Panel name constants are defined as static strings below — always use these
+ * rather than hardcoded strings.
  */
 public class ApplicationFrame extends JFrame {
 
@@ -37,35 +42,35 @@ public class ApplicationFrame extends JFrame {
     // -------------------------------------------------------------------------
     // Panel name constants — use these everywhere, never hardcode strings
     // -------------------------------------------------------------------------
-    public static final String panelSplash             = "splash";
-    public static final String panelStaffLogin         = "staffLogin";
-    public static final String panelGuestLogin         = "guestLogin";
-    public static final String panelGuestRegister      = "guestRegister";
-    public static final String panelNetworkAdmin       = "networkAdmin";
-    public static final String panelEnterpriseAdmin    = "enterpriseAdmin";
-    public static final String panelOrgDirector        = "orgDirector";
-    public static final String panelWorkRequests       = "workRequests";
-    public static final String panelCreativeLead       = "creativeLead";
-    public static final String panelTechnologyLead     = "technologyLead";
-    public static final String panelMarketingLead      = "marketingLead";
-    public static final String panelComplianceOfficer  = "complianceOfficer";
-    public static final String panelDataAnalyst        = "dataAnalyst";
-    public static final String panelReporting          = "reporting";
-    public static final String panelGuestPortal        = "guestPortal";
-    public static final String panelGuestBookings      = "guestBookings";
-    public static final String panelGuestCasino        = "guestCasino";
-    public static final String panelGuestComplaints    = "guestComplaints";
-    public static final String panelAiGuide            = "aiGuide";
-    public static final String panelCfo                = "cfo";
-    public static final String panelMap                = "map";
+    public static final String panelSplash = "splash";
+    public static final String panelStaffLogin = "staffLogin";
+    public static final String panelGuestLogin = "guestLogin";
+    public static final String panelGuestRegister = "guestRegister";
+    public static final String panelNetworkAdmin = "networkAdmin";
+    public static final String panelEnterpriseAdmin = "enterpriseAdmin";
+    public static final String panelOrgDirector = "orgDirector";
+    public static final String panelWorkRequests = "workRequests";
+    public static final String panelCreativeLead = "creativeLead";
+    public static final String panelTechnologyLead = "technologyLead";
+    public static final String panelMarketingLead = "marketingLead";
+    public static final String panelComplianceOfficer = "complianceOfficer";
+    public static final String panelDataAnalyst = "dataAnalyst";
+    public static final String panelReporting = "reporting";
+    public static final String panelGuestPortal = "guestPortal";
+    public static final String panelGuestBookings = "guestBookings";
+    public static final String panelGuestCasino = "guestCasino";
+    public static final String panelGuestComplaints = "guestComplaints";
+    public static final String panelAiGuide = "aiGuide";
+    public static final String panelCfo = "cfo";
+    public static final String panelMap = "map";
 
     // -------------------------------------------------------------------------
     // Layout components
     // -------------------------------------------------------------------------
-    private final CardLayout  cardLayout    = new CardLayout();
-    private final JPanel      cardContainer = new JPanel(cardLayout);
-    private       HeaderPanel  headerPanel;
-    private       SidebarPanel sidebarPanel;
+    private final CardLayout cardLayout = new CardLayout();
+    private final JPanel cardContainer = new JPanel(cardLayout);
+    private HeaderPanel headerPanel;
+    private SidebarPanel sidebarPanel;
 
     // Registered panels map — name -> panel
     private final Map<String, JPanel> panels = new HashMap<>();
@@ -73,10 +78,9 @@ public class ApplicationFrame extends JFrame {
     // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
-
     public ApplicationFrame() {
         super(ConfigService.getInstance().get("app.name",
-              "Deep Thought Entertainment Group"));
+                "Deep Thought Entertainment Group"));
         initWindow();
         initPanels();
         initLayout();
@@ -87,10 +91,9 @@ public class ApplicationFrame extends JFrame {
     // -------------------------------------------------------------------------
     // Initialisation
     // -------------------------------------------------------------------------
-
     private void initWindow() {
         ConfigService cfg = ConfigService.getInstance();
-        int mw = cfg.getInt("app.window.min.width",  1024);
+        int mw = cfg.getInt("app.window.min.width", 1024);
         int mh = cfg.getInt("app.window.min.height", 680);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -100,7 +103,7 @@ public class ApplicationFrame extends JFrame {
 
         try {
             ImageIcon icon = new ImageIcon(
-                getClass().getResource("/resources/images/deep_field.png"));
+                    getClass().getResource("/resources/images/deep_field.png"));
             setIconImage(icon.getImage());
         } catch (Exception e) {
             log.fine("App icon not found — skipping");
@@ -109,8 +112,8 @@ public class ApplicationFrame extends JFrame {
 
     private void initPanels() {
         // Public panels — no session required
-        register(panelSplash,      new SplashPanel(this));
-        register(panelStaffLogin,  new StaffLoginPanel(this));
+        register(panelSplash, new SplashPanel(this));
+        register(panelStaffLogin, new StaffLoginPanel(this));
 //        register(panelGuestLogin,     new GuestLoginPanel(this));
 //        register(panelGuestRegister,  new GuestRegistrationPanel(this));
 
@@ -122,21 +125,23 @@ public class ApplicationFrame extends JFrame {
 //        register(panelCreativeLead,      new CreativeLeadPanel(this));
 //        register(panelTechnologyLead,    new TechnologyLeadPanel(this));
 //        register(panelMarketingLead,     new MarketingLeadPanel(this));
-//        register(panelComplianceOfficer, new ComplianceOfficerPanel(this));
-//        register(panelDataAnalyst,       new DataAnalystPanel(this));
-//        register(panelReporting,         new ReportingPanel(this));
+        register(panelComplianceOfficer, new ComplianceOfficerPanel(this));
+        register(panelDataAnalyst, new DataAnalystPanel(this));
+        register(panelReporting, new ReportingPanel(this));
 //        register(panelAiGuide,           new AIGuidePanel(this));
-//        register(panelCfo, new CfoPanel(this));  // JR — uncomment when CfoPanel delivered
+        register(panelCfo, new CfoPanel(this));
         // Guest panels — guest session required
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
 //        register(panelGuestBookings,   new GuestBookingsPanel(this));
-//        register(panelGuestCasino,     new GuestCasinoPanel(this));
+        register(panelGuestCasino, new GuestCasinoPanel(this));
+        register("casino", new CasinoPanel(this));
+
 //        register(panelGuestComplaints, new GuestComplaintsPanel(this));
 //        register(panelMap,             new MapPanel(this));
     }
 
     private void initLayout() {
-        headerPanel  = new HeaderPanel(this);
+        headerPanel = new HeaderPanel(this);
         sidebarPanel = new SidebarPanel(this);
         sidebarPanel.setPreferredSize(new Dimension(200, getHeight()));
 
@@ -145,8 +150,8 @@ public class ApplicationFrame extends JFrame {
 
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(ThemeService.colorBgPrimary);
-        root.add(headerPanel,   BorderLayout.NORTH);
-        root.add(sidebarPanel,  BorderLayout.WEST);
+        root.add(headerPanel, BorderLayout.NORTH);
+        root.add(sidebarPanel, BorderLayout.WEST);
         root.add(cardContainer, BorderLayout.CENTER);
 
         setContentPane(root);
@@ -160,10 +165,9 @@ public class ApplicationFrame extends JFrame {
     // -------------------------------------------------------------------------
     // Navigation
     // -------------------------------------------------------------------------
-
     /**
-     * Shows the named panel and updates header/sidebar visibility.
-     * This is the primary navigation method — panels call this to navigate.
+     * Shows the named panel and updates header/sidebar visibility. This is the
+     * primary navigation method — panels call this to navigate.
      *
      * @param name one of the panel* constants defined above
      */
@@ -174,9 +178,9 @@ public class ApplicationFrame extends JFrame {
         }
 
         boolean isPublicScreen = name.equals(panelSplash)
-            || name.equals(panelStaffLogin)
-            || name.equals(panelGuestLogin)
-            || name.equals(panelGuestRegister);
+                || name.equals(panelStaffLogin)
+                || name.equals(panelGuestLogin)
+                || name.equals(panelGuestRegister);
 
         headerPanel.setVisible(!isPublicScreen);
         sidebarPanel.setVisible(!isPublicScreen);
@@ -194,39 +198,64 @@ public class ApplicationFrame extends JFrame {
         if (name.equals(panelEnterpriseAdmin)) {
             ((EnterpriseAdminPanel) panels.get(panelEnterpriseAdmin)).onShow();
         }
-        // if (name.equals(panelCfo)) {
-        //     ((CfoPanel) panels.get(panelCfo)).onShow();  // uncomment when CfoPanel delivered
-        // }
+
+        if (name.equals(panelComplianceOfficer)) {
+            ((ComplianceOfficerPanel) panels.get(panelComplianceOfficer)).onShow();
+        }
+
+        if (name.equals(panelReporting)) {
+            ((ReportingPanel) panels.get(panelReporting)).onShow();
+        }
+        if (name.equals(panelDataAnalyst)) {
+            ((DataAnalystPanel) panels.get(panelDataAnalyst)).onShow();
+        }
+        if (name.equals(panelGuestCasino)) {
+            ((GuestCasinoPanel) panels.get(panelGuestCasino)).onShow();
+        }
+
+        if (name.equals("casino")) {
+            ((CasinoPanel) panels.get("casino")).onShow();
+        }
+
+         if (name.equals(panelCfo)) {
+            ((CfoPanel) panels.get(panelCfo)).onShow(); 
+        }
         log.fine("Navigated to panel: " + name);
     }
 
     /**
-     * Routes the user to their home panel based on their JWT role claim.
-     * Also refreshes the header and sidebar to reflect the new session.
-     * Falls back to the splash panel if the session is invalid or the role
-     * is unrecognised. Call this immediately after a successful login.
+     * Routes the user to their home panel based on their JWT role claim. Also
+     * refreshes the header and sidebar to reflect the new session. Falls back
+     * to the splash panel if the session is invalid or the role is
+     * unrecognised. Call this immediately after a successful login.
      */
-public void routeByRole() {
+    public void routeByRole() {
         if (!SessionManager.isLoggedIn()) {
             showPanel(panelSplash);
             return;
         }
         String role = SessionManager.getRole();
         String target = switch (role) {
-            case Claims.roleNetworkAdmin,
-                 Claims.roleSystemAdmin,
-                 Claims.roleGroupCeo        -> panelNetworkAdmin;
-            case Claims.roleGroupCfo        -> panelCfo;
-            case Claims.roleEnterpriseAdmin,
-                 Claims.roleEntPresident,
-                 Claims.roleEntCoo          -> panelEnterpriseAdmin;
-            case Claims.roleOrgDirector     -> panelOrgDirector;
-            case Claims.roleCreativeLead    -> panelCreativeLead;
-            case Claims.roleTechnologyLead  -> panelTechnologyLead;
-            case Claims.roleMarketingLead   -> panelMarketingLead;
-            case Claims.roleComplianceOfficer -> panelComplianceOfficer;
-            case Claims.roleDataAnalyst     -> panelDataAnalyst;
-            case Claims.roleGuest           -> panelGuestPortal;
+            case Claims.roleNetworkAdmin, Claims.roleSystemAdmin, Claims.roleGroupCeo ->
+                panelNetworkAdmin;
+            case Claims.roleGroupCfo ->
+                panelCfo;
+            case Claims.roleEnterpriseAdmin, Claims.roleEntPresident, Claims.roleEntCoo ->
+                panelEnterpriseAdmin;
+            case Claims.roleOrgDirector ->
+                panelOrgDirector;
+            case Claims.roleCreativeLead ->
+                panelCreativeLead;
+            case Claims.roleTechnologyLead ->
+                panelTechnologyLead;
+            case Claims.roleMarketingLead ->
+                panelMarketingLead;
+            case Claims.roleComplianceOfficer ->
+                panelComplianceOfficer;
+            case Claims.roleDataAnalyst ->
+                panelDataAnalyst;
+            case Claims.roleGuest ->
+                panelGuestPortal;
             default -> {
                 log.warning("Unrecognised role: " + role + " — routing to splash");
                 yield panelSplash;
@@ -254,21 +283,22 @@ public void routeByRole() {
     // -------------------------------------------------------------------------
     // Demo mode — Ctrl+Shift+D
     // -------------------------------------------------------------------------
-
     private void initDemoModeShortcut() {
-        if (!ConfigService.getInstance().getBool("app.demo.mode.enabled", false)) return;
+        if (!ConfigService.getInstance().getBool("app.demo.mode.enabled", false)) {
+            return;
+        }
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
-            .addKeyEventDispatcher(e -> {
-                if (e.getID() == KeyEvent.KEY_PRESSED
-                        && e.isControlDown()
-                        && e.isShiftDown()
-                        && e.getKeyCode() == KeyEvent.VK_D) {
-                    showDemoSwitcher();
-                    return true;
-                }
-                return false;
-            });
+                .addKeyEventDispatcher(e -> {
+                    if (e.getID() == KeyEvent.KEY_PRESSED
+                            && e.isControlDown()
+                            && e.isShiftDown()
+                            && e.getKeyCode() == KeyEvent.VK_D) {
+                        showDemoSwitcher();
+                        return true;
+                    }
+                    return false;
+                });
     }
 
     private void showDemoSwitcher() {
@@ -305,8 +335,8 @@ public void routeByRole() {
             "siriusCybernetics"
         };
 
-        JComboBox<String> roleBox       = new JComboBox<>(roles);
-        JComboBox<String> orgBox        = new JComboBox<>(orgs);
+        JComboBox<String> roleBox = new JComboBox<>(roles);
+        JComboBox<String> orgBox = new JComboBox<>(orgs);
         JComboBox<String> enterpriseBox = new JComboBox<>(enterprises);
 
         JPanel form = new JPanel(new GridLayout(3, 2, 8, 8));
@@ -318,22 +348,22 @@ public void routeByRole() {
         form.add(enterpriseBox);
 
         int result = JOptionPane.showConfirmDialog(
-            this, form,
-            "Demo mode — switch role (Ctrl+Shift+D)",
-            JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.PLAIN_MESSAGE
+                this, form,
+                "Demo mode — switch role (Ctrl+Shift+D)",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
         );
 
         if (result == JOptionPane.OK_OPTION) {
             SessionManager.injectDemoSession(
-                (String) roleBox.getSelectedItem(),
-                (String) orgBox.getSelectedItem(),
-                (String) enterpriseBox.getSelectedItem()
+                    (String) roleBox.getSelectedItem(),
+                    (String) orgBox.getSelectedItem(),
+                    (String) enterpriseBox.getSelectedItem()
             );
             routeByRole();
         }
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -366,10 +396,10 @@ public void routeByRole() {
         // Validate config before launching
         if (!ConfigService.getInstance().isLoaded()) {
             JOptionPane.showMessageDialog(null,
-                "config.properties not found.\n" +
-                "Copy config.properties.template, fill in your values,\n" +
-                "and place it in the project root alongside src/ and lib/.",
-                "Configuration Error", JOptionPane.ERROR_MESSAGE);
+                    "config.properties not found.\n"
+                    + "Copy config.properties.template, fill in your values,\n"
+                    + "and place it in the project root alongside src/ and lib/.",
+                    "Configuration Error", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
 

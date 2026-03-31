@@ -29,11 +29,10 @@ import ui.ApplicationFrame;
 import ui.components.ImageBackgroundPanel;
 
 /**
- * Staff login panel — hand-coded per project spec.
- * Extends ImageBackgroundPanel to inherit JWST background rendering.
- * Authenticates via AuthService (BCrypt verify + JWT issue/validate),
- * establishes session via SessionManager.login(), then routes via
- * ApplicationFrame.routeByRole().
+ * Staff login panel — hand-coded per project spec. Extends ImageBackgroundPanel
+ * to inherit JWST background rendering. Authenticates via AuthService (BCrypt
+ * verify + JWT issue/validate), establishes session via SessionManager.login(),
+ * then routes via ApplicationFrame.routeByRole().
  *
  * NOTE: Database lookup is stubbed until PersistenceService is live (Anan).
  * Swap the stub block in attemptLogin() for the real DB query when ready.
@@ -41,53 +40,54 @@ import ui.components.ImageBackgroundPanel;
 public class StaffLoginPanel extends ImageBackgroundPanel {
 
     // ── Layout constants ──────────────────────────────────────────────────────
-    private static final int   cardW       = 480;
-    private static final int   cardH       = 560;
-    private static final int   cardArc     = 20;
-    private static final Color cardBg      = new Color(10, 10, 26, 210);
-    private static final Color cardBorder  = new Color(80, 80, 140, 180);
-    private static final Color accent      = ThemeService.colorAccentPurple;
+    private static final int cardW = 480;
+    private static final int cardH = 560;
+    private static final int cardArc = 20;
+    private static final Color cardBg = new Color(10, 10, 26, 210);
+    private static final Color cardBorder = new Color(80, 80, 140, 180);
+    private static final Color accent = ThemeService.colorAccentPurple;
     private static final Color textPrimary = ThemeService.colorTextPrimary;
-    private static final Color textMuted   = ThemeService.colorTextMuted;
-    private static final Color fieldBg     = new Color(20, 20, 46, 230);
+    private static final Color textMuted = ThemeService.colorTextMuted;
+    private static final Color fieldBg = new Color(20, 20, 46, 230);
     private static final Color fieldBorder = new Color(60, 60, 110, 200);
-    private static final Color fieldFocus  = new Color(100, 120, 220, 180);
-    private static final Color errColor    = new Color(220, 80, 80);
-    private static final Color btnNormal   = new Color(70, 90, 200);
-    private static final Color btnHover    = new Color(90, 110, 230);
-    private static final Color btnPress    = new Color(50, 70, 170);
+    private static final Color fieldFocus = new Color(100, 120, 220, 180);
+    private static final Color errColor = new Color(220, 80, 80);
+    private static final Color btnNormal = new Color(70, 90, 200);
+    private static final Color btnHover = new Color(90, 110, 230);
+    private static final Color btnPress = new Color(50, 70, 170);
 
     // ── Services / frame ─────────────────────────────────────────────────────
     private final ApplicationFrame frame;
-    private final AuthService       auth;
+    private final AuthService auth;
 
     // ── UI components ─────────────────────────────────────────────────────────
-    private JTextField     usernameField;
+    private JTextField usernameField;
     private JPasswordField passwordField;
-    private JLabel         passwordPlaceholder;
-    private JLabel         errorLabel;
-    private JLabel         showHideLabel;
-    private JButton        loginButton;
-    private JButton        backButton;
-    private JLabel         guestLink;
+    private JLabel passwordPlaceholder;
+    private JLabel errorLabel;
+    private JLabel showHideLabel;
+    private JButton loginButton;
+    private JButton backButton;
+    private JLabel guestLink;
 
     // ── State ─────────────────────────────────────────────────────────────────
     private boolean passwordVisible = false;
-    private boolean isBtnHovered    = false;
-    private boolean isBtnPressed    = false;
+    private boolean isBtnHovered = false;
+    private boolean isBtnPressed = false;
 
     // ─────────────────────────────────────────────────────────────────────────
-	/**
-	 * Constructs the staff login panel with JWST background and login form.
-	 * Database lookup is stubbed until PersistenceService is live — see attemptLogin().
-	 *
-	 * @param frame the parent ApplicationFrame used for panel navigation
-	 */
+    /**
+     * Constructs the staff login panel with JWST background and login form.
+     * Database lookup is stubbed until PersistenceService is live — see
+     * attemptLogin().
+     *
+     * @param frame the parent ApplicationFrame used for panel navigation
+     */
     public StaffLoginPanel(ApplicationFrame frame) {
         super(ThemeService.getInstance().getPublicImage(),
-              ImageBackgroundPanel.Treatment.FULL_OVERLAY, 0.72f, Color.BLACK);
+                ImageBackgroundPanel.Treatment.FULL_OVERLAY, 0.72f, Color.BLACK);
         this.frame = frame;
-        this.auth  = AuthService.getInstance();
+        this.auth = AuthService.getInstance();
 
         setLayout(null);
         initComponents();
@@ -95,7 +95,6 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
     }
 
     // ── Component init ────────────────────────────────────────────────────────
-
     private void initComponents() {
         usernameField = createStyledTextField("Username");
         add(usernameField);
@@ -108,10 +107,13 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         passwordPlaceholder.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
         add(passwordPlaceholder);
         passwordField.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override public void focusGained(java.awt.event.FocusEvent e) {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
                 passwordPlaceholder.setVisible(false);
             }
-            @Override public void focusLost(java.awt.event.FocusEvent e) {
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
                 passwordPlaceholder.setVisible(passwordField.getPassword().length == 0);
             }
         });
@@ -122,7 +124,10 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         showHideLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 22));
         showHideLabel.setToolTipText("Show / hide password");
         showHideLabel.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) { togglePasswordVisibility(); }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                togglePasswordVisibility();
+            }
         });
         add(showHideLabel);
 
@@ -144,8 +149,15 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         backButton.setFocusPainted(false);
         backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         backButton.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) { backButton.setForeground(textPrimary); }
-            @Override public void mouseExited(MouseEvent e)  { backButton.setForeground(textMuted); }
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                backButton.setForeground(textPrimary);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                backButton.setForeground(textMuted);
+            }
         });
         backButton.addActionListener(e -> frame.showPanel(ApplicationFrame.panelSplash));
         add(backButton);
@@ -156,33 +168,41 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         guestLink.setHorizontalAlignment(SwingConstants.CENTER);
         guestLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         guestLink.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) {
+            @Override
+            public void mouseClicked(MouseEvent e) {
                 frame.showPanel(ApplicationFrame.panelGuestLogin);
             }
-            @Override public void mouseEntered(MouseEvent e) { guestLink.setForeground(textPrimary); }
-            @Override public void mouseExited(MouseEvent e)  { guestLink.setForeground(accent); }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                guestLink.setForeground(textPrimary);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                guestLink.setForeground(accent);
+            }
         });
         add(guestLink);
     }
 
     // ── Layout ────────────────────────────────────────────────────────────────
-
     @Override
     public void doLayout() {
         super.doLayout();
-        int cx = (getWidth()  - cardW) / 2;
+        int cx = (getWidth() - cardW) / 2;
         int cy = (getHeight() - cardH) / 2;
 
-        int fieldX    = cx + 40;
-        int fieldW    = cardW - 80;
-        int fieldH    = 46;
+        int fieldX = cx + 40;
+        int fieldW = cardW - 80;
+        int fieldH = 46;
 
         // Stack from card top with fixed gaps — resolution independent
         int titleBase = cy + 110;
-        int pwY       = titleBase + fieldH + 20;
-        int errY      = pwY + fieldH + 10;
-        int btnY      = errY + 28;
-        int linkY     = btnY + 58;
+        int pwY = titleBase + fieldH + 20;
+        int errY = pwY + fieldH + 10;
+        int btnY = errY + 28;
+        int linkY = btnY + 58;
 
         usernameField.setBounds(fieldX, titleBase, fieldW, fieldH);
         passwordField.setBounds(fieldX, pwY, fieldW - 40, fieldH);
@@ -195,16 +215,15 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
     }
 
     // ── Paint ─────────────────────────────────────────────────────────────────
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        int cx = (getWidth()  - cardW) / 2;
+        int cx = (getWidth() - cardW) / 2;
         int cy = (getHeight() - cardH) / 2;
 
         RoundRectangle2D card = new RoundRectangle2D.Double(cx, cy, cardW, cardH, cardArc, cardArc);
@@ -229,12 +248,11 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
     }
 
     // ── Login action ──────────────────────────────────────────────────────────
+    private void attemptLogin() {
+        String username = usernameField.getText().trim();
+        String password = new String(passwordField.getPassword());
 
-	private void attemptLogin() {
-	        String username = usernameField.getText().trim();
-	        String password = new String(passwordField.getPassword());
-
-	        clearError();
+        clearError();
 
         if (username.isEmpty() || password.isEmpty()
                 || username.equals("Username")) {
@@ -258,25 +276,90 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
                 // Claims claims = auth.validateJWT(token);
                 // SessionManager.login(token, claims);
 
-                // ── Stub credentials — remove once PersistenceService is live ──
+// ── Stub credentials — remove once PersistenceService is live ──
                 String token;
-                if ("netadmin".equals(username) && "Admin1!".equals(password)) {
+
+                if ("admin".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("admin", Claims.roleNetworkAdmin,
+                            "slartibartfastPictures", "magratheaStudios",
+                            "admin@deepthought.com");
+
+                } else if ("netadmin".equals(username) && "Admin1!".equals(password)) {
                     token = auth.issueJWT("netadmin", Claims.roleNetworkAdmin,
-                        "slartibartfastPictures", "magratheaStudios",
-                        "netadmin@deepthought.com");
+                            "slartibartfastPictures", "magratheaStudios",
+                            "netadmin@deepthought.com");
+
                 } else if ("grpceo".equals(username) && "Admin1!".equals(password)) {
                     token = auth.issueJWT("grpceo", Claims.roleGroupCeo,
-                        "slartibartfastPictures", "magratheaStudios",
-                        "grpceo@deepthought.com");
-                } else if ("admin".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("admin", Claims.roleNetworkAdmin,
-                        "magratheaStudios", "magratheaStudios",
-                        "admin@deepthought.com");
+                            "slartibartfastPictures", "magratheaStudios",
+                            "grpceo@deepthought.com");
+
+                } else if ("grpcfo".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("grpcfo", Claims.roleGroupCfo,
+                            "slartibartfastPictures", "magratheaStudios",
+                            "grpcfo@deepthought.com");
+
+                } else if ("entadmin".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("entadmin", Claims.roleEnterpriseAdmin,
+                            "magratheaThemeWorlds", "starshipTitanicLeisure",
+                            "entadmin@deepthought.com");
+
+                } else if ("entpres".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("entpres", Claims.roleEntPresident,
+                            "milliwaysEntertainment", "starshipTitanicLeisure",
+                            "entpres@deepthought.com");
+
+                } else if ("orgdir1".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("orgdir1", Claims.roleOrgDirector,
+                            "infiniteImprobabilityStreaming", "galacticBroadcasting",
+                            "orgdir1@deepthought.com");
+
+                } else if ("creative1".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("creative1", Claims.roleCreativeLead,
+                            "bistromathAnimation", "magratheaStudios",
+                            "creative1@deepthought.com");
+
+                } else if ("tech1".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("tech1", Claims.roleTechnologyLead,
+                            "megadodoLicensing", "siriusCybernetics",
+                            "tech1@deepthought.com");
+
+                } else if ("mktg1".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("mktg1", Claims.roleMarketingLead,
+                            "panGalacticBroadcast", "galacticBroadcasting",
+                            "mktg1@deepthought.com");
+
+                } else if ("analyst1".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("analyst1", Claims.roleDataAnalyst,
+                            "hooloovooRetail", "siriusCybernetics",
+                            "analyst1@deepthought.com");
+
+                } else if ("comply1".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("comply1", Claims.roleComplianceOfficer,
+                            "slartibartfastPictures", "magratheaStudios",
+                            "comply1@deepthought.com");
+
+                } else if ("comply2".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("comply2", Claims.roleComplianceOfficer,
+                            "milliwaysEntertainment", "starshipTitanicLeisure",
+                            "comply2@deepthought.com");
+
+                } else if ("comply3".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("comply3", Claims.roleComplianceOfficer,
+                            "infiniteImprobabilityStreaming", "galacticBroadcasting",
+                            "comply3@deepthought.com");
+
+                } else if ("comply4".equals(username) && "Admin1!".equals(password)) {
+                    token = auth.issueJWT("comply4", Claims.roleComplianceOfficer,
+                            "megadodoLicensing", "siriusCybernetics",
+                            "comply4@deepthought.com");
+
                 } else {
                     throw new SecurityException("Invalid username or password.");
                 }
-                // ── End stub ──────────────────────────────────────────────────
+// ── End stub ──────────────────────────────────────────────────
 
+                // ── End stub ──────────────────────────────────────────────────
                 Claims claims = auth.validateJWT(token);
                 SessionManager.login(token, claims);
 
@@ -301,20 +384,27 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
-
     private void togglePasswordVisibility() {
         passwordVisible = !passwordVisible;
         passwordField.setEchoChar(passwordVisible ? (char) 0 : '\u2022');
         showHideLabel.setText(passwordVisible ? "\uD83D\uDC41\u200D\uD83D\uDDE8" : "\uD83D\uDC41");
     }
 
-    private void showError(String msg) { errorLabel.setText(msg); }
-    private void clearError()          { errorLabel.setText(" "); }
+    private void showError(String msg) {
+        errorLabel.setText(msg);
+    }
+
+    private void clearError() {
+        errorLabel.setText(" ");
+    }
 
     private void registerKeyBindings() {
         KeyAdapter enterKey = new KeyAdapter() {
-            @Override public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) attemptLogin();
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    attemptLogin();
+                }
             }
         };
         usernameField.addKeyListener(enterKey);
@@ -326,10 +416,11 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         g2.drawString(text, x + (width - fm.stringWidth(text)) / 2, y);
     }
 
-	/**
-	 * Called by ApplicationFrame.showPanel() when this panel is made visible.
-	 * Resets the error label, clears the password field, and focuses the username field.
-	 */
+    /**
+     * Called by ApplicationFrame.showPanel() when this panel is made visible.
+     * Resets the error label, clears the password field, and focuses the
+     * username field.
+     */
     public void onShow() {
         clearError();
         passwordField.setText("");
@@ -338,10 +429,10 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
     }
 
     // ── Field / button factories ──────────────────────────────────────────────
-
     private JTextField createStyledTextField(String placeholder) {
         JTextField f = new JTextField() {
-            @Override protected void paintComponent(Graphics g) {
+            @Override
+            protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(fieldBg);
@@ -349,7 +440,9 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
                 g2.dispose();
                 super.paintComponent(g);
             }
-            @Override protected void paintBorder(Graphics g) {
+
+            @Override
+            protected void paintBorder(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(isFocusOwner() ? fieldFocus : fieldBorder);
@@ -365,13 +458,16 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         f.setText(placeholder);
 
         f.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override public void focusGained(java.awt.event.FocusEvent e) {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
                 if (f.getText().equals(placeholder)) {
                     f.setText("");
                     f.setForeground(textPrimary);
                 }
             }
-            @Override public void focusLost(java.awt.event.FocusEvent e) {
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
                 if (f.getText().isEmpty()) {
                     f.setText(placeholder);
                     f.setForeground(ThemeService.colorTextSecondary);
@@ -383,7 +479,8 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
 
     private JPasswordField createStyledPasswordField() {
         JPasswordField f = new JPasswordField() {
-            @Override protected void paintComponent(Graphics g) {
+            @Override
+            protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(fieldBg);
@@ -391,7 +488,9 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
                 g2.dispose();
                 super.paintComponent(g);
             }
-            @Override protected void paintBorder(Graphics g) {
+
+            @Override
+            protected void paintBorder(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(isFocusOwner() ? fieldFocus : fieldBorder);
@@ -410,7 +509,8 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
 
     private JButton createLoginButton() {
         JButton btn = new JButton("Sign In") {
-            @Override protected void paintComponent(Graphics g) {
+            @Override
+            protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 Color bg = isBtnPressed ? btnPress : isBtnHovered ? btnHover : btnNormal;
@@ -431,10 +531,30 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.addActionListener((ActionEvent e) -> attemptLogin());
         btn.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e)  { isBtnHovered = true;  btn.repaint(); }
-            @Override public void mouseExited(MouseEvent e)   { isBtnHovered = false; isBtnPressed = false; btn.repaint(); }
-            @Override public void mousePressed(MouseEvent e)  { isBtnPressed = true;  btn.repaint(); }
-            @Override public void mouseReleased(MouseEvent e) { isBtnPressed = false; btn.repaint(); }
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                isBtnHovered = true;
+                btn.repaint();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                isBtnHovered = false;
+                isBtnPressed = false;
+                btn.repaint();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                isBtnPressed = true;
+                btn.repaint();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                isBtnPressed = false;
+                btn.repaint();
+            }
         });
         return btn;
     }
