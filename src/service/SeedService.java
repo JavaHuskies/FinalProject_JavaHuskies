@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Logger;
+import com.j256.ormlite.jdbc.JdbcConnectionSource;
 
 /**
  * Initializes the database schema and static seed data on first launch.
@@ -41,16 +42,18 @@ public class SeedService {
      *
      * @param conn open JDBC connection
      */
-    public static void initialize(Connection conn) {
-        try {
-            runScript(conn, "schema.sql");
-            runScript(conn, "seed.sql");
-            seedUsers(conn);
-            log.info("SeedService: database initialized successfully");
-        } catch (Exception e) {
-            log.severe("SeedService: initialization failed — " + e.getMessage());
-            throw new RuntimeException("Database initialization failed", e);
-        }
+    public static void initialize(JdbcConnectionSource connectionSource) throws Exception {
+        PersistenceService.initializeSchema(connectionSource);
+
+        // TODO: Seed data
+        // try {
+        //     runScript(conn, "seed.sql");
+        //     seedUsers(conn);
+        //     log.info("SeedService: database initialized successfully");
+        // } catch (Exception e) {
+        //     log.severe("SeedService: initialization failed — " + e.getMessage());
+        //     throw new RuntimeException("Database initialization failed", e);
+        // }
     }
 
     // ── Script runner ─────────────────────────────────────────────────────────

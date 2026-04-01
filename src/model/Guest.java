@@ -1,5 +1,8 @@
 package model;
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
 /**
  * Represents a registered guest user.
  * Created by {@link service.AuthService#registerGuest} and persisted via
@@ -7,20 +10,49 @@ package model;
  * {@code emailVerified} is set to {@code true} via
  * {@link service.AuthService#confirmVerification}.
  *
- * <p>STUB — Anan expands this class when delivering PersistenceService model classes.
- * Fields map to the GUEST table in schema.sql.
+ * <p>Fields map to the GUEST table in schema.sql.
  * Setters for mutable fields (emailVerified) are provided for PersistenceService
  * to update the record after verification.
  */
+@DatabaseTable(tableName = "guest")
 public class Guest {
 
-    private final String guestId;
-    private final String firstName;
-    private final String lastName;
-    private final String email;
-    private final String passwordHash;
-    private final String verificationToken;
+    @DatabaseField(id = true, columnName = "guest_id", canBeNull = false)
+    private String guestId;
+
+    @DatabaseField(columnName = "first_name")
+    private String firstName;
+
+    @DatabaseField(columnName = "last_name")
+    private String lastName;
+
+    @DatabaseField(unique = true, canBeNull = false)
+    private String email;
+
+    @DatabaseField(columnName = "password_hash", canBeNull = false)
+    private String passwordHash;
+
+    @DatabaseField
+    private String phone;
+
+    @DatabaseField(columnName = "loyalty_points", canBeNull = false)
+    private int loyaltyPoints;
+
+    // Stored as 0/1 integer in SQLite. True once the guest confirms their email.
+    @DatabaseField(columnName = "is_verified", canBeNull = false)
     private boolean emailVerified;
+
+    @DatabaseField(columnName = "verification_token")
+    private String verificationToken;
+
+    @DatabaseField(columnName = "jwt_token")
+    private String jwtToken;
+
+    @DatabaseField(columnName = "created_at", canBeNull = false)
+    private String createdAt;
+
+    /** Required by ORMLite. */
+    public Guest() {}
 
     /**
      * Constructs a new Guest record.
@@ -62,11 +94,23 @@ public class Guest {
     /** @return BCrypt password hash — never expose the plaintext */
     public String getPasswordHash()      { return passwordHash; }
 
+    /** @return guest's phone number */
+    public String getPhone()             { return phone; }
+
+    /** @return accumulated loyalty points */
+    public int getLoyaltyPoints()        { return loyaltyPoints; }
+
     /** @return UUID verification token pending email confirmation */
     public String getVerificationToken() { return verificationToken; }
 
     /** @return true if the guest has confirmed their email address */
     public boolean isEmailVerified()     { return emailVerified; }
+
+    /** @return JWT token for the current session */
+    public String getJwtToken()          { return jwtToken; }
+
+    /** @return ISO-8601 creation timestamp */
+    public String getCreatedAt()         { return createdAt; }
 
     // ── Setters ───────────────────────────────────────────────────────────────
 
@@ -79,6 +123,11 @@ public class Guest {
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
     }
+
+    public void setPhone(String phone)             { this.phone = phone; }
+    public void setLoyaltyPoints(int points)       { this.loyaltyPoints = points; }
+    public void setJwtToken(String jwtToken)       { this.jwtToken = jwtToken; }
+    public void setCreatedAt(String createdAt)     { this.createdAt = createdAt; }
 
     @Override
     public String toString() {
