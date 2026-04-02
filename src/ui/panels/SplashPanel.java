@@ -17,22 +17,10 @@ import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-/**
- * Hand-coded splash screen — entry point for all user types.
- * Full JWST background with dark overlay.
- * Three entry cards route to staff login, guest portal, system admin.
- *
- * Hand-coded (not GUI Builder) to support ImageBackgroundPanel painting.
- */
 public class SplashPanel extends ImageBackgroundPanel {
 
     private final ApplicationFrame frame;
 
-	/**
-	 * Constructs the splash panel with JWST background and three entry cards.
-	 *
-	 * @param frame the parent ApplicationFrame used for panel navigation
-	 */
     public SplashPanel(ApplicationFrame frame) {
         super(ThemeService.getInstance().getPublicImage(),
               Treatment.FULL_OVERLAY, 0.68f, Color.BLACK);
@@ -51,20 +39,17 @@ public class SplashPanel extends ImageBackgroundPanel {
         gbc.fill   = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.CENTER;
 
-        // Title
         JLabel title = new JLabel("Deep Thought Entertainment Group");
         title.setFont(new Font("SansSerif", Font.PLAIN, 48));
         title.setForeground(ThemeService.colorTextPrimary);
         title.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Tagline
         JLabel tagline = new JLabel(
             "\u201cThe answer is 42. The system is everything else.\u201d");
         tagline.setFont(new Font("SansSerif", Font.ITALIC, 20));
         tagline.setForeground(ThemeService.colorTextMuted);
         tagline.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Entry cards
         JPanel cards = new JPanel(new FlowLayout(FlowLayout.CENTER, 24, 0));
         cards.setOpaque(false);
         cards.add(buildEntryCard("\uD83C\uDFE2",
@@ -77,7 +62,6 @@ public class SplashPanel extends ImageBackgroundPanel {
             "System Admin", "Network access",
             ApplicationFrame.panelNetworkAdmin));
 
-        // Version
         JLabel version = new JLabel(
             "v1.0.0  \u00B7  INFO 5100  \u00B7  Northeastern University");
         version.setFont(new Font("SansSerif", Font.PLAIN, 14));
@@ -99,16 +83,6 @@ public class SplashPanel extends ImageBackgroundPanel {
         add(content);
     }
 
-	/**
-	 * Builds a single entry card with icon, label, subtitle, and hover styling.
-	 * Clicking the card navigates to the specified panel.
-	 *
-	 * @param icon        emoji or symbol character to display at the top of the card
-	 * @param label       primary card label (e.g. "Staff Login")
-	 * @param subtitle    secondary descriptor displayed below the label
-	 * @param targetPanel ApplicationFrame panel constant to navigate to on click
-	 * @return configured JPanel card ready to add to the card row
-	 */
     private JPanel buildEntryCard(String icon, String label,
                                    String subtitle, String targetPanel) {
         JPanel card = new JPanel(new GridBagLayout());

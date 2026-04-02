@@ -10,14 +10,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
-/**
- * Compliance Officer Dashboard — accessible only by complianceOfficer role.
- *
- * Layout: stats row + toolbar + tabbed pane (Violations | Audits | Work Requests)
- */
 public class ComplianceOfficerPanel extends JPanel {
 
-    // Colors
     private static final Color bgPrimary     = ThemeService.colorBgPrimary;
     private static final Color bgSecondary   = ThemeService.colorBgSecondary;
     private static final Color bgTertiary    = ThemeService.colorBgTertiary;
@@ -28,10 +22,8 @@ public class ComplianceOfficerPanel extends JPanel {
 
     private static final String mockTip = "Mock data — replace with PersistenceService query";
 
-    // Frame
     private final ApplicationFrame frame;
 
-    // Components
     private JLabel titleLabel;
     private JLabel subtitleLabel;
     private JPanel statsRow;
@@ -48,7 +40,6 @@ public class ComplianceOfficerPanel extends JPanel {
         buildComponents();
     }
 
-    // Lifecycle
     public void onShow() {
         if (!SessionManager.guard(Claims.roleComplianceOfficer)) {
             frame.showPanel(ApplicationFrame.panelStaffLogin);
@@ -58,13 +49,11 @@ public class ComplianceOfficerPanel extends JPanel {
         loadData();
     }
 
-    // Build UI
     private void buildComponents() {
         JPanel wrapper = new JPanel(new BorderLayout(0, 16));
         wrapper.setBackground(bgPrimary);
         wrapper.setBorder(new EmptyBorder(32, 80, 24, 80));
 
-        // Header
         JPanel header = new JPanel(new BorderLayout(0, 4));
         header.setBackground(bgPrimary);
         header.setBorder(new EmptyBorder(0, 0, 16, 0));
@@ -80,7 +69,6 @@ public class ComplianceOfficerPanel extends JPanel {
         header.add(titleLabel, BorderLayout.NORTH);
         header.add(subtitleLabel, BorderLayout.SOUTH);
 
-        // Stats row
         statsRow = new JPanel(new GridLayout(1, 3, 12, 0));
         statsRow.setBackground(bgPrimary);
         statsRow.setBorder(new EmptyBorder(0, 0, 20, 0));
@@ -88,7 +76,6 @@ public class ComplianceOfficerPanel extends JPanel {
         statsRow.add(buildStatCard("Pending Audits", "—"));
         statsRow.add(buildStatCard("Compliance Requests", "—"));
 
-        // Toolbar
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         toolbar.setBackground(bgPrimary);
         toolbar.setBorder(new EmptyBorder(0, 0, 12, 0));
@@ -96,7 +83,6 @@ public class ComplianceOfficerPanel extends JPanel {
         toolbar.add(buildToolbarButton("Export"));
         toolbar.add(buildToolbarButton("Refresh"));
 
-        // Tabs
         tabs = new JTabbedPane();
         tabs.setBackground(bgSecondary);
         tabs.setForeground(textMuted);
@@ -107,13 +93,11 @@ public class ComplianceOfficerPanel extends JPanel {
         tabs.addTab("Audits", buildAuditsTab());
         tabs.addTab("Work Requests", buildWorkRequestTab());
 
-        // Main content
         JPanel mainContent = new JPanel(new BorderLayout(0, 0));
         mainContent.setBackground(bgPrimary);
         mainContent.add(toolbar, BorderLayout.NORTH);
         mainContent.add(tabs, BorderLayout.CENTER);
 
-        // Assemble
         JPanel top = new JPanel(new BorderLayout(0, 0));
         top.setBackground(bgPrimary);
         top.add(header, BorderLayout.NORTH);
@@ -125,7 +109,6 @@ public class ComplianceOfficerPanel extends JPanel {
         add(wrapper, BorderLayout.CENTER);
     }
 
-    // Tab builders
     private JScrollPane buildViolationsTab() {
         String[] cols = { "ID", "Description", "Severity", "Status" };
         DefaultTableModel model = new DefaultTableModel(cols, 0) {
@@ -159,7 +142,6 @@ public class ComplianceOfficerPanel extends JPanel {
         return sp;
     }
 
-    // Data loading
     private void loadData() {
         loadViolations();
         loadAudits();
@@ -199,7 +181,6 @@ public class ComplianceOfficerPanel extends JPanel {
         subtitleLabel.setText("Enterprise: " + SessionManager.getEnterpriseId());
     }
 
-    // Helpers
     private void setStatValue(int index, String value) {
         JPanel card = (JPanel) statsRow.getComponent(index);
         for (Component c : card.getComponents()) {

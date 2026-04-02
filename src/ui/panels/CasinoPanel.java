@@ -5,6 +5,7 @@ import model.Casino.GameRound;
 import model.Casino.RouletteRules;
 import model.Casino.RouletteRules.Bet;
 import model.Casino.RouletteRules.BetType;
+import service.SessionManager;
 import ui.ApplicationFrame;
 
 import javax.swing.*;
@@ -23,34 +24,39 @@ public class CasinoPanel extends WorkAreaTemplate {
     public CasinoPanel(ApplicationFrame frame) {
         super(frame);
 
-        // Visible header text (uses titleLabel/subtitleLabel via helpers)
         setPageTitle("Casino");
         setPageSubtitle("Roulette Table");
 
-        // Start session with $1000
-        this.session = new CasinoSession("session1", "guest1", 1000);
-
+        startNewSession();
         initControls();
         configureTable();
         updateStats();
     }
 
+    private void startNewSession() {
+        String userId = SessionManager.getUserId();
+        this.session = new CasinoSession(
+            java.util.UUID.randomUUID().toString(),
+            userId != null ? userId : "anonymous",
+            1000
+        );
+    }
+
     private void initControls() {
-        // Bet type dropdown
         betTypeCombo = new JComboBox<>(BetType.values());
 
-        // Bet amount spinner
         betAmountSpinner = new JSpinner(
             new SpinnerNumberModel(10, 1, 1000, 1)
         );
 
-        // Spin button using template's styled button
         JButton spinButton = buildToolbarButton("Spin");
         spinButton.addActionListener(e -> handleSpin());
 
-        // Add controls to the existing toolbar from WorkAreaTemplate
+        JButton resetButton = buildToolbarButton("Reset");
+        resetButton.addActionListener(e -> resetGame());
+
         JPanel toolbar = getToolbar();
-        toolbar.removeAll(); // replace "+ New" / "Export"
+        toolbar.removeAll();
         toolbar.add(new JLabel("Bet Type:"));
         toolbar.add(betTypeCombo);
         toolbar.add(Box.createHorizontalStrut(8));
@@ -58,8 +64,9 @@ public class CasinoPanel extends WorkAreaTemplate {
         toolbar.add(betAmountSpinner);
         toolbar.add(Box.createHorizontalStrut(8));
         toolbar.add(spinButton);
+        toolbar.add(Box.createHorizontalStrut(8));
+        toolbar.add(resetButton);
 
-        // Result label at bottom of mainContent
         resultLabel = new JLabel("Place your bet and spin.");
         resultLabel.setForeground(Color.WHITE);
 
@@ -68,7 +75,6 @@ public class CasinoPanel extends WorkAreaTemplate {
     }
 
     private void configureTable() {
-        // Replace default columns with roulette-specific columns
         String[] cols = { "Round", "Bet Type", "Amount", "Result", "Payout", "Balance After" };
         roundsModel = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int row, int col) { return false; }
@@ -105,14 +111,12 @@ public class CasinoPanel extends WorkAreaTemplate {
         Bet bet = new Bet(type, amount, targetNumber);
         GameRound round = session.playRoulette(bet);
 
-        // Update result label
         resultLabel.setText(
             "Result: " + round.getSpinResult() +
             "   |   Payout: " + round.getPayout() +
             "   |   Balance: $" + session.getBalance()
         );
 
-        // Append row to table
         roundsModel.addRow(new Object[]{
             round.getRoundNumber(),
             type,
@@ -125,6 +129,13 @@ public class CasinoPanel extends WorkAreaTemplate {
         updateStats();
     }
 
+    private void resetGame() {
+        startNewSession();
+        roundsModel.setRowCount(0);
+        resultLabel.setText("New session started.");
+        updateStats();
+    }
+
     private void updateStats() {
         int totalSpins = session.getRounds().size();
         int totalWins = (int) session.getRounds().stream()
@@ -132,7 +143,6 @@ public class CasinoPanel extends WorkAreaTemplate {
             .count();
         int netProfit = session.getBalance() - 1000;
 
-        // Use WorkAreaTemplate's stat row helper
         setStatValue(0, String.valueOf(totalSpins));
         setStatValue(1, String.valueOf(totalWins));
         setStatValue(2, "$" + netProfit);
@@ -140,8 +150,6 @@ public class CasinoPanel extends WorkAreaTemplate {
 
     @Override
     public void onShow() {
-        // Skip WorkAreaTemplate's default loadData() behavior for this panel
         updateStats();
     }
 }
-
