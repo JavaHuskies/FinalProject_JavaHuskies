@@ -23,4 +23,11 @@ public class Network {
     private String createdAt = LocalDateTime.now().toString();
 
     public Network() {}
+
+    public Network(String networkId, String name, String headquarters, String founded) {
+        this.networkId = networkId;
+        this.name = name;
+        this.headquarters = headquarters;
+        this.founded = founded;
+    }
 }

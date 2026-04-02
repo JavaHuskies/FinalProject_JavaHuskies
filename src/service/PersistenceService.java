@@ -19,7 +19,25 @@ import model.WorkRequest;
 import model.WorkRequestComment;
 
 public class PersistenceService {
-    public static void initializeSchema(JdbcConnectionSource connectionSource) throws SQLException {
+
+    /** Database (SQLite connector) */ 
+    private static JdbcConnectionSource connectionSource;
+
+    public static void initialize() throws  SQLException {
+        if (connectionSource != null) {
+            return;
+        }
+
+        ConfigService config = ConfigService.getInstance();
+        // JdbcConnectionSource implements AutoCloseable
+        connectionSource = new JdbcConnectionSource(config.get("db.url"));
+    }
+
+    public static JdbcConnectionSource getConnectionSource() {
+        return connectionSource;
+    }
+
+    public static void initializeSchema() throws SQLException {
         TableUtils.createTableIfNotExists(connectionSource, Network.class);
         TableUtils.createTableIfNotExists(connectionSource, Enterprise.class);
         TableUtils.createTableIfNotExists(connectionSource, Organization.class);

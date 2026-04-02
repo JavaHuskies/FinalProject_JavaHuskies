@@ -8,8 +8,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
+import com.github.javafaker.Faker;
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import model.Enterprise;
+import model.Network;
+import model.Organization;
+import model.User;
+import model.UserRole;
 
 /**
  * Initializes the database schema and static seed data on first launch.
@@ -42,18 +52,150 @@ public class SeedService {
      *
      * @param conn open JDBC connection
      */
-    public static void initialize(JdbcConnectionSource connectionSource) throws Exception {
-        PersistenceService.initializeSchema(connectionSource);
+    public static void initialize() throws Exception {
+        PersistenceService.initializeSchema();
+        seedAll();
+    }
 
-        // TODO: Seed data
-        // try {
-        //     runScript(conn, "seed.sql");
-        //     seedUsers(conn);
-        //     log.info("SeedService: database initialized successfully");
-        // } catch (Exception e) {
-        //     log.severe("SeedService: initialization failed — " + e.getMessage());
-        //     throw new RuntimeException("Database initialization failed", e);
-        // }
+    private static void seedAll() throws SQLException {
+        Network network = seedNetwork();
+        List<Enterprise> enterprises = seedEnterprises(network);
+        List<Organization> orgs = seedOrganizations(enterprises);
+        seedUsers(orgs, enterprises);
+    }
+
+    private static Network seedNetwork() throws SQLException {
+        Dao<Network, String> dao = DaoManager.createDao(
+            PersistenceService.getConnectionSource(), Network.class);
+
+        long count = dao.countOf();
+        log.info("SeedService.seedNetwork: countOf=" + count);
+        if (count == 0) {
+            Faker faker = new Faker();
+            Network network = new Network(
+                faker.internet().uuid(),
+                "Deep Thought Entertainment Group",
+                "Magrathea",
+                "1979"
+            );
+            int rows = dao.create(network);
+            log.info("SeedService.seedNetwork: inserted rows=" + rows);
+            return network;
+        }
+
+        return dao.queryForAll().get(0);
+    }
+
+    private static List<Enterprise> seedEnterprises(Network network) throws SQLException {
+        Dao<Enterprise, String> dao = DaoManager.createDao(
+            PersistenceService.getConnectionSource(), Enterprise.class);
+
+        long count = dao.countOf();
+        log.info("SeedService.seedEnterprises: countOf=" + count);
+        if (count == 0) {
+            List<Enterprise> enterprises = List.of(
+                new Enterprise("magratheaStudios",       network, "Magrathea Studios",        "Production"),
+                new Enterprise("starshipTitanicLeisure", network, "Starship Titanic Leisure",  "Hospitality"),
+                new Enterprise("galacticBroadcasting",   network, "Galactic Broadcasting",     "Media"),
+                new Enterprise("siriusCybernetics",      network, "Sirius Cybernetics",        "Technology")
+            );
+            for (Enterprise e : enterprises) {
+                dao.createIfNotExists(e);
+            }
+            log.info("SeedService.seedEnterprises: inserted " + enterprises.size() + " enterprises");
+        }
+
+        return dao.queryForAll();
+    }
+
+    private static List<Organization> seedOrganizations(List<Enterprise> enterprises) throws SQLException {
+        Dao<Organization, String> dao = DaoManager.createDao(
+            PersistenceService.getConnectionSource(), Organization.class);
+
+        long count = dao.countOf();
+        log.info("SeedService.seedOrganizations: countOf=" + count);
+        if (count == 0) {
+            Enterprise magratheaStudios       = enterprises.get(0);
+            Enterprise starshipTitanicLeisure = enterprises.get(1);
+            Enterprise galacticBroadcasting   = enterprises.get(2);
+            Enterprise siriusCybernetics      = enterprises.get(3);
+
+            List<Organization> orgs = List.of(
+                new Organization("slartibartfastPictures",         magratheaStudios,       "Slartibartfast Pictures",          "Film"),
+                new Organization("bistromathAnimation",            magratheaStudios,       "Bistromath Animation",             "Animation"),
+                new Organization("magratheaThemeWorlds",           starshipTitanicLeisure, "Magrathea Theme Worlds",           "Theme Park"),
+                new Organization("milliwaysEntertainment",         starshipTitanicLeisure, "Milliways Entertainment",          "Events"),
+                new Organization("infiniteImprobabilityStreaming", galacticBroadcasting,   "Infinite Improbability Streaming", "Streaming"),
+                new Organization("panGalacticBroadcast",          galacticBroadcasting,   "Pan-Galactic Broadcast",           "Broadcast"),
+                new Organization("megadodoLicensing",             siriusCybernetics,      "Megadodo Licensing",               "Licensing"),
+                new Organization("hooloovooRetail",               siriusCybernetics,      "Hooloovoo Retail",                 "Retail")
+            );
+            for (Organization o : orgs) {
+                dao.createIfNotExists(o);
+            }
+            log.info("SeedService.seedOrganizations: inserted " + orgs.size() + " organizations");
+        }
+
+        return dao.queryForAll();
+    }
+
+    private static void seedUsers(List<Organization> orgs, List<Enterprise> enterprises) throws SQLException {
+        Dao<User, String> dao = DaoManager.createDao(
+            PersistenceService.getConnectionSource(), User.class);
+
+        long count = dao.countOf();
+        log.info("SeedService.seedUsers: countOf=" + count);
+        if (count > 0) return;
+
+        String hash = AuthService.getInstance().hashPassword(defaultPassword);
+        Faker faker = new Faker();
+        UserRole[] roles = UserRole.values();
+
+        Enterprise magratheaStudios       = enterprises.get(0);
+        Enterprise starshipTitanicLeisure = enterprises.get(1);
+        Enterprise galacticBroadcasting   = enterprises.get(2);
+        Enterprise siriusCybernetics      = enterprises.get(3);
+
+        Organization slartibartfastPictures         = orgs.get(0);
+        Organization bistromathAnimation            = orgs.get(1);
+        Organization magratheaThemeWorlds           = orgs.get(2);
+        Organization milliwaysEntertainment         = orgs.get(3);
+        Organization infiniteImprobabilityStreaming = orgs.get(4);
+        Organization panGalacticBroadcast           = orgs.get(5);
+        Organization megadodoLicensing              = orgs.get(6);
+        Organization hooloovooRetail                = orgs.get(7);
+
+        record Pair(Organization org, Enterprise enterprise) {}
+        List<Pair> pairs = List.of(
+            new Pair(slartibartfastPictures,         magratheaStudios),
+            new Pair(bistromathAnimation,            magratheaStudios),
+            new Pair(magratheaThemeWorlds,           starshipTitanicLeisure),
+            new Pair(milliwaysEntertainment,         starshipTitanicLeisure),
+            new Pair(infiniteImprobabilityStreaming, galacticBroadcasting),
+            new Pair(panGalacticBroadcast,           galacticBroadcasting),
+            new Pair(megadodoLicensing,              siriusCybernetics),
+            new Pair(hooloovooRetail,                siriusCybernetics)
+        );
+
+        int total = 0;
+        for (Pair pair : pairs) {
+            for (int i = 0; i < 20; i++) {
+                String firstName = faker.name().firstName();
+                String lastName  = faker.name().lastName();
+                dao.createIfNotExists(new User(
+                    faker.internet().uuid(),
+                    pair.org(),
+                    pair.enterprise(),
+                    firstName,
+                    lastName,
+                    faker.internet().emailAddress(),
+                    hash,
+                    roles[i % roles.length]
+                ));
+                total++;
+            }
+        }
+        log.info("SeedService.seedUsers: inserted " + total + " users");
     }
 
     // ── Script runner ─────────────────────────────────────────────────────────

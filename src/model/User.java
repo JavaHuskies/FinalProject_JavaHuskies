@@ -42,4 +42,17 @@ public class User {
     private String createdAt = LocalDateTime.now().toString();
 
     public User() {}
+
+    public User(String userId, Organization org, Enterprise enterprise,
+                String firstName, String lastName, String email,
+                String passwordHash, UserRole role) {
+        this.userId = userId;
+        this.org = org;
+        this.enterprise = enterprise;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+    }
 }

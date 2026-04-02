@@ -22,5 +22,14 @@ public class Enterprise {
     @DatabaseField(columnName = "created_at", canBeNull = false)
     private String createdAt = LocalDateTime.now().toString();
 
+    public String getEnterpriseId() { return enterpriseId; }
+
     public Enterprise() {}
+
+    public Enterprise(String enterpriseId, Network network, String name, String type) {
+        this.enterpriseId = enterpriseId;
+        this.network = network;
+        this.name = name;
+        this.type = type;
+    }
 }
