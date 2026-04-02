@@ -2,6 +2,7 @@ package ui;
 
 import model.Claims;
 import service.ConfigService;
+import service.PersistenceService;
 import service.SessionManager;
 import service.ThemeService;
 import ui.panels.HeaderPanel;
@@ -101,12 +102,11 @@ public class ApplicationFrame extends JFrame {
     // -------------------------------------------------------------------------
     private void initDatabase() {
         try {
-            ConfigService config = ConfigService.getInstance();
-            // JdbcConnectionSource implements AutoCloseable
-            connectionSource = new JdbcConnectionSource(config.get("db.url"));
-            SeedService.initialize(connectionSource);
+            PersistenceService.initialize();
+            SeedService.initialize();
         } catch (Exception e) {
-            // TODO: Display an error dialog
+                    System.out.println(e);
+// TODO: Display an error dialog
         }
     }
 

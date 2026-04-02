@@ -23,4 +23,11 @@ public class Organization {
     private String createdAt = LocalDateTime.now().toString();
 
     public Organization() {}
+
+    public Organization(String orgId, Enterprise enterprise, String name, String type) {
+        this.orgId = orgId;
+        this.enterprise = enterprise;
+        this.name = name;
+        this.type = type;
+    }
 }
