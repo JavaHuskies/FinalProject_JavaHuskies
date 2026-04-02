@@ -55,16 +55,6 @@ public class SeedService {
     public static void initialize() throws Exception {
         PersistenceService.initializeSchema();
         seedAll();
-
-        // TODO: Seed data
-        // try {
-        //     runScript(conn, "seed.sql");
-        //     seedUsers(conn);
-        //     log.info("SeedService: database initialized successfully");
-        // } catch (Exception e) {
-        //     log.severe("SeedService: initialization failed — " + e.getMessage());
-        //     throw new RuntimeException("Database initialization failed", e);
-        // }
     }
 
     private static void seedAll() throws SQLException {
