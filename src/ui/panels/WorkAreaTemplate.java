@@ -203,7 +203,7 @@ public class WorkAreaTemplate extends JPanel {
      * Called from onShow() and any refresh action.
      * TODO: replace stub content with real PersistenceService calls (Anan).
      */
-    private void loadData() {
+    protected void loadData() {
         DefaultTableModel model = (DefaultTableModel) dataTable.getModel();
         model.setRowCount(0);
         // TODO: query PersistenceService and populate rows
