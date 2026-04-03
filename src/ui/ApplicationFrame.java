@@ -46,11 +46,6 @@ import ui.panels.DataAnalystPanel;
  */
 public class ApplicationFrame extends JFrame {
 
-    // -------------------------------------------------------------------------
-    // Database (SQLite connector)
-    // -------------------------------------------------------------------------
-    private JdbcConnectionSource connectionSource;
-
     private static final Logger log = Logger.getLogger(ApplicationFrame.class.getName());
 
     // -------------------------------------------------------------------------
@@ -103,16 +98,16 @@ public class ApplicationFrame extends JFrame {
         showPanel(panelSplash);
     }
 
-    // -------------------------------------------------------------------------
-    // Connect to the database
-    // -------------------------------------------------------------------------
+    /**
+    * Initialize the database connection and seed the database if it is empty.
+    */
     private void initDatabase() {
         try {
-            PersistenceService.initialize();
-            SeedService.initialize();
+            JdbcConnectionSource connectionSource = PersistenceService.getInstance().getConnectionSource();
+            SeedService.initialize(connectionSource);
         } catch (Exception e) {
             System.out.println(e);
-// TODO: Display an error dialog
+            // TODO: Display an error dialog
         }
     }
 

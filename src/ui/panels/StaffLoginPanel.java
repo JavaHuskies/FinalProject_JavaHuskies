@@ -1,5 +1,6 @@
 package ui.panels;
 
+import dao.UserDao;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -13,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.sql.SQLException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -20,8 +22,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-
 import model.Claims;
+import model.User;
 import service.AuthService;
 import service.SessionManager;
 import service.ThemeService;
@@ -265,113 +267,34 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
 
         new Thread(() -> {
             try {
-                // ── TODO (Anan): replace entire stub block with PersistenceService ──
-                // UserRecord user = PersistenceService.getInstance().findUserByUsername(username);
-                // if (user == null || !auth.verifyPassword(password, user.getPasswordHash())) {
-                //     throw new SecurityException("Invalid username or password.");
-                // }
-                // String token  = auth.issueJWT(user.getUserId(), user.getRole(),
-                //                               user.getOrgId(), user.getEnterpriseId(),
-                //                               user.getEmail());
-                // Claims claims = auth.validateJWT(token);
-                // SessionManager.login(token, claims);
+                UserDao userDao = new UserDao();
+                User user = userDao.queryForId(username);
 
-// ── Stub credentials — remove once PersistenceService is live ──
-                String token;
+                // Verify a user credential
+                if (user != null && auth.verifyPassword(password, user.getPasswordHash())) {
+                    String token  = auth.issueJWT(
+                        user.getUserId(),
+                        user.getRole().toString(),
+                        user.getOrg().getOrgId(),
+                        user.getEnterprise().getEnterpriseId(),
+                        user.getEmail()
+                    );
+                    Claims claims = auth.validateJWT(token);
+                    SessionManager.login(token, claims);
 
-                if ("admin".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("admin", Claims.roleNetworkAdmin,
-                            "slartibartfastPictures", "magratheaStudios",
-                            "admin@deepthought.com");
-
-                } else if ("netadmin".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("netadmin", Claims.roleNetworkAdmin,
-                            "slartibartfastPictures", "magratheaStudios",
-                            "netadmin@deepthought.com");
-
-                } else if ("grpceo".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("grpceo", Claims.roleGroupCeo,
-                            "slartibartfastPictures", "magratheaStudios",
-                            "grpceo@deepthought.com");
-
-                } else if ("grpcfo".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("grpcfo", Claims.roleGroupCfo,
-                            "slartibartfastPictures", "magratheaStudios",
-                            "grpcfo@deepthought.com");
-
-                } else if ("entadmin".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("entadmin", Claims.roleEnterpriseAdmin,
-                            "magratheaThemeWorlds", "starshipTitanicLeisure",
-                            "entadmin@deepthought.com");
-
-                } else if ("entpres".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("entpres", Claims.roleEntPresident,
-                            "milliwaysEntertainment", "starshipTitanicLeisure",
-                            "entpres@deepthought.com");
-
-                } else if ("orgdir1".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("orgdir1", Claims.roleOrgDirector,
-                            "infiniteImprobabilityStreaming", "galacticBroadcasting",
-                            "orgdir1@deepthought.com");
-
-                } else if ("creative1".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("creative1", Claims.roleCreativeLead,
-                            "bistromathAnimation", "magratheaStudios",
-                            "creative1@deepthought.com");
-
-                } else if ("tech1".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("tech1", Claims.roleTechnologyLead,
-                            "megadodoLicensing", "siriusCybernetics",
-                            "tech1@deepthought.com");
-
-                } else if ("mktg1".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("mktg1", Claims.roleMarketingLead,
-                            "panGalacticBroadcast", "galacticBroadcasting",
-                            "mktg1@deepthought.com");
-
-                } else if ("analyst1".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("analyst1", Claims.roleDataAnalyst,
-                            "hooloovooRetail", "siriusCybernetics",
-                            "analyst1@deepthought.com");
-
-                } else if ("comply1".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("comply1", Claims.roleComplianceOfficer,
-                            "slartibartfastPictures", "magratheaStudios",
-                            "comply1@deepthought.com");
-
-                } else if ("comply2".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("comply2", Claims.roleComplianceOfficer,
-                            "milliwaysEntertainment", "starshipTitanicLeisure",
-                            "comply2@deepthought.com");
-
-                } else if ("comply3".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("comply3", Claims.roleComplianceOfficer,
-                            "infiniteImprobabilityStreaming", "galacticBroadcasting",
-                            "comply3@deepthought.com");
-
-                } else if ("comply4".equals(username) && "Admin1!".equals(password)) {
-                    token = auth.issueJWT("comply4", Claims.roleComplianceOfficer,
-                            "megadodoLicensing", "siriusCybernetics",
-                            "comply4@deepthought.com");
-
-                } else {
-                    throw new SecurityException("Invalid username or password.");
+                    SwingUtilities.invokeLater(() -> {
+                        loginButton.setEnabled(true);
+                        loginButton.setText("Sign In");
+                        usernameField.setText("");
+                        passwordField.setText("");
+                        frame.routeByRole();
+                    });
+                    return;
                 }
-// ── End stub ──────────────────────────────────────────────────
 
-                // ── End stub ──────────────────────────────────────────────────
-                Claims claims = auth.validateJWT(token);
-                SessionManager.login(token, claims);
-
-                SwingUtilities.invokeLater(() -> {
-                    loginButton.setEnabled(true);
-                    loginButton.setText("Sign In");
-                    usernameField.setText("");
-                    passwordField.setText("");
-                    frame.routeByRole();
-                });
-
-            } catch (SecurityException ex) {
+                // If it fails throws SecurityException
+                throw new SecurityException("Invalid username or password.");
+            } catch (SQLException | SecurityException ex) {
                 SwingUtilities.invokeLater(() -> {
                     loginButton.setEnabled(true);
                     loginButton.setText("Sign In");
@@ -379,6 +302,7 @@ public class StaffLoginPanel extends ImageBackgroundPanel {
                     passwordField.setText("");
                     passwordField.requestFocusInWindow();
                 });
+
             }
         }, "auth-thread").start();
     }

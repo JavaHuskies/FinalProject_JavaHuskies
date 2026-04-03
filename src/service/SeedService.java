@@ -1,25 +1,30 @@
 package service;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import com.github.javafaker.Faker;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import com.j256.ormlite.misc.TransactionManager;
+import com.j256.ormlite.table.TableUtils;
+import model.Booking;
+import model.Complaint;
 import model.Enterprise;
+import model.Guest;
 import model.Network;
+import model.NotificationLog;
 import model.Organization;
+import model.Report;
+import model.StatusChange;
 import model.User;
 import model.UserRole;
+import model.WorkRequest;
+import model.WorkRequestComment;
+import model.Casino.CasinoSession;
+import model.Casino.GameRound;
 
 /**
  * Initializes the database schema and static seed data on first launch.
@@ -42,7 +47,7 @@ public class SeedService {
     private static final Logger log = Logger.getLogger(SeedService.class.getName());
 
     // Default password for all seed accounts — must satisfy password policy
-    private static final String defaultPassword = "Admin1!";
+    private static final String DEFAULT_PASSWORD = "Admin1!";
 
     // ── Public entry point ────────────────────────────────────────────────────
 
@@ -50,23 +55,39 @@ public class SeedService {
      * Runs schema + seed scripts then inserts stub users.
      * Safe to call on every launch — all operations use INSERT OR IGNORE.
      *
-     * @param conn open JDBC connection
+     * @param connectionSource JDBC connection
      */
-    public static void initialize() throws Exception {
-        PersistenceService.initializeSchema();
-        seedAll();
+    public static void initialize(JdbcConnectionSource connectionSource) throws Exception {    
+        initializeSchema(connectionSource);
+        seedAll(connectionSource);
     }
 
-    private static void seedAll() throws SQLException {
-        Network network = seedNetwork();
-        List<Enterprise> enterprises = seedEnterprises(network);
-        List<Organization> orgs = seedOrganizations(enterprises);
-        seedUsers(orgs, enterprises);
+    public static void initializeSchema(JdbcConnectionSource connectionSource) throws SQLException {
+        TableUtils.createTableIfNotExists(connectionSource, Network.class);
+        TableUtils.createTableIfNotExists(connectionSource, Enterprise.class);
+        TableUtils.createTableIfNotExists(connectionSource, Organization.class);
+        TableUtils.createTableIfNotExists(connectionSource, User.class);
+        TableUtils.createTableIfNotExists(connectionSource, Guest.class);
+        TableUtils.createTableIfNotExists(connectionSource, WorkRequest.class);
+        TableUtils.createTableIfNotExists(connectionSource, StatusChange.class);
+        TableUtils.createTableIfNotExists(connectionSource, WorkRequestComment.class);
+        TableUtils.createTableIfNotExists(connectionSource, Booking.class);
+        TableUtils.createTableIfNotExists(connectionSource, Complaint.class);
+        TableUtils.createTableIfNotExists(connectionSource, CasinoSession.class);
+        TableUtils.createTableIfNotExists(connectionSource, GameRound.class);
+        TableUtils.createTableIfNotExists(connectionSource, Report.class);
+        TableUtils.createTableIfNotExists(connectionSource, NotificationLog.class);
     }
 
-    private static Network seedNetwork() throws SQLException {
-        Dao<Network, String> dao = DaoManager.createDao(
-            PersistenceService.getConnectionSource(), Network.class);
+    private static void seedAll(JdbcConnectionSource connectionSource) throws SQLException {
+        Network network = seedNetwork(connectionSource);
+        List<Enterprise> enterprises = seedEnterprises(connectionSource, network);
+        List<Organization> orgs = seedOrganizations(connectionSource, enterprises);
+        seedUsers(connectionSource, orgs, enterprises);
+    }
+
+    private static Network seedNetwork(JdbcConnectionSource connectionSource) throws SQLException {
+        Dao<Network, String> dao = DaoManager.createDao(connectionSource, Network.class);
 
         long count = dao.countOf();
         log.info("SeedService.seedNetwork: countOf=" + count);
@@ -78,17 +99,16 @@ public class SeedService {
                 "Magrathea",
                 "1979"
             );
-            int rows = dao.create(network);
-            log.info("SeedService.seedNetwork: inserted rows=" + rows);
+            dao.create(network);
+            log.info("SeedService.seedNetwork: inserted rows=" + 1);
             return network;
         }
 
         return dao.queryForAll().get(0);
     }
 
-    private static List<Enterprise> seedEnterprises(Network network) throws SQLException {
-        Dao<Enterprise, String> dao = DaoManager.createDao(
-            PersistenceService.getConnectionSource(), Enterprise.class);
+    private static List<Enterprise> seedEnterprises(JdbcConnectionSource connectionSource, Network network) throws SQLException {
+        Dao<Enterprise, String> dao = DaoManager.createDao(connectionSource, Enterprise.class);
 
         long count = dao.countOf();
         log.info("SeedService.seedEnterprises: countOf=" + count);
@@ -99,18 +119,22 @@ public class SeedService {
                 new Enterprise("galacticBroadcasting",   network, "Galactic Broadcasting",     "Media"),
                 new Enterprise("siriusCybernetics",      network, "Sirius Cybernetics",        "Technology")
             );
-            for (Enterprise e : enterprises) {
-                dao.createIfNotExists(e);
-            }
+            TransactionManager.callInTransaction(connectionSource, new Callable<Void>() {
+                public Void call() throws Exception {
+                    for (Enterprise e : enterprises) {
+                        dao.createIfNotExists(e);
+                    }
+                    return null;
+                }
+            });
             log.info("SeedService.seedEnterprises: inserted " + enterprises.size() + " enterprises");
         }
 
         return dao.queryForAll();
     }
 
-    private static List<Organization> seedOrganizations(List<Enterprise> enterprises) throws SQLException {
-        Dao<Organization, String> dao = DaoManager.createDao(
-            PersistenceService.getConnectionSource(), Organization.class);
+    private static List<Organization> seedOrganizations(JdbcConnectionSource connectionSource, List<Enterprise> enterprises) throws SQLException {
+        Dao<Organization, String> dao = DaoManager.createDao(connectionSource, Organization.class);
 
         long count = dao.countOf();
         log.info("SeedService.seedOrganizations: countOf=" + count);
@@ -130,24 +154,28 @@ public class SeedService {
                 new Organization("megadodoLicensing",             siriusCybernetics,      "Megadodo Licensing",               "Licensing"),
                 new Organization("hooloovooRetail",               siriusCybernetics,      "Hooloovoo Retail",                 "Retail")
             );
-            for (Organization o : orgs) {
-                dao.createIfNotExists(o);
-            }
+            TransactionManager.callInTransaction(connectionSource, new Callable<Void>() {
+                public Void call() throws Exception {
+                    for (Organization o : orgs) {
+                        dao.createIfNotExists(o);
+                    }
+                    return null;
+                }
+            });
             log.info("SeedService.seedOrganizations: inserted " + orgs.size() + " organizations");
         }
 
         return dao.queryForAll();
     }
 
-    private static void seedUsers(List<Organization> orgs, List<Enterprise> enterprises) throws SQLException {
-        Dao<User, String> dao = DaoManager.createDao(
-            PersistenceService.getConnectionSource(), User.class);
+    private static void seedUsers(JdbcConnectionSource connectionSource, List<Organization> orgs, List<Enterprise> enterprises) throws SQLException {
+        Dao<User, String> dao = DaoManager.createDao(connectionSource, User.class);
 
         long count = dao.countOf();
         log.info("SeedService.seedUsers: countOf=" + count);
         if (count > 0) return;
 
-        String hash = AuthService.getInstance().hashPassword(defaultPassword);
+        String hash = AuthService.getInstance().hashPassword(DEFAULT_PASSWORD);
         Faker faker = new Faker();
         UserRole[] roles = UserRole.values();
 
@@ -165,161 +193,31 @@ public class SeedService {
         Organization megadodoLicensing              = orgs.get(6);
         Organization hooloovooRetail                = orgs.get(7);
 
-        record Pair(Organization org, Enterprise enterprise) {}
-        List<Pair> pairs = List.of(
-            new Pair(slartibartfastPictures,         magratheaStudios),
-            new Pair(bistromathAnimation,            magratheaStudios),
-            new Pair(magratheaThemeWorlds,           starshipTitanicLeisure),
-            new Pair(milliwaysEntertainment,         starshipTitanicLeisure),
-            new Pair(infiniteImprobabilityStreaming, galacticBroadcasting),
-            new Pair(panGalacticBroadcast,           galacticBroadcasting),
-            new Pair(megadodoLicensing,              siriusCybernetics),
-            new Pair(hooloovooRetail,                siriusCybernetics)
+        List<User> users = List.of(
+            new User("admin",      slartibartfastPictures,         magratheaStudios,       "Arthur",         "Dent",       "admin@deepthought.com",     hash, UserRole.networkAdmin),
+            new User("netadmin",   slartibartfastPictures,         magratheaStudios,       "Ford",           "Prefect",    "netadmin@deepthought.com",  hash, UserRole.networkAdmin),
+            new User("grpceo",     slartibartfastPictures,         magratheaStudios,       "Zaphod",         "Beeblebrox", "grpceo@deepthought.com",    hash, UserRole.groupCeo),
+            new User("grpcfo",     slartibartfastPictures,         magratheaStudios,       "Humma",          "Kavula",     "grpcfo@deepthought.com",    hash, UserRole.groupCfo),
+            new User("entadmin",   magratheaThemeWorlds,           starshipTitanicLeisure, "Trillian",       "McMillan",   "entadmin@deepthought.com",  hash, UserRole.enterpriseAdmin),
+            new User("entpres",    milliwaysEntertainment,         starshipTitanicLeisure, "Slartibartfast", "-",         "entpres@deepthought.com",   hash, UserRole.enterprisePresident),
+            new User("orgdir1",    infiniteImprobabilityStreaming, galacticBroadcasting,   "Marvin",         "Android",    "orgdir1@deepthought.com",   hash, UserRole.orgDirector),
+            new User("creative1",  bistromathAnimation,            magratheaStudios,       "Fenchurch",      "-",         "creative1@deepthought.com", hash, UserRole.creativeLead),
+            new User("tech1",      megadodoLicensing,              siriusCybernetics,      "Eddie",          "Ship",       "tech1@deepthought.com",     hash, UserRole.technologyLead),
+            new User("mktg1",      panGalacticBroadcast,           galacticBroadcasting,   "Veet",           "Voojagig",   "mktg1@deepthought.com",     hash, UserRole.marketingLead),
+            new User("analyst1",   hooloovooRetail,                siriusCybernetics,      "Deep",           "Thought",    "analyst1@deepthought.com",  hash, UserRole.dataAnalyst),
+            new User("comply1",    slartibartfastPictures,         magratheaStudios,       "Wonko",          "Sane",       "comply1@deepthought.com",   hash, UserRole.complianceOfficer),
+            new User("comply2",    milliwaysEntertainment,         starshipTitanicLeisure, "Effrafax",       "Wug",        "comply2@deepthought.com",   hash, UserRole.complianceOfficer),
+            new User("comply3",    infiniteImprobabilityStreaming, galacticBroadcasting,   "Prak",           "-",         "comply3@deepthought.com",   hash, UserRole.complianceOfficer),
+            new User("comply4",    megadodoLicensing,              siriusCybernetics,      "Agrajag",        "-",         "comply4@deepthought.com",   hash, UserRole.complianceOfficer)
         );
 
-        int total = 0;
-        for (Pair pair : pairs) {
-            for (int i = 0; i < 20; i++) {
-                String firstName = faker.name().firstName();
-                String lastName  = faker.name().lastName();
-                dao.createIfNotExists(new User(
-                    faker.internet().uuid(),
-                    pair.org(),
-                    pair.enterprise(),
-                    firstName,
-                    lastName,
-                    faker.internet().emailAddress(),
-                    hash,
-                    roles[i % roles.length]
-                ));
-                total++;
-            }
-        }
-        log.info("SeedService.seedUsers: inserted " + total + " users");
-    }
-
-    // ── Script runner ─────────────────────────────────────────────────────────
-
-    /**
-     * Reads a SQL script from the classpath root and executes each statement.
-     * Statements are split on semicolons; blank lines and comments are skipped.
-     *
-     * @param conn         open JDBC connection
-     * @param resourceName filename of the SQL script on the classpath root
-     * @throws Exception if the script is not found or a statement fails
-     */
-    private static void runScript(Connection conn, String resourceName)
-            throws Exception {
-        InputStream is = SeedService.class.getClassLoader()
-                .getResourceAsStream(resourceName);
-        if (is == null) {
-            throw new IllegalStateException(
-                "SQL script not found on classpath: " + resourceName);
-        }
-
-        String sql;
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(is, StandardCharsets.UTF_8))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String trimmed = line.trim();
-                if (trimmed.isEmpty() || trimmed.startsWith("--")) continue;
-                sb.append(line).append('\n');
-            }
-            sql = sb.toString();
-        }
-
-        try (Statement stmt = conn.createStatement()) {
-            for (String statement : sql.split(";")) {
-                String trimmed = statement.trim();
-                if (!trimmed.isEmpty()) {
-                    stmt.executeUpdate(trimmed);
+        TransactionManager.callInTransaction(connectionSource, new Callable<Void>() {
+            public Void call() throws Exception {
+                for (User user : users) {
+                    dao.createIfNotExists(user);
                 }
+                return null;
             }
-        }
-        log.fine("SeedService: executed " + resourceName);
-    }
-
-    // ── User seed ─────────────────────────────────────────────────────────────
-
-    /**
-     * Inserts stub users if they don't already exist.
-     * Passwords are hashed at runtime — never hardcoded in SQL.
-     * All role values match the CHECK constraint in schema.sql and the
-     * Claims role constants.
-     *
-     * @param conn open JDBC connection
-     * @throws SQLException if any insert fails
-     */
-    private static void seedUsers(Connection conn) throws SQLException {
-        AuthService auth = AuthService.getInstance();
-        String hash = auth.hashPassword(defaultPassword);
-
-        // columns: user_id, org_id, enterprise_id, first_name, last_name, email, role
-        Object[][] users = {
-
-            // ── Network level ─────────────────────────────────────────────────
-            { "admin",    "slartibartfastPictures", "magratheaStudios",
-              "Arthur",  "Dent",        "admin@deepthought.com",    "networkAdmin"       },
-            { "netadmin", "slartibartfastPictures", "magratheaStudios",
-              "Ford",    "Prefect",     "netadmin@deepthought.com", "networkAdmin"       },
-
-            // ── Group level ───────────────────────────────────────────────────
-            { "grpceo",   "slartibartfastPictures", "magratheaStudios",
-              "Zaphod",  "Beeblebrox",  "grpceo@deepthought.com",   "groupCeo"           },
-            { "grpcfo",   "slartibartfastPictures", "magratheaStudios",
-              "Humma",   "Kavula",      "grpcfo@deepthought.com",   "groupCfo"           },
-
-            // ── Enterprise level ──────────────────────────────────────────────
-            { "entadmin", "magratheaThemeWorlds",   "starshipTitanicLeisure",
-              "Trillian","McMillan",    "entadmin@deepthought.com", "enterpriseAdmin"    },
-            { "entpres",  "milliwaysEntertainment", "starshipTitanicLeisure",
-              "Slartibartfast", "—",   "entpres@deepthought.com",  "enterprisePresident"},
-
-            // ── Org level ─────────────────────────────────────────────────────
-            { "orgdir1",  "infiniteImprobabilityStreaming", "galacticBroadcasting",
-              "Marvin",  "Android",     "orgdir1@deepthought.com",  "orgDirector"        },
-            { "creative1","bistromathAnimation",    "magratheaStudios",
-              "Fenchurch","—",          "creative1@deepthought.com","creativeLead"       },
-            { "tech1",    "megadodoLicensing",      "siriusCybernetics",
-              "Eddie",   "Ship",        "tech1@deepthought.com",    "technologyLead"     },
-            { "mktg1",    "panGalacticBroadcast",   "galacticBroadcasting",
-              "Veet",    "Voojagig",    "mktg1@deepthought.com",    "marketingLead"      },
-            { "analyst1", "hooloovooRetail",         "siriusCybernetics",
-              "Deep",    "Thought",     "analyst1@deepthought.com", "dataAnalyst"        },
-
-            // ── Compliance Officers — one per enterprise ───────────────────────
-            { "comply1",  "slartibartfastPictures", "magratheaStudios",
-              "Wonko",   "Sane",        "comply1@deepthought.com",  "complianceOfficer"  },
-            { "comply2",  "milliwaysEntertainment", "starshipTitanicLeisure",
-              "Effrafax","Wug",         "comply2@deepthought.com",  "complianceOfficer"  },
-            { "comply3",  "infiniteImprobabilityStreaming", "galacticBroadcasting",
-              "Prak",    "—",           "comply3@deepthought.com",  "complianceOfficer"  },
-            { "comply4",  "megadodoLicensing",      "siriusCybernetics",
-              "Agrajag", "—",           "comply4@deepthought.com",  "complianceOfficer"  },
-        };
-
-        String sql = """
-            INSERT OR IGNORE INTO user
-                (user_id, org_id, enterprise_id, first_name, last_name,
-                 email, password_hash, role)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """;
-
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            for (Object[] u : users) {
-                ps.setString(1, (String) u[0]); // user_id
-                ps.setString(2, (String) u[1]); // org_id
-                ps.setString(3, (String) u[2]); // enterprise_id
-                ps.setString(4, (String) u[3]); // first_name
-                ps.setString(5, (String) u[4]); // last_name
-                ps.setString(6, (String) u[5]); // email
-                ps.setString(7, hash);           // password_hash
-                ps.setString(8, (String) u[6]); // role
-                ps.executeUpdate();
-            }
-        }
-        log.info("SeedService: " + users.length + " seed users inserted (or already existed)");
+        });
     }
 }
