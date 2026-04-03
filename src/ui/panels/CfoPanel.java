@@ -36,11 +36,9 @@ public class CfoPanel extends WorkAreaTemplate {
         JPanel toolbar = getToolbar();
         toolbar.removeAll();
 
-        // Refresh button
         JButton refresh = buildToolbarButton("Refresh");
         refresh.addActionListener(e -> loadData());
 
-        // Export button (simple CSV export)
         JButton export = buildToolbarButton("Export");
         export.addActionListener(e -> exportCsv());
 
@@ -57,24 +55,19 @@ public class CfoPanel extends WorkAreaTemplate {
         loadData();
     }
 
-    private void loadData() {
+    protected void loadData() {
         DefaultTableModel model = (DefaultTableModel) getDataTable().getModel();
         model.setRowCount(0);
 
-        // Placeholder data — replace with PersistenceService later
         model.addRow(new Object[]{ "Slartibartfast Pictures", "$1.2M", "$980k", "$220k", "On Track" });
         model.addRow(new Object[]{ "Magrathea Studios", "$3.4M", "$3.8M", "-$400k", "Over Budget" });
         model.addRow(new Object[]{ "Pan Galactic Broadcast", "$2.1M", "$1.9M", "$200k", "On Track" });
 
-        // Stat cards
-        setStatValue(0, "$6.7M");   // Total Budget
-        setStatValue(1, "$6.68M");  // Total Spend
-        setStatValue(2, "$20k");    // Net Variance
+        setStatValue(0, "$6.7M");
+        setStatValue(1, "$6.68M");
+        setStatValue(2, "$20k");
     }
 
-    // -------------------------------------------------------------------------
-    // Simple CSV export — no dependencies, consistent with ReportingPanel style
-    // -------------------------------------------------------------------------
     private void exportCsv() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Export CFO Report");
@@ -85,14 +78,12 @@ public class CfoPanel extends WorkAreaTemplate {
             try (PrintWriter out = new PrintWriter(file)) {
                 DefaultTableModel model = (DefaultTableModel) getDataTable().getModel();
 
-                // Write headers
                 for (int c = 0; c < model.getColumnCount(); c++) {
                     out.print(model.getColumnName(c));
                     if (c < model.getColumnCount() - 1) out.print(",");
                 }
                 out.println();
 
-                // Write rows
                 for (int r = 0; r < model.getRowCount(); r++) {
                     for (int c = 0; c < model.getColumnCount(); c++) {
                         out.print(model.getValueAt(r, c));
@@ -101,16 +92,20 @@ public class CfoPanel extends WorkAreaTemplate {
                     out.println();
                 }
 
-                JOptionPane.showMessageDialog(this,
+                JOptionPane.showMessageDialog(
+                        this,
                         "Export complete:\n" + file.getAbsolutePath(),
                         "Export Successful",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.INFORMATION_MESSAGE
+                );
 
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this,
+                JOptionPane.showMessageDialog(
+                        this,
                         "Export failed:\n" + ex.getMessage(),
                         "Export Error",
-                        JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         }
     }

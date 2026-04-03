@@ -278,4 +278,12 @@ public class SessionManager {
         }
         return true;
     }
+public static void injectGuestSession(String username) {
+    injectDemoSession(
+        Claims.roleGuest,
+        "guestOrg",
+        "guestEnterprise"
+    );
+}
+
 }

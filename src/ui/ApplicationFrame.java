@@ -14,6 +14,12 @@ import ui.panels.EnterpriseAdminPanel;
 import ui.panels.ComplianceOfficerPanel;
 import ui.panels.ReportingPanel;
 import ui.panels.GuestCasinoPanel;
+import ui.panels.OrgDirectorPanel;
+import ui.panels.CreativeLeadPanel;
+import ui.panels.TechnologyLeadPanel;
+import ui.panels.MarketingLeadPanel;
+import ui.panels.AiGuidePanel;
+import ui.panels.GuestLoginPanel;
 
 import javax.swing.*;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
@@ -105,7 +111,7 @@ public class ApplicationFrame extends JFrame {
             PersistenceService.initialize();
             SeedService.initialize();
         } catch (Exception e) {
-                    System.out.println(e);
+            System.out.println(e);
 // TODO: Display an error dialog
         }
     }
@@ -136,21 +142,21 @@ public class ApplicationFrame extends JFrame {
         // Public panels — no session required
         register(panelSplash, new SplashPanel(this));
         register(panelStaffLogin, new StaffLoginPanel(this));
-//        register(panelGuestLogin,     new GuestLoginPanel(this));
+        register(panelGuestLogin, new GuestLoginPanel(this));
 //        register(panelGuestRegister,  new GuestRegistrationPanel(this));
 
         // Staff panels — session + role required
         register(panelNetworkAdmin, new NetworkAdminPanel(this));
         register(panelEnterpriseAdmin, new EnterpriseAdminPanel(this));
-//        register(panelOrgDirector,       new OrgDirectorPanel(this));
+        register(panelOrgDirector, new OrgDirectorPanel(this));
 //        register(panelWorkRequests,      new WorkRequestPanel(this));
-//        register(panelCreativeLead,      new CreativeLeadPanel(this));
-//        register(panelTechnologyLead,    new TechnologyLeadPanel(this));
-//        register(panelMarketingLead,     new MarketingLeadPanel(this));
+        register(panelCreativeLead, new CreativeLeadPanel(this));
+        register(panelTechnologyLead, new TechnologyLeadPanel(this));
+        register(panelMarketingLead, new MarketingLeadPanel(this));
         register(panelComplianceOfficer, new ComplianceOfficerPanel(this));
         register(panelDataAnalyst, new DataAnalystPanel(this));
         register(panelReporting, new ReportingPanel(this));
-//        register(panelAiGuide,           new AIGuidePanel(this));
+        register(panelAiGuide, new AiGuidePanel(this));
         register(panelCfo, new CfoPanel(this));
         // Guest panels — guest session required
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
@@ -239,9 +245,28 @@ public class ApplicationFrame extends JFrame {
             ((CasinoPanel) panels.get("casino")).onShow();
         }
 
-         if (name.equals(panelCfo)) {
-            ((CfoPanel) panels.get(panelCfo)).onShow(); 
+        if (name.equals(panelCfo)) {
+            ((CfoPanel) panels.get(panelCfo)).onShow();
         }
+        if (name.equals(panelOrgDirector)) {
+            ((OrgDirectorPanel) panels.get(panelOrgDirector)).onShow();
+        }
+        if (name.equals(panelCreativeLead)) {
+            ((CreativeLeadPanel) panels.get(panelCreativeLead)).onShow();
+        }
+        if (name.equals(panelTechnologyLead)) {
+            ((TechnologyLeadPanel) panels.get(panelTechnologyLead)).onShow();
+        }
+        if (name.equals(panelMarketingLead)) {
+            ((MarketingLeadPanel) panels.get(panelMarketingLead)).onShow();
+        }
+        if (name.equals(panelAiGuide)) {
+            ((AiGuidePanel) panels.get(panelAiGuide)).onShow();
+        }
+        if (name.equals(panelGuestLogin)) {
+            ((GuestLoginPanel) panels.get(panelGuestLogin)).onShow();
+        }
+
         log.fine("Navigated to panel: " + name);
     }
 
@@ -277,7 +302,7 @@ public class ApplicationFrame extends JFrame {
             case Claims.roleDataAnalyst ->
                 panelDataAnalyst;
             case Claims.roleGuest ->
-                panelGuestPortal;
+                panelGuestLogin;
             default -> {
                 log.warning("Unrecognised role: " + role + " — routing to splash");
                 yield panelSplash;

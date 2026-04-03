@@ -10,19 +10,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
-/**
- * Enterprise Admin Dashboard — accessible by enterpriseAdmin, entPresident,
- * entCoo roles, and networkAdmin / groupCeo / groupCfo when drilling down.
- *
- * Scoped to the logged-in user's enterprise. Shows orgs, users, and work
- * requests belonging to that enterprise only.
- *
- * Layout mirrors NetworkAdminPanel: stats row + tabbed pane.
- * Tabs: Organizations | Users | Work Requests
- */
 public class EnterpriseAdminPanel extends JPanel {
 
-    // ── Colors ────────────────────────────────────────────────────────────────
     private static final Color bgPrimary   = ThemeService.colorBgPrimary;
     private static final Color bgSecondary = ThemeService.colorBgSecondary;
     private static final Color bgTertiary  = ThemeService.colorBgTertiary;
@@ -32,39 +21,24 @@ public class EnterpriseAdminPanel extends JPanel {
 
     private static final String mockTip = "Mock data — replace with PersistenceService query";
 
-    // ── Frame ─────────────────────────────────────────────────────────────────
     private final ApplicationFrame frame;
 
-    // ── Components ────────────────────────────────────────────────────────────
-    private JLabel      titleLabel;
-    private JLabel      subtitleLabel;
-    private JPanel      statsRow;
+    private JLabel titleLabel;
+    private JLabel subtitleLabel;
+    private JPanel statsRow;
     private JTabbedPane tabs;
-    private JTable      orgTable;
-    private JTable      userTable;
-    private JTable      workRequestTable;
 
-    // ─────────────────────────────────────────────────────────────────────────
+    private JTable orgTable;
+    private JTable userTable;
+    private JTable workRequestTable;
 
-	/**
-	 * Constructs the Enterprise Admin dashboard and builds all UI components.
-	 *
-	 * @param frame the parent ApplicationFrame used for panel navigation
-	 */
     public EnterpriseAdminPanel(ApplicationFrame frame) {
         this.frame = frame;
-        setBackground(new Color(10, 10, 26));
+        setBackground(bgPrimary);
         setLayout(new BorderLayout(0, 0));
         buildComponents();
     }
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
-
-	/**
-	 * Called by ApplicationFrame.showPanel() when this panel is made visible.
-	 * Guards session against required roles, then refreshes the header and data.
-	 * Redirects to staff login if the session is invalid or role is insufficient.
-	 */
     public void onShow() {
         if (!SessionManager.guardAny(
                 Claims.roleEnterpriseAdmin, Claims.roleEntPresident, Claims.roleEntCoo,
@@ -77,14 +51,11 @@ public class EnterpriseAdminPanel extends JPanel {
         loadData();
     }
 
-    // ── Build ─────────────────────────────────────────────────────────────────
-
     private void buildComponents() {
         JPanel wrapper = new JPanel(new BorderLayout(0, 16));
         wrapper.setBackground(bgPrimary);
         wrapper.setBorder(new EmptyBorder(32, 80, 24, 80));
 
-        // ── Header ────────────────────────────────────────────────────────
         JPanel header = new JPanel(new BorderLayout(0, 4));
         header.setBackground(bgPrimary);
         header.setBorder(new EmptyBorder(0, 0, 16, 0));
@@ -97,18 +68,16 @@ public class EnterpriseAdminPanel extends JPanel {
         subtitleLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         subtitleLabel.setForeground(textMuted);
 
-        header.add(titleLabel,    BorderLayout.NORTH);
+        header.add(titleLabel, BorderLayout.NORTH);
         header.add(subtitleLabel, BorderLayout.SOUTH);
 
-        // ── Stats row ─────────────────────────────────────────────────────
         statsRow = new JPanel(new GridLayout(1, 3, 12, 0));
         statsRow.setBackground(bgPrimary);
         statsRow.setBorder(new EmptyBorder(0, 0, 20, 0));
-        statsRow.add(buildStatCard("Organizations", "2"));
-        statsRow.add(buildStatCard("Users",         "6"));
-        statsRow.add(buildStatCard("Work Requests", "4"));
+        statsRow.add(buildStatCard("Organizations", "—"));
+        statsRow.add(buildStatCard("Users", "—"));
+        statsRow.add(buildStatCard("Work Requests", "—"));
 
-        // ── Toolbar ───────────────────────────────────────────────────────
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         toolbar.setBackground(bgPrimary);
         toolbar.setBorder(new EmptyBorder(0, 0, 12, 0));
@@ -116,36 +85,31 @@ public class EnterpriseAdminPanel extends JPanel {
         toolbar.add(buildToolbarButton("New User", e -> onNewUser()));
         toolbar.add(buildToolbarButton("Export",   e -> onExport()));
 
-        // ── Tabs ──────────────────────────────────────────────────────────
         tabs = new JTabbedPane();
         tabs.setBackground(bgSecondary);
-        tabs.setForeground(ThemeService.colorTextMuted);
+        tabs.setForeground(textMuted);
         tabs.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         tabs.setBorder(BorderFactory.createLineBorder(borderColor, 1));
 
-        tabs.addTab("Organizations",  buildOrgTab());
-        tabs.addTab("Users",          buildUserTab());
-        tabs.addTab("Work Requests",  buildWorkRequestTab());
+        tabs.addTab("Organizations", buildOrgTab());
+        tabs.addTab("Users", buildUserTab());
+        tabs.addTab("Work Requests", buildWorkRequestTab());
 
-        // ── Main content ──────────────────────────────────────────────────
         JPanel mainContent = new JPanel(new BorderLayout(0, 0));
         mainContent.setBackground(bgPrimary);
         mainContent.add(toolbar, BorderLayout.NORTH);
-        mainContent.add(tabs,    BorderLayout.CENTER);
+        mainContent.add(tabs, BorderLayout.CENTER);
 
-        // ── Top block ─────────────────────────────────────────────────────
         JPanel top = new JPanel(new BorderLayout(0, 0));
         top.setBackground(bgPrimary);
-        top.add(header,   BorderLayout.NORTH);
+        top.add(header, BorderLayout.NORTH);
         top.add(statsRow, BorderLayout.SOUTH);
 
-        wrapper.add(top,         BorderLayout.NORTH);
+        wrapper.add(top, BorderLayout.NORTH);
         wrapper.add(mainContent, BorderLayout.CENTER);
 
         add(wrapper, BorderLayout.CENTER);
     }
-
-    // ── Tab builders ──────────────────────────────────────────────────────────
 
     private JScrollPane buildOrgTab() {
         String[] cols = { "Organization", "ID", "Users", "Work Requests" };
@@ -180,8 +144,6 @@ public class EnterpriseAdminPanel extends JPanel {
         return sp;
     }
 
-    // ── Data loading ──────────────────────────────────────────────────────────
-
     private void loadData() {
         String eid = SessionManager.getEnterpriseId();
         loadOrgs(eid);
@@ -193,102 +155,50 @@ public class EnterpriseAdminPanel extends JPanel {
     private void loadOrgs(String enterpriseId) {
         DefaultTableModel m = (DefaultTableModel) orgTable.getModel();
         m.setRowCount(0);
-        // TODO: replace with PersistenceService.getInstance().getOrgsByEnterprise(enterpriseId)
-        if (ThemeService.magratheaStudios.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "Slartibartfast Pictures", "slartibartfastPictures", "4", "3" });
-            m.addRow(new Object[]{ "Bistromath Animation",    "bistromathAnimation",    "4", "1" });
-        } else if (ThemeService.starshipTitanicLeisure.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "Magrathea Theme Worlds",  "magratheaThemeWorlds",   "3", "2" });
-            m.addRow(new Object[]{ "Milliways Entertainment", "milliwaysEntertainment", "3", "2" });
-        } else if (ThemeService.galacticBroadcasting.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "Infinite Improbability Streaming", "infiniteImprobabilityStreaming", "3", "2" });
-            m.addRow(new Object[]{ "Pan-Galactic Broadcast",           "panGalacticBroadcast",           "2", "2" });
-        } else if (ThemeService.siriusCybernetics.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "Megadodo Licensing", "megadodoLicensing", "3", "2" });
-            m.addRow(new Object[]{ "Hooloovoo Retail",   "hooloovooRetail",   "2", "1" });
-        }
+
+        m.addRow(new Object[]{ "Slartibartfast Pictures", "slartibartfastPictures", "4", "3" });
+        m.addRow(new Object[]{ "Bistromath Animation",    "bistromathAnimation",    "4", "1" });
     }
 
     private void loadUsers(String enterpriseId) {
         DefaultTableModel m = (DefaultTableModel) userTable.getModel();
         m.setRowCount(0);
-        // TODO: replace with PersistenceService.getInstance().getUsersByEnterprise(enterpriseId)
-        if (ThemeService.magratheaStudios.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "netadmin",  "Network Admin",   "slartibartfastPictures", "netadmin@deepthought.com"  });
-            m.addRow(new Object[]{ "grpceo",    "Group CEO",       "slartibartfastPictures", "grpceo@deepthought.com"    });
-            m.addRow(new Object[]{ "creative1", "Creative Lead",   "bistromathAnimation",    "creative1@deepthought.com" });
-        } else if (ThemeService.starshipTitanicLeisure.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "entadmin",  "Enterprise Admin",   "magratheaThemeWorlds",   "entadmin@deepthought.com"  });
-            m.addRow(new Object[]{ "comply1",   "Compliance Officer", "milliwaysEntertainment", "comply1@deepthought.com"   });
-        } else if (ThemeService.galacticBroadcasting.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "orgdir1",  "Org Director",   "infiniteImprobabilityStreaming", "orgdir1@deepthought.com" });
-            m.addRow(new Object[]{ "mktg1",    "Marketing Lead", "panGalacticBroadcast",           "mktg1@deepthought.com"   });
-        } else if (ThemeService.siriusCybernetics.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "tech1",    "Technology Lead", "megadodoLicensing", "tech1@deepthought.com"    });
-            m.addRow(new Object[]{ "analyst1", "Data Analyst",    "hooloovooRetail",   "analyst1@deepthought.com" });
-        }
+
+        m.addRow(new Object[]{ "netadmin",   "Network Admin", "slartibartfastPictures", "netadmin@deepthought.com" });
+        m.addRow(new Object[]{ "creative1",  "Creative Lead", "bistromathAnimation",    "creative1@deepthought.com" });
     }
 
     private void loadWorkRequests(String enterpriseId) {
         DefaultTableModel m = (DefaultTableModel) workRequestTable.getModel();
         m.setRowCount(0);
-        // TODO: replace with PersistenceService.getInstance().getWorkRequestsByEnterprise(enterpriseId)
-        if (ThemeService.magratheaStudios.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "WR-01", "Galactic Odyssey Release", "Slartibartfast Pictures", "Megadodo Licensing",  "Licensing", "Pending"   });
-            m.addRow(new Object[]{ "WR-02", "Park Theming — Vogon World","Magrathea Studios",       "Magrathea Theme Worlds","Content", "In Review" });
-            m.addRow(new Object[]{ "WR-06", "Animation Commission",      "Infinite Improbability Streaming","Bistromath Animation","Content","In Review"});
-        } else if (ThemeService.starshipTitanicLeisure.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "WR-05", "Theme World Event Package", "Magrathea Theme Worlds", "Milliways Entertainment", "Events",     "Active"  });
-            m.addRow(new Object[]{ "WR-08", "Guest Complaint Escalation","Milliways Entertainment", "Compliance Officer",      "Compliance", "Pending" });
-        } else if (ThemeService.galacticBroadcasting.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "WR-03", "Streaming Premiere Assets", "Magrathea Theme Worlds",  "Pan-Galactic Broadcast", "Broadcast", "Active"   });
-            m.addRow(new Object[]{ "WR-04", "Retail Campaign Q3",        "Hooloovoo Retail",        "Pan-Galactic Broadcast", "Marketing", "Pending"  });
-        } else if (ThemeService.siriusCybernetics.equals(enterpriseId)) {
-            m.addRow(new Object[]{ "WR-07", "Licensing Agreement Renewal","Megadodo Licensing",     "Hooloovoo Retail",       "Licensing", "Closed"   });
-        }
+
+        m.addRow(new Object[]{ "WR-01", "Galactic Odyssey Release", "Slartibartfast Pictures", "Megadodo Licensing", "Licensing", "Pending" });
+        m.addRow(new Object[]{ "WR-02", "Park Theming — Vogon World", "Magrathea Studios", "Magrathea Theme Worlds", "Content", "In Review" });
     }
 
     private void updateStats() {
-        DefaultTableModel orgModel = (DefaultTableModel) orgTable.getModel();
-        DefaultTableModel userModel = (DefaultTableModel) userTable.getModel();
-        DefaultTableModel wrModel  = (DefaultTableModel) workRequestTable.getModel();
-        setStatValue(0, String.valueOf(orgModel.getRowCount()));
-        setStatValue(1, String.valueOf(userModel.getRowCount()));
-        setStatValue(2, String.valueOf(wrModel.getRowCount()));
+        setStatValue(0, String.valueOf(orgTable.getRowCount()));
+        setStatValue(1, String.valueOf(userTable.getRowCount()));
+        setStatValue(2, String.valueOf(workRequestTable.getRowCount()));
     }
 
     private void updateHeader() {
-	String eid = SessionManager.getEnterpriseId();
-	String displayName = eid != null ? formatCamelCase(eid) : "Enterprise";
-	titleLabel.setText("Enterprise Admin — " + displayName);
-        subtitleLabel.setText(SessionManager.getUserId() != null
-            ? SessionManager.getUserId() : "");
+        subtitleLabel.setText("Enterprise: " + SessionManager.getEnterpriseId());
     }
 
-    // ── Toolbar actions ───────────────────────────────────────────────────────
-
     private void onNewOrg() {
-        JOptionPane.showMessageDialog(this,
-            "New organization form — coming soon.",
-            "New Organization", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "New organization form — coming soon.");
     }
 
     private void onNewUser() {
-        JOptionPane.showMessageDialog(this,
-            "New user form — coming soon.",
-            "New User", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "New user form — coming soon.");
     }
 
     private void onExport() {
-        JOptionPane.showMessageDialog(this,
-            "Export — coming soon.",
-            "Export", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Export — coming soon.");
     }
 
-    // ── Stat helpers ──────────────────────────────────────────────────────────
-
     private void setStatValue(int index, String value) {
-        if (index < 0 || index >= statsRow.getComponentCount()) return;
         JPanel card = (JPanel) statsRow.getComponent(index);
         for (Component c : card.getComponents()) {
             if (c instanceof JLabel lbl && lbl.getFont().getSize() >= 22) {
@@ -298,25 +208,15 @@ public class EnterpriseAdminPanel extends JPanel {
         }
     }
 
-    // ── Component builders ────────────────────────────────────────────────────
-
-	/**
-	 * Builds a single stat card displaying a metric label and value.
-	 *
-	 * @param label display label (e.g. "Organizations")
-	 * @param value initial display value (e.g. "2")
-	 * @return styled JPanel stat card
-	 */
     private JPanel buildStatCard(String label, String value) {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(bgSecondary);
-        card.setToolTipText(mockTip);
         card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(borderColor, 1),
-            new EmptyBorder(14, 16, 14, 16)));
+                BorderFactory.createLineBorder(borderColor, 1),
+                new EmptyBorder(14, 16, 14, 16)));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0; gbc.anchor = GridBagConstraints.CENTER;
+        gbc.gridx = 0;
 
         JLabel labelLbl = new JLabel(label);
         labelLbl.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
@@ -326,53 +226,39 @@ public class EnterpriseAdminPanel extends JPanel {
         valueLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 26));
         valueLbl.setForeground(textPrimary);
 
-        gbc.gridy = 0; gbc.insets = new Insets(0, 0, 4, 0);
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 4, 0);
         card.add(labelLbl, gbc);
-        gbc.gridy = 1; gbc.insets = new Insets(0, 0, 0, 0);
+
+        gbc.gridy = 1;
+        gbc.insets = new Insets(0, 0, 0, 0);
         card.add(valueLbl, gbc);
 
         return card;
     }
 
-	/**
-	 * Builds a styled toolbar button with hover effect.
-	 *
-	 * @param label  button display text
-	 * @param action ActionListener to fire on click
-	 * @return configured JButton
-	 */
-    private JButton buildToolbarButton(String label,
-            java.awt.event.ActionListener action) {
+    private JButton buildToolbarButton(String label, java.awt.event.ActionListener action) {
         JButton btn = new JButton(label);
         btn.setBackground(bgTertiary);
-        btn.setForeground(ThemeService.colorTextMuted);
+        btn.setForeground(textMuted);
         btn.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         btn.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(borderColor, 1),
-            new EmptyBorder(6, 14, 6, 14)));
+                BorderFactory.createLineBorder(borderColor, 1),
+                new EmptyBorder(6, 14, 6, 14)));
         btn.setFocusPainted(false);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.addActionListener(action);
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override public void mouseEntered(java.awt.event.MouseEvent e) {
-                btn.setBackground(bgSecondary);
-            }
-            @Override public void mouseExited(java.awt.event.MouseEvent e) {
-                btn.setBackground(bgTertiary);
-            }
+            @Override public void mouseEntered(java.awt.event.MouseEvent e) { btn.setBackground(bgSecondary); }
+            @Override public void mouseExited(java.awt.event.MouseEvent e) { btn.setBackground(bgTertiary); }
         });
         return btn;
     }
 
     private JTable styledTable(DefaultTableModel model) {
-        JTable table = new JTable(model) {
-            @Override public String getToolTipText(java.awt.event.MouseEvent e) {
-                int row = rowAtPoint(e.getPoint());
-                return row >= 0 ? mockTip : null;
-            }
-        };
+        JTable table = new JTable(model);
         table.setBackground(bgSecondary);
-        table.setForeground(ThemeService.colorTextSecondary);
+        table.setForeground(textPrimary);
         table.setSelectionBackground(bgTertiary);
         table.setSelectionForeground(textPrimary);
         table.setGridColor(borderColor);
@@ -380,11 +266,13 @@ public class EnterpriseAdminPanel extends JPanel {
         table.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         table.setShowVerticalLines(false);
         table.setFocusable(false);
+
         table.getTableHeader().setBackground(bgTertiary);
         table.getTableHeader().setForeground(textMuted);
         table.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         table.getTableHeader().setBorder(
-            BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor));
+                BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor));
+
         return table;
     }
 
@@ -394,23 +282,5 @@ public class EnterpriseAdminPanel extends JPanel {
         sp.getViewport().setBackground(bgSecondary);
         sp.setBorder(BorderFactory.createLineBorder(borderColor, 1));
         return sp;
-    }
-
-	/**
-	 * Converts a camelCase identifier to a space-separated display string.
-	 * Example: "magratheaStudios" → "Magrathea Studios"
-	 *
-	 * @param s camelCase string to format
-	 * @return human-readable display string, or empty string if input is blank
-	 */
-    private static String formatCamelCase(String s) {
-        if (s == null || s.isBlank()) return "";
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (Character.isUpperCase(c) && i > 0) sb.append(' ');
-            sb.append(i == 0 ? Character.toUpperCase(c) : c);
-        }
-        return sb.toString();
     }
 }

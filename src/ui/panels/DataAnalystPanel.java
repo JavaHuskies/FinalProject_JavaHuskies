@@ -1,6 +1,6 @@
-// DataAnalystPanel.java
 package ui.panels;
 
+import model.Claims;
 import service.SessionManager;
 import service.ThemeService;
 import ui.ApplicationFrame;
@@ -35,6 +35,10 @@ public class DataAnalystPanel extends WorkAreaTemplate {
 
     @Override
     public void onShow() {
+        if (!SessionManager.guard(Claims.roleDataAnalyst)) {
+            getFrame().showPanel(ApplicationFrame.panelStaffLogin);
+            return;
+        }
         updateHeader();
         loadData();
     }
@@ -141,7 +145,7 @@ public class DataAnalystPanel extends WorkAreaTemplate {
         add(wrapper, BorderLayout.CENTER);
     }
 
-    private void loadData() {
+    protected void loadData() {
         DefaultTableModel m = (DefaultTableModel) table.getModel();
         m.setRowCount(0);
 

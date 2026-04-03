@@ -1,4 +1,3 @@
-// ReportingPanel.java
 package ui.panels;
 
 import service.SessionManager;
@@ -21,7 +20,6 @@ public class ReportingPanel extends WorkAreaTemplate {
     private static final Color textMuted     = ThemeService.colorTextMuted;
     private static final Color borderColor   = ThemeService.colorBorder;
 
-    private JLabel titleLabel;
     private JLabel subtitleLabel;
     private JPanel statsRow;
 
@@ -53,7 +51,7 @@ public class ReportingPanel extends WorkAreaTemplate {
         header.setBackground(bgPrimary);
         header.setBorder(new EmptyBorder(0, 0, 16, 0));
 
-        titleLabel = new JLabel("Reporting Dashboard");
+        JLabel titleLabel = new JLabel("Reporting Dashboard");
         titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 22));
         titleLabel.setForeground(textPrimary);
 
@@ -84,7 +82,6 @@ public class ReportingPanel extends WorkAreaTemplate {
         btnRefresh.addActionListener(e -> loadData());
 
         btnExport.addActionListener(e -> {
-
             String[] options = { "KPIs", "Trends", "Raw Data" };
             String choice = (String) JOptionPane.showInputDialog(
                     this,
@@ -179,7 +176,8 @@ public class ReportingPanel extends WorkAreaTemplate {
         return styledScroll(rawTable);
     }
 
-    private void loadData() {
+    @Override
+    protected void loadData() {
         loadKpis();
         loadTrends();
         loadRaw();
