@@ -3,9 +3,10 @@ package model;
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import dao.UserDao;
 import java.time.LocalDateTime;
 
-@DatabaseTable(tableName = "user")
+@DatabaseTable(tableName = "user", daoClass = UserDao.class)
 public class User {
 
     @DatabaseField(id = true, columnName = "user_id", canBeNull = false)
@@ -55,4 +56,11 @@ public class User {
         this.passwordHash = passwordHash;
         this.role = role;
     }
+
+    public String getUserId()       { return userId; }
+    public Organization getOrg()    { return org; }
+    public Enterprise getEnterprise() { return enterprise; }
+    public String getEmail()        { return email; }
+    public String getPasswordHash() { return passwordHash; }
+    public UserRole getRole()       { return role; }
 }
