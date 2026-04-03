@@ -1,3 +1,4 @@
+
 package ui.panels;
 
 import ui.ApplicationFrame;
@@ -5,6 +6,22 @@ import service.SessionManager;
 import service.ThemeService;
 
 import javax.swing.*;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+
+/**
+ *
+ * @author fabio
+ */
+
+import service.SessionManager;
+import service.ThemeService;
+import ui.ApplicationFrame;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class GuestLoginPanel extends JPanel {
@@ -36,6 +53,12 @@ public class GuestLoginPanel extends JPanel {
         btn.addActionListener(e -> attemptLogin());
         gbc.gridy = 2;
         add(btn, gbc);
+        
+        JButton registerBtn = new JButton("Register");
+        registerBtn.addActionListener(e -> frame.showPanel(ApplicationFrame.panelGuestRegister));
+        gbc.gridy = 3;
+        add(registerBtn, gbc);
+
     }
 
     private void attemptLogin() {
@@ -44,6 +67,14 @@ public class GuestLoginPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Enter a username.");
             return;
         }
+        
+        if (!isVerifiedGuest(user)) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Guest account not verified yet. Please verify your email before accessing bookings."
+        );
+        return;
+    }
 
         SessionManager.injectGuestSession(user);
         frame.routeByRole();
@@ -53,4 +84,12 @@ public class GuestLoginPanel extends JPanel {
         usernameField.setText("");
         usernameField.requestFocusInWindow();
     }
+    
+    private boolean isVerifiedGuest(String username) {
+    return username.equalsIgnoreCase("verified")
+            || username.equalsIgnoreCase("fabio")
+            || username.equalsIgnoreCase("guest1");
 }
+
+}
+

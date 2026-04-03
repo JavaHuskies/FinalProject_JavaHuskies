@@ -14,12 +14,15 @@ import ui.panels.EnterpriseAdminPanel;
 import ui.panels.ComplianceOfficerPanel;
 import ui.panels.ReportingPanel;
 import ui.panels.GuestCasinoPanel;
+import ui.panels.GuestBookingsPanel;
+import ui.panels.GuestComplaintsPanel;
 import ui.panels.OrgDirectorPanel;
 import ui.panels.CreativeLeadPanel;
 import ui.panels.TechnologyLeadPanel;
 import ui.panels.MarketingLeadPanel;
 import ui.panels.AiGuidePanel;
 import ui.panels.GuestLoginPanel;
+import ui.panels.GuestRegistrationPanel;
 
 import javax.swing.*;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
@@ -32,6 +35,7 @@ import service.SeedService;
 import ui.panels.CasinoPanel;
 import ui.panels.CfoPanel;
 import ui.panels.DataAnalystPanel;
+import ui.panels.GuestLoginPanel;
 
 /**
  * Top-level JFrame — the application window. Owns the CardLayout container and
@@ -138,7 +142,7 @@ public class ApplicationFrame extends JFrame {
         register(panelSplash, new SplashPanel(this));
         register(panelStaffLogin, new StaffLoginPanel(this));
         register(panelGuestLogin, new GuestLoginPanel(this));
-//        register(panelGuestRegister,  new GuestRegistrationPanel(this));
+        register(panelGuestRegister,  new GuestRegistrationPanel(this));
 
         // Staff panels — session + role required
         register(panelNetworkAdmin, new NetworkAdminPanel(this));
@@ -155,11 +159,11 @@ public class ApplicationFrame extends JFrame {
         register(panelCfo, new CfoPanel(this));
         // Guest panels — guest session required
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
-//        register(panelGuestBookings,   new GuestBookingsPanel(this));
+        register(panelGuestBookings,   new GuestBookingsPanel(this));
         register(panelGuestCasino, new GuestCasinoPanel(this));
         register("casino", new CasinoPanel(this));
 
-//        register(panelGuestComplaints, new GuestComplaintsPanel(this));
+        register(panelGuestComplaints, new GuestComplaintsPanel(this));
 //        register(panelMap,             new MapPanel(this));
     }
 
@@ -235,6 +239,15 @@ public class ApplicationFrame extends JFrame {
         if (name.equals(panelGuestCasino)) {
             ((GuestCasinoPanel) panels.get(panelGuestCasino)).onShow();
         }
+        if (name.equals(panelGuestBookings)) {
+             ((GuestBookingsPanel) panels.get(panelGuestBookings)).onShow();
+        }
+        if (name.equals(panelGuestComplaints)) {
+            ((GuestComplaintsPanel) panels.get(panelGuestComplaints)).onShow();
+        }
+        if (name.equals(panelGuestLogin)) {
+            ((GuestLoginPanel) panels.get(panelGuestLogin)).onShow();
+        }
 
         if (name.equals("casino")) {
             ((CasinoPanel) panels.get("casino")).onShow();
@@ -260,6 +273,9 @@ public class ApplicationFrame extends JFrame {
         }
         if (name.equals(panelGuestLogin)) {
             ((GuestLoginPanel) panels.get(panelGuestLogin)).onShow();
+        }
+        if (name.equals(panelGuestRegister)) {
+            ((GuestRegistrationPanel) panels.get(panelGuestRegister)).onShow();
         }
 
         log.fine("Navigated to panel: " + name);
@@ -297,7 +313,7 @@ public class ApplicationFrame extends JFrame {
             case Claims.roleDataAnalyst ->
                 panelDataAnalyst;
             case Claims.roleGuest ->
-                panelGuestLogin;
+                panelGuestBookings;
             default -> {
                 log.warning("Unrecognised role: " + role + " — routing to splash");
                 yield panelSplash;
