@@ -22,6 +22,7 @@ import ui.panels.TechnologyLeadPanel;
 import ui.panels.MarketingLeadPanel;
 import ui.panels.AiGuidePanel;
 import ui.panels.GuestLoginPanel;
+import ui.panels.GuestRegistrationPanel;
 
 import javax.swing.*;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
@@ -146,8 +147,7 @@ public class ApplicationFrame extends JFrame {
         register(panelSplash, new SplashPanel(this));
         register(panelStaffLogin, new StaffLoginPanel(this));
         register(panelGuestLogin, new GuestLoginPanel(this));
-
-//        register(panelGuestRegister,  new GuestRegistrationPanel(this));
+        register(panelGuestRegister,  new GuestRegistrationPanel(this));
 
         // Staff panels — session + role required
         register(panelNetworkAdmin, new NetworkAdminPanel(this));
@@ -278,6 +278,9 @@ public class ApplicationFrame extends JFrame {
         }
         if (name.equals(panelGuestLogin)) {
             ((GuestLoginPanel) panels.get(panelGuestLogin)).onShow();
+        }
+        if (name.equals(panelGuestRegister)) {
+            ((GuestRegistrationPanel) panels.get(panelGuestRegister)).onShow();
         }
 
         log.fine("Navigated to panel: " + name);

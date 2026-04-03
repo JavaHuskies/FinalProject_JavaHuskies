@@ -53,6 +53,11 @@ public class GuestLoginPanel extends JPanel {
         btn.addActionListener(e -> attemptLogin());
         gbc.gridy = 2;
         add(btn, gbc);
+        
+        JButton registerBtn = new JButton("Register");
+        registerBtn.addActionListener(e -> frame.showPanel(ApplicationFrame.panelGuestRegister));
+        gbc.gridy = 3;
+        add(registerBtn, gbc);
 
     }
 
@@ -62,6 +67,14 @@ public class GuestLoginPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Enter a username.");
             return;
         }
+        
+        if (!isVerifiedGuest(user)) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Guest account not verified yet. Please verify your email before accessing bookings."
+        );
+        return;
+    }
 
         SessionManager.injectGuestSession(user);
         frame.routeByRole();
@@ -71,6 +84,12 @@ public class GuestLoginPanel extends JPanel {
         usernameField.setText("");
         usernameField.requestFocusInWindow();
     }
+    
+    private boolean isVerifiedGuest(String username) {
+    return username.equalsIgnoreCase("verified")
+            || username.equalsIgnoreCase("fabio")
+            || username.equalsIgnoreCase("guest1");
+}
 
 }
 

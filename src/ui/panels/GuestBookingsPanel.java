@@ -17,6 +17,8 @@ public class GuestBookingsPanel extends JPanel {
     private static final Color textPrimary = ThemeService.colorTextPrimary;
     private static final Color textMuted = ThemeService.colorTextMuted;
     private static final Color borderColor = ThemeService.colorBorder;
+    private final java.util.List<Object[]> bookingData = new java.util.ArrayList<>();
+    private int bookingSequence = 4;
 
     private final ApplicationFrame frame;
 
@@ -68,9 +70,37 @@ public class GuestBookingsPanel extends JPanel {
 
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         toolbar.setBackground(bgPrimary);
-        toolbar.add(buildToolbarButton("New Booking"));
-        toolbar.add(buildToolbarButton("Cancel Booking"));
-        toolbar.add(buildToolbarButton("Refresh"));
+        JButton newBtn = buildToolbarButton("New Booking");
+        newBtn.addActionListener(e -> {
+            String bookingId = String.format("B%03d", bookingSequence++);
+            bookingData.add(new Object[]{
+                bookingId,
+                "Dinner Reservation",
+                "2026 04 20",
+                2,
+                "Confirmed"
+            });
+            loadData();
+        });
+
+        JButton cancelBtn = buildToolbarButton("Cancel Booking");
+        cancelBtn.addActionListener(e -> {
+            int row = bookingsTable.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Select a booking to cancel.");
+                return;
+            }
+
+            bookingData.get(row)[4] = "Cancelled";
+            loadData();
+        });
+
+        JButton refreshBtn = buildToolbarButton("Refresh");
+        refreshBtn.addActionListener(e -> loadData());
+
+        toolbar.add(newBtn);
+        toolbar.add(cancelBtn);
+        toolbar.add(refreshBtn);
 
         String[] columns = { "Booking ID", "Experience", "Date", "Party Size", "Status" };
         DefaultTableModel model = new DefaultTableModel(columns, 0) {
@@ -100,16 +130,33 @@ public class GuestBookingsPanel extends JPanel {
     }
 
     private void loadData() {
+        if (bookingData.isEmpty()) {
+            bookingData.add(new Object[] { "B001", "Theme Park Package", "2026 04 05", 4, "Confirmed" });
+            bookingData.add(new Object[] { "B002", "Dinner Experience", "2026 04 10", 2, "Pending" });
+            bookingData.add(new Object[] { "B003", "Resort Stay", "2026 04 15", 3, "Cancelled" });
+        }
+
         DefaultTableModel model = (DefaultTableModel) bookingsTable.getModel();
         model.setRowCount(0);
 
-        model.addRow(new Object[] { "B001", "Theme Park Package", "2026 04 05", 4, "Confirmed" });
-        model.addRow(new Object[] { "B002", "Dinner Experience", "2026 04 10", 2, "Pending" });
-        model.addRow(new Object[] { "B003", "Resort Stay", "2026 04 15", 3, "Cancelled" });
+        int confirmed = 0;
+        int pending = 0;
 
-        setStatValue(0, "3");
-        setStatValue(1, "1");
-        setStatValue(2, "1");
+        for (Object[] row : bookingData) {
+            model.addRow(row);
+
+            String status = String.valueOf(row[4]);
+            if ("Confirmed".equalsIgnoreCase(status)) {
+                confirmed++;
+            }
+            if ("Pending".equalsIgnoreCase(status)) {
+                pending++;
+            }
+        }
+
+        setStatValue(0, String.valueOf(bookingData.size()));
+        setStatValue(1, String.valueOf(confirmed));
+        setStatValue(2, String.valueOf(pending));
     }
 
     private void updateHeader() {
