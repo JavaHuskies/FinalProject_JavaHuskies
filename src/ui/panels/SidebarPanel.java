@@ -97,7 +97,8 @@ public class SidebarPanel extends ImageBackgroundPanel {
 
         if (Claims.roleGuest.equals(role)) {
             List<NavItem> guest = new ArrayList<>();
-            
+            guest.add(new NavItem("Bookings", ApplicationFrame.panelGuestBookings));
+            guest.add(new NavItem("Complaints", ApplicationFrame.panelGuestComplaints));
             guest.add(new NavItem("Casino", ApplicationFrame.panelGuestCasino));
             sections.add(new NavSection("Guest", guest));
             return sections;

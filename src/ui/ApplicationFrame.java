@@ -34,6 +34,7 @@ import service.SeedService;
 import ui.panels.CasinoPanel;
 import ui.panels.CfoPanel;
 import ui.panels.DataAnalystPanel;
+import ui.panels.GuestLoginPanel;
 
 /**
  * Top-level JFrame — the application window. Owns the CardLayout container and
@@ -145,6 +146,7 @@ public class ApplicationFrame extends JFrame {
         register(panelSplash, new SplashPanel(this));
         register(panelStaffLogin, new StaffLoginPanel(this));
         register(panelGuestLogin, new GuestLoginPanel(this));
+
 //        register(panelGuestRegister,  new GuestRegistrationPanel(this));
 
         // Staff panels — session + role required
@@ -248,6 +250,9 @@ public class ApplicationFrame extends JFrame {
         if (name.equals(panelGuestComplaints)) {
             ((GuestComplaintsPanel) panels.get(panelGuestComplaints)).onShow();
         }
+        if (name.equals(panelGuestLogin)) {
+            ((GuestLoginPanel) panels.get(panelGuestLogin)).onShow();
+        }
 
         if (name.equals("casino")) {
             ((CasinoPanel) panels.get("casino")).onShow();
@@ -310,7 +315,7 @@ public class ApplicationFrame extends JFrame {
             case Claims.roleDataAnalyst ->
                 panelDataAnalyst;
             case Claims.roleGuest ->
-                panelGuestLogin;
+                panelGuestBookings;
             default -> {
                 log.warning("Unrecognised role: " + role + " — routing to splash");
                 yield panelSplash;

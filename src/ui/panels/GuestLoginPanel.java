@@ -1,3 +1,4 @@
+
 package ui.panels;
 
 import ui.ApplicationFrame;
@@ -5,6 +6,22 @@ import service.SessionManager;
 import service.ThemeService;
 
 import javax.swing.*;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+
+/**
+ *
+ * @author fabio
+ */
+
+import service.SessionManager;
+import service.ThemeService;
+import ui.ApplicationFrame;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class GuestLoginPanel extends JPanel {
@@ -36,6 +53,7 @@ public class GuestLoginPanel extends JPanel {
         btn.addActionListener(e -> attemptLogin());
         gbc.gridy = 2;
         add(btn, gbc);
+
     }
 
     private void attemptLogin() {
@@ -53,4 +71,6 @@ public class GuestLoginPanel extends JPanel {
         usernameField.setText("");
         usernameField.requestFocusInWindow();
     }
+
 }
+
