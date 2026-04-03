@@ -14,6 +14,8 @@ import ui.panels.EnterpriseAdminPanel;
 import ui.panels.ComplianceOfficerPanel;
 import ui.panels.ReportingPanel;
 import ui.panels.GuestCasinoPanel;
+import ui.panels.GuestBookingsPanel;
+import ui.panels.GuestComplaintsPanel;
 
 import javax.swing.*;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
@@ -154,11 +156,11 @@ public class ApplicationFrame extends JFrame {
         register(panelCfo, new CfoPanel(this));
         // Guest panels — guest session required
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
-//        register(panelGuestBookings,   new GuestBookingsPanel(this));
+        register(panelGuestBookings,   new GuestBookingsPanel(this));
         register(panelGuestCasino, new GuestCasinoPanel(this));
         register("casino", new CasinoPanel(this));
 
-//        register(panelGuestComplaints, new GuestComplaintsPanel(this));
+        register(panelGuestComplaints, new GuestComplaintsPanel(this));
 //        register(panelMap,             new MapPanel(this));
     }
 
@@ -233,6 +235,12 @@ public class ApplicationFrame extends JFrame {
         }
         if (name.equals(panelGuestCasino)) {
             ((GuestCasinoPanel) panels.get(panelGuestCasino)).onShow();
+        }
+        if (name.equals(panelGuestBookings)) {
+             ((GuestBookingsPanel) panels.get(panelGuestBookings)).onShow();
+        }
+        if (name.equals(panelGuestComplaints)) {
+            ((GuestComplaintsPanel) panels.get(panelGuestComplaints)).onShow();
         }
 
         if (name.equals("casino")) {
