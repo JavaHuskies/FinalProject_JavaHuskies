@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import service.SeedService;
-import ui.panels.CasinoPanel;
+import ui.panels.CasinoOpsPanel;
 import ui.panels.CfoPanel;
 import ui.panels.DataAnalystPanel;
 import ui.panels.GuestLoginPanel;
@@ -161,7 +161,7 @@ public class ApplicationFrame extends JFrame {
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
         register(panelGuestBookings,   new GuestBookingsPanel(this));
         register(panelGuestCasino, new GuestCasinoPanel(this));
-        register("casino", new CasinoPanel(this));
+        register("casino", new CasinoOpsPanel(this));
 
         register(panelGuestComplaints, new GuestComplaintsPanel(this));
 //        register(panelMap,             new MapPanel(this));
@@ -250,7 +250,7 @@ public class ApplicationFrame extends JFrame {
         }
 
         if (name.equals("casino")) {
-            ((CasinoPanel) panels.get("casino")).onShow();
+            ((CasinoOpsPanel) panels.get("casino")).onShow();
         }
 
         if (name.equals(panelCfo)) {

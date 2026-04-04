@@ -1,5 +1,9 @@
 package ui.panels;
 
+import model.Casino.CasinoSession;
+import model.Casino.GameRound;
+import model.Casino.RouletteRules.Bet;
+import model.Casino.RouletteRules.BetType;
 import model.Claims;
 import service.SessionManager;
 import service.ThemeService;
@@ -11,16 +15,16 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 /**
- * Work area panel for the Creative Lead role.
- * Displays active creative tasks, pending reviews, and completed assets
- * scoped to the current user's organization.
+ * Work area panel for the Milliways Casino guest experience.
+ * Restricted to authenticated guests with a confirmed Milliways booking.
+ * Supports roulette betting with full session and round history tracking.
  */
-public class CreativeLeadPanel extends JPanel {
+public class CasinoOpsPanel extends JPanel {
 
     // ── Configuration ─────────────────────────────────────────────────────────
-    private static final String requiredRole = Claims.roleCreativeLead;
-    private static final String pageTitle    = "Creative Lead Dashboard";
-    private static final String pageSubtitle = "Creative Operations";
+    private static final String requiredRole = Claims.roleGuest;
+    private static final String pageTitle    = "Casino";
+    private static final String pageSubtitle = "Roulette Table";
 
     // ── Colors ────────────────────────────────────────────────────────────────
     private static final Color bgPrimary     = ThemeService.colorBgPrimary;
@@ -36,26 +40,37 @@ public class CreativeLeadPanel extends JPanel {
     private final ApplicationFrame frame;
 
     // ── UI components ─────────────────────────────────────────────────────────
-    private JLabel      titleLabel;
-    private JLabel      subtitleLabel;
-    private JPanel      statsRow;
-    private JPanel      toolbar;
-    private JTable      dataTable;
-    private JScrollPane tableScroll;
-    private JPanel      mainContent;
+    private JLabel           titleLabel;
+    private JLabel           subtitleLabel;
+    private JPanel           statsRow;
+    private JPanel           toolbar;
+    private JTable           dataTable;
+    private JScrollPane      tableScroll;
+    private JPanel           mainContent;
+    private JLabel           resultLabel;
+    private JComboBox<BetType> betTypeCombo;
+    private JSpinner         betAmountSpinner;
+    private DefaultTableModel roundsModel;
+
+    // ── Session ───────────────────────────────────────────────────────────────
+    private CasinoSession session;
 
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Constructs the Creative Lead work area panel.
+     * Constructs the Casino work area panel.
      *
      * @param frame the parent ApplicationFrame used for panel navigation
      */
-    public CreativeLeadPanel(ApplicationFrame frame) {
+    public CasinoOpsPanel(ApplicationFrame frame) {
         this.frame = frame;
         setBackground(bgPrimary);
         setLayout(new BorderLayout(0, 0));
         buildComponents();
+        startNewSession();
+        configureTable();
+        initControls();
+        updateStats();
     }
 
     // ── Build ─────────────────────────────────────────────────────────────────
@@ -86,22 +101,20 @@ public class CreativeLeadPanel extends JPanel {
         statsRow = new JPanel(new GridLayout(1, 3, 12, 0));
         statsRow.setBackground(bgPrimary);
         statsRow.setBorder(new EmptyBorder(0, 0, 16, 0));
-        statsRow.add(buildStatCard("Active Creative Tasks", "—"));
-        statsRow.add(buildStatCard("Pending Reviews",       "—"));
-        statsRow.add(buildStatCard("Completed Assets",      "—"));
+        statsRow.add(buildStatCard("Total Spins", "—"));
+        statsRow.add(buildStatCard("Wins",        "—"));
+        statsRow.add(buildStatCard("Net Profit",  "—"));
 
         toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         toolbar.setBackground(bgPrimary);
         toolbar.setBorder(new EmptyBorder(0, 0, 12, 0));
-        toolbar.add(buildToolbarButton("+ New"));
-        toolbar.add(buildToolbarButton("Export"));
 
-        String[] columns = { "WR ID", "Title", "Department", "Type", "Status" };
-        DefaultTableModel tableModel = new DefaultTableModel(columns, 0) {
+        String[] cols = { "Round", "Bet Type", "Amount", "Result", "Payout", "Balance After" };
+        roundsModel = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int row, int col) { return false; }
         };
 
-        dataTable = new JTable(tableModel);
+        dataTable = new JTable(roundsModel);
         dataTable.setBackground(bgSecondary);
         dataTable.setForeground(textSecondary);
         dataTable.setSelectionBackground(bgTertiary);
@@ -123,10 +136,15 @@ public class CreativeLeadPanel extends JPanel {
         tableScroll.getViewport().setBackground(bgSecondary);
         tableScroll.setBorder(BorderFactory.createLineBorder(borderColor, 1));
 
+        resultLabel = new JLabel("Place your bet and spin.");
+        resultLabel.setForeground(textPrimary);
+        resultLabel.setBorder(new EmptyBorder(8, 0, 0, 0));
+
         mainContent = new JPanel(new BorderLayout(0, 0));
         mainContent.setBackground(bgPrimary);
-        mainContent.add(toolbar,     BorderLayout.NORTH);
-        mainContent.add(tableScroll, BorderLayout.CENTER);
+        mainContent.add(toolbar,      BorderLayout.NORTH);
+        mainContent.add(tableScroll,  BorderLayout.CENTER);
+        mainContent.add(resultLabel,  BorderLayout.SOUTH);
 
         JPanel top = new JPanel(new BorderLayout(0, 0));
         top.setBackground(bgPrimary);
@@ -139,46 +157,138 @@ public class CreativeLeadPanel extends JPanel {
         add(wrapper, BorderLayout.CENTER);
     }
 
+    // ── Controls ──────────────────────────────────────────────────────────────
+
+    /**
+     * Wires betting controls into the toolbar after buildComponents() runs.
+     */
+    private void initControls() {
+        betTypeCombo = new JComboBox<>(BetType.values());
+        betAmountSpinner = new JSpinner(new SpinnerNumberModel(10, 1, 1000, 1));
+
+        JButton spinButton = buildToolbarButton("Spin");
+        spinButton.addActionListener(e -> handleSpin());
+
+        JButton resetButton = buildToolbarButton("Reset");
+        resetButton.addActionListener(e -> resetGame());
+
+        toolbar.add(new JLabel("Bet Type:"));
+        toolbar.add(betTypeCombo);
+        toolbar.add(Box.createHorizontalStrut(8));
+        toolbar.add(new JLabel("Amount:"));
+        toolbar.add(betAmountSpinner);
+        toolbar.add(Box.createHorizontalStrut(8));
+        toolbar.add(spinButton);
+        toolbar.add(Box.createHorizontalStrut(8));
+        toolbar.add(resetButton);
+    }
+
+    /**
+     * Sets the table model columns on the data table.
+     */
+    private void configureTable() {
+        dataTable.setModel(roundsModel);
+    }
+
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     /**
      * Called by ApplicationFrame.showPanel() when this panel becomes visible.
-     * Guards the session then loads data.
+     * Guards the guest session then refreshes stats.
      */
     public void onShow() {
-        if (!SessionManager.guard(requiredRole)) {
-            frame.showPanel(ApplicationFrame.panelStaffLogin);
+        if (!SessionManager.isGuest()) {
+            frame.showPanel(ApplicationFrame.panelGuestLogin);
             return;
         }
-        updateSubtitle();
-        loadData();
+        updateStats();
+    }
+
+    // ── Game logic ────────────────────────────────────────────────────────────
+
+    /**
+     * Starts a new casino session for the current guest user.
+     */
+    private void startNewSession() {
+        String userId = SessionManager.getUserId();
+        this.session = new CasinoSession(
+            java.util.UUID.randomUUID().toString(),
+            userId != null ? userId : "anonymous",
+            1000
+        );
     }
 
     /**
-     * Loads mock creative work request data into the table and updates stat cards.
-     * TODO: replace with real PersistenceService calls.
+     * Handles a spin action — resolves the bet, updates the table and result label.
      */
-    protected void loadData() {
-        setStatValue(0, "5");
-        setStatValue(1, "2");
-        setStatValue(2, "8");
+    private void handleSpin() {
+        BetType type = (BetType) betTypeCombo.getSelectedItem();
+        int amount = (int) betAmountSpinner.getValue();
 
-        DefaultTableModel m = (DefaultTableModel) dataTable.getModel();
-        m.setRowCount(0);
-        m.addRow(new Object[]{ "WR-301", "Poster Design",  "Marketing", "Creative", "In Progress" });
-        m.addRow(new Object[]{ "WR-302", "Video Edit",     "Broadcast", "Creative", "Pending Review" });
-        m.addRow(new Object[]{ "WR-303", "Brand Refresh",  "Executive", "Creative", "Open" });
+        int targetNumber = -1;
+        if (type == BetType.SINGLE_NUMBER) {
+            String input = JOptionPane.showInputDialog(
+                this,
+                "Enter number (0–36):",
+                "Single Number Bet",
+                JOptionPane.PLAIN_MESSAGE
+            );
+            if (input == null) return;
+            try {
+                targetNumber = Integer.parseInt(input);
+                if (targetNumber < 0 || targetNumber > 36) {
+                    JOptionPane.showMessageDialog(this, "Invalid number.");
+                    return;
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Invalid number.");
+                return;
+            }
+        }
+
+        Bet bet = new Bet(type, amount, targetNumber);
+        GameRound round = session.playRoulette(bet);
+
+        resultLabel.setText(
+            "Result: " + round.getSpinResult() +
+            "   |   Payout: " + round.getPayout() +
+            "   |   Balance: $" + session.getBalance()
+        );
+
+        roundsModel.addRow(new Object[]{
+            round.getRoundNumber(),
+            type,
+            amount,
+            round.getSpinResult(),
+            round.getPayout(),
+            session.getBalance()
+        });
+
+        updateStats();
     }
 
-    // ── Subtitle ──────────────────────────────────────────────────────────────
+    /**
+     * Resets the game by starting a new session and clearing the round history.
+     */
+    private void resetGame() {
+        startNewSession();
+        roundsModel.setRowCount(0);
+        resultLabel.setText("New session started.");
+        updateStats();
+    }
 
     /**
-     * Updates the subtitle to reflect the current user's org from the JWT session.
+     * Updates stat cards from the current session state.
      */
-    private void updateSubtitle() {
-        String org = SessionManager.getOrgId();
-        subtitleLabel.setText(org != null && !org.isBlank()
-            ? formatCamelCase(org) : pageSubtitle);
+    private void updateStats() {
+        int totalSpins = session.getRounds().size();
+        int totalWins  = (int) session.getRounds().stream()
+            .filter(r -> r.getPayout() > 0).count();
+        int netProfit  = session.getBalance() - 1000;
+
+        setStatValue(0, String.valueOf(totalSpins));
+        setStatValue(1, String.valueOf(totalWins));
+        setStatValue(2, "$" + netProfit);
     }
 
     // ── Stat card helpers ─────────────────────────────────────────────────────
@@ -260,24 +370,5 @@ public class CreativeLeadPanel extends JPanel {
             }
         });
         return btn;
-    }
-
-    // ── Utility ───────────────────────────────────────────────────────────────
-
-    /**
-     * Splits a camelCase string into readable display text.
-     *
-     * @param s camelCase input string
-     * @return space-separated display string
-     */
-    private static String formatCamelCase(String s) {
-        if (s == null || s.isBlank()) return "";
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (Character.isUpperCase(c) && i > 0) sb.append(' ');
-            sb.append(i == 0 ? Character.toUpperCase(c) : c);
-        }
-        return sb.toString();
     }
 }
