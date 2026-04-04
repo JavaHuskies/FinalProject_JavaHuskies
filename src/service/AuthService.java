@@ -49,7 +49,7 @@ import java.util.logging.Logger;
  */
 public class AuthService {
 
-    private static final Logger LOG = Logger.getLogger(AuthService.class.getName());
+    private static final Logger log = Logger.getLogger(AuthService.class.getName());
     private static AuthService instance;
 
     private final SecretKey signingKey;
@@ -69,13 +69,13 @@ public class AuthService {
 
         String secret = cfg.get("jwt.secret");
         if (secret == null || secret.isBlank() || secret.startsWith("REPLACE_")) {
-            LOG.severe("jwt.secret not configured — auth will not function correctly");
+            log.severe("jwt.secret not configured — auth will not function correctly");
             secret = "fallback-insecure-key-replace-this-immediately-32chars";
         }
         // jjwt requires minimum 256-bit (32 byte) key for HS256
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < 32) {
-            LOG.warning("jwt.secret is shorter than 32 characters — padding");
+            log.warning("jwt.secret is shorter than 32 characters — padding");
             byte[] padded = new byte[32];
             System.arraycopy(keyBytes, 0, padded, 0, keyBytes.length);
             keyBytes = padded;
@@ -158,10 +158,10 @@ public class AuthService {
             );
 
         } catch (ExpiredJwtException e) {
-            LOG.info("JWT expired for subject: " + e.getClaims().getSubject());
+            log.info("JWT expired for subject: " + e.getClaims().getSubject());
             return null;
         } catch (JwtException e) {
-            LOG.warning("Invalid JWT: " + e.getMessage());
+            log.warning("Invalid JWT: " + e.getMessage());
             return null;
         }
     }
@@ -190,7 +190,7 @@ public class AuthService {
     public void revokeToken(String token) {
         if (token != null) {
             revokedTokens.add(token);
-            LOG.info("Token revoked");
+            log.info("Token revoked");
         }
     }
 
@@ -229,7 +229,7 @@ public class AuthService {
         try {
             return BCrypt.checkpw(plaintext, hash);
         } catch (Exception e) {
-            LOG.log(Level.WARNING, "BCrypt verification error", e);
+            log.log(Level.WARNING, "BCrypt verification error", e);
             return false;
         }
     }
@@ -305,33 +305,27 @@ public class AuthService {
             throw new IllegalArgumentException("Registration form cannot be null");
         }
 
-        // Validate form fields
         String formError = form.validate();
         if (formError != null) {
             throw new IllegalArgumentException(formError);
         }
 
-        // Enforce password policy
         String policyError = getPasswordPolicyMessage(form.getPassword());
         if (policyError != null) {
             throw new IllegalArgumentException(policyError);
         }
 
-        // Hash password — never store plaintext
         String passwordHash = hashPassword(form.getPassword());
-
-        // Generate email verification token
         String verificationToken = java.util.UUID.randomUUID().toString();
 
-        // Build guest object with emailVerified = false
         model.Guest guest = new model.Guest(
-            java.util.UUID.randomUUID().toString(), // guestId
+            java.util.UUID.randomUUID().toString(),
             form.getFirstName(),
             form.getLastName(),
             form.getEmail(),
             passwordHash,
             verificationToken,
-            false // emailVerified
+            false
         );
 
         // TODO: persist guest via PersistenceService once delivered
@@ -340,7 +334,7 @@ public class AuthService {
         // TODO: send verification email via NotificationService once delivered
         // NotificationService.getInstance().sendVerificationEmail(guest.getEmail(), verificationToken);
 
-        LOG.info("Guest registered (pending verification): " + guest.getEmail());
+        log.info("Guest registered (pending verification): " + guest.getEmail());
         return guest;
     }
 
@@ -354,7 +348,7 @@ public class AuthService {
      */
     public boolean confirmVerification(String token) {
         if (token == null || token.isBlank()) {
-            LOG.warning("confirmVerification called with null or blank token");
+            log.warning("confirmVerification called with null or blank token");
             return false;
         }
 
@@ -365,7 +359,7 @@ public class AuthService {
         // PersistenceService.getInstance().updateGuest(guest);
         // return true;
 
-        LOG.info("confirmVerification stub called — PersistenceService not yet available");
+        log.info("confirmVerification stub called — PersistenceService not yet available");
         return false;
     }
 
@@ -379,13 +373,13 @@ public class AuthService {
      */
     public void sendVerificationEmail(String email, String token) {
         if (email == null || email.isBlank() || token == null || token.isBlank()) {
-            LOG.warning("sendVerificationEmail called with null or blank argument");
+            log.warning("sendVerificationEmail called with null or blank argument");
             return;
         }
 
         // TODO: delegate to NotificationService once delivered
         // NotificationService.getInstance().sendVerificationEmail(email, token);
 
-        LOG.info("sendVerificationEmail stub called for: " + email);
+        log.info("sendVerificationEmail stub called for: " + email);
     }
 }

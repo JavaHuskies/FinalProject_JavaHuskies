@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  */
 public class SessionManager {
 
-    private static final Logger LOG = Logger.getLogger(SessionManager.class.getName());
+    private static final Logger log = Logger.getLogger(SessionManager.class.getName());
 
     private static String  activeToken;
     private static Claims  activeClaims;
@@ -53,13 +53,13 @@ public class SessionManager {
      */
     public static void login(String token, Claims claims) {
         if (token == null || claims == null || !claims.isValid()) {
-            LOG.warning("SessionManager.login() called with invalid token or claims");
+            log.warning("SessionManager.login() called with invalid token or claims");
             return;
         }
         activeToken    = token;
         activeClaims   = claims;
         loginTimestamp = System.currentTimeMillis();
-        LOG.info("Session started — userId: " + claims.getUserId()
+        log.info("Session started — userId: " + claims.getUserId()
                  + ", role: " + claims.getRole()
                  + ", org: " + claims.getOrgId());
     }
@@ -71,7 +71,7 @@ public class SessionManager {
     public static void logout() {
         if (activeToken != null) {
             AuthService.getInstance().revokeToken(activeToken);
-            LOG.info("Session ended — userId: "
+            log.info("Session ended — userId: "
                      + (activeClaims != null ? activeClaims.getUserId() : "unknown"));
         }
         activeToken    = null;
@@ -141,21 +141,21 @@ public class SessionManager {
     }
 
     /**
-    * Returns true if the current user has exactly the specified role.
-    *
-    * @param role role string to test — use Claims role constants
-    * @return true if the current session role matches exactly
-    */
+     * Returns true if the current user has exactly the specified role.
+     *
+     * @param role role string to test — use Claims role constants
+     * @return true if the current session role matches exactly
+     */
     public static boolean hasRole(String role) {
         return role != null && role.equals(getRole());
     }
 
     /**
-    * Returns true if the current user has any of the specified roles.
-    *
-    * @param roles one or more role strings to test — use Claims role constants
-    * @return true if the current session role matches any entry in roles
-    */
+     * Returns true if the current user has any of the specified roles.
+     *
+     * @param roles one or more role strings to test — use Claims role constants
+     * @return true if the current session role matches any entry in roles
+     */
     public static boolean hasAnyRole(String... roles) {
         String current = getRole();
         if (current == null) return false;
@@ -204,13 +204,13 @@ public class SessionManager {
      * Triggered by the Ctrl+Shift+D demo mode switcher in MainShell.
      * Only available when app.demo.mode.enabled=true in config.properties.
      *
-     * @param role        one of the Claims.ROLE_* constants
-     * @param orgId       org to associate with the demo session
+     * @param role         one of the Claims role constants
+     * @param orgId        org to associate with the demo session
      * @param enterpriseId enterprise to associate with the demo session
      */
     public static void injectDemoSession(String role, String orgId, String enterpriseId) {
         if (!ConfigService.getInstance().getBool("app.demo.mode.enabled", false)) {
-            LOG.warning("Demo mode is disabled — ignoring injectDemoSession()");
+            log.warning("Demo mode is disabled — ignoring injectDemoSession()");
             return;
         }
         String demoToken = AuthService.getInstance().issueJWT(
@@ -218,7 +218,7 @@ public class SessionManager {
         );
         Claims demoClaims = AuthService.getInstance().validateJWT(demoToken);
         login(demoToken, demoClaims);
-        LOG.info("Demo session injected — role: " + role);
+        log.info("Demo session injected — role: " + role);
     }
 
     // -------------------------------------------------------------------------
@@ -226,26 +226,26 @@ public class SessionManager {
     // -------------------------------------------------------------------------
 
     /**
-     * Panel guard — call at the top of every panel's initialize() method.
+     * Panel guard — call at the top of every panel's onShow() method.
      * Returns true if the session is valid and the user has the required role.
      * Returns false if the session is invalid or the role does not match.
      *
      * Usage:
-     *   if (!SessionManager.guard(Claims.ROLE_ORG_DIRECTOR)) {
-     *       mainShell.showPanel("login");
+     *   if (!SessionManager.guard(Claims.roleOrgDirector)) {
+     *       frame.showPanel(ApplicationFrame.panelStaffLogin);
      *       return;
      *   }
      *
-     * @param requiredRole the Claims.ROLE_* constant required for this panel
+     * @param requiredRole the Claims role constant required for this panel
      * @return true if access is permitted
      */
     public static boolean guard(String requiredRole) {
         if (!isLoggedIn()) {
-            LOG.warning("Guard failed — no active session");
+            log.warning("Guard failed — no active session");
             return false;
         }
         if (!hasRole(requiredRole)) {
-            LOG.warning("Guard failed — required: " + requiredRole
+            log.warning("Guard failed — required: " + requiredRole
                         + ", actual: " + getRole());
             return false;
         }
@@ -253,37 +253,45 @@ public class SessionManager {
     }
 
     /**
-    * Multi-role guard — returns true if the session is valid and the user
-    * has any of the specified roles.
-    *
-    * Usage:
-    *   if (!SessionManager.guardAny(Claims.ROLE_NETWORK_ADMIN,
-    *                                Claims.ROLE_ENTERPRISE_ADMIN)) {
-    *       mainShell.showPanel("login");
-    *       return;
-    *   }
-    *
-    * @param requiredRoles one or more Claims role constants — access granted if any match
-    * @return true if the session is active and the user holds at least one required role
-    */
+     * Multi-role guard — returns true if the session is valid and the user
+     * has any of the specified roles.
+     *
+     * Usage:
+     *   if (!SessionManager.guardAny(Claims.roleNetworkAdmin,
+     *                                Claims.roleEnterpriseAdmin)) {
+     *       frame.showPanel(ApplicationFrame.panelStaffLogin);
+     *       return;
+     *   }
+     *
+     * @param requiredRoles one or more Claims role constants — access granted if any match
+     * @return true if the session is active and the user holds at least one required role
+     */
     public static boolean guardAny(String... requiredRoles) {
         if (!isLoggedIn()) {
-            LOG.warning("Guard failed — no active session");
+            log.warning("Guard failed — no active session");
             return false;
         }
         if (!hasAnyRole(requiredRoles)) {
-            LOG.warning("Guard failed — role " + getRole()
+            log.warning("Guard failed — role " + getRole()
                         + " not in required set");
             return false;
         }
         return true;
     }
-public static void injectGuestSession(String username) {
-    injectDemoSession(
-        Claims.roleGuest,
-        "guestOrg",
-        "guestEnterprise"
-    );
-}
 
+    // -------------------------------------------------------------------------
+    // Demo mode — guest session injection
+    // -------------------------------------------------------------------------
+
+    /**
+     * Injects a demo guest session for the specified username.
+     * Passes null for orgId and enterpriseId as guests are not org-scoped.
+     * TODO: wire to real guest record via PersistenceService once delivered
+     *       so that a real guestId and email are used instead of demo values.
+     *
+     * @param username guest username — currently unused pending PersistenceService wiring
+     */
+    public static void injectGuestSession(String username) {
+        injectDemoSession(Claims.roleGuest, null, null);
+    }
 }
