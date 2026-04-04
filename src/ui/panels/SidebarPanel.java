@@ -7,6 +7,7 @@ import ui.ApplicationFrame;
 import ui.components.ImageBackgroundPanel;
 
 import java.awt.Color;
+import static java.awt.Component.LEFT_ALIGNMENT;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;

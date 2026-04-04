@@ -23,7 +23,9 @@ import ui.panels.MarketingLeadPanel;
 import ui.panels.AiGuidePanel;
 import ui.panels.GuestLoginPanel;
 import ui.panels.GuestRegistrationPanel;
-
+import ui.panels.CasinoPanel;
+import ui.panels.CfoPanel;
+import ui.panels.DataAnalystPanel;
 import javax.swing.*;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import java.awt.*;
@@ -225,11 +227,9 @@ public class ApplicationFrame extends JFrame {
         if (name.equals(panelEnterpriseAdmin)) {
             ((EnterpriseAdminPanel) panels.get(panelEnterpriseAdmin)).onShow();
         }
-
         if (name.equals(panelComplianceOfficer)) {
             ((ComplianceOfficerPanel) panels.get(panelComplianceOfficer)).onShow();
         }
-
         if (name.equals(panelReporting)) {
             ((ReportingPanel) panels.get(panelReporting)).onShow();
         }
@@ -245,14 +245,9 @@ public class ApplicationFrame extends JFrame {
         if (name.equals(panelGuestComplaints)) {
             ((GuestComplaintsPanel) panels.get(panelGuestComplaints)).onShow();
         }
-        if (name.equals(panelGuestLogin)) {
-            ((GuestLoginPanel) panels.get(panelGuestLogin)).onShow();
-        }
-
         if (name.equals("casino")) {
             ((CasinoOpsPanel) panels.get("casino")).onShow();
         }
-
         if (name.equals(panelCfo)) {
             ((CfoPanel) panels.get(panelCfo)).onShow();
         }
