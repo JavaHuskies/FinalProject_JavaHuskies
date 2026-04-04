@@ -42,8 +42,9 @@ public class NetworkAdminPanel extends JPanel {
 
     public void onShow() {
         if (!SessionManager.guardAny(
-                Claims.roleNetworkAdmin, Claims.roleSystemAdmin,
-                Claims.roleGroupCeo,     Claims.roleGroupCfo)) {
+                Claims.roleNetworkAdmin,
+                Claims.roleSystemAdmin,
+                Claims.roleGroupCeo)) {
             frame.showPanel(ApplicationFrame.panelStaffLogin);
             return;
         }
@@ -74,18 +75,18 @@ public class NetworkAdminPanel extends JPanel {
         statsRow = new JPanel(new GridLayout(1, 4, 12, 0));
         statsRow.setBackground(bgPrimary);
         statsRow.setBorder(new EmptyBorder(0, 0, 20, 0));
-        statsRow.add(buildStatCard("Enterprises", "—"));
+        statsRow.add(buildStatCard("Enterprises",   "—"));
         statsRow.add(buildStatCard("Organizations", "—"));
-        statsRow.add(buildStatCard("Users", "—"));
+        statsRow.add(buildStatCard("Users",         "—"));
         statsRow.add(buildStatCard("Work Requests", "—"));
 
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         toolbar.setBackground(bgPrimary);
         toolbar.setBorder(new EmptyBorder(0, 0, 12, 0));
         toolbar.add(buildToolbarButton("New Enterprise", e -> onNewEnterprise()));
-        toolbar.add(buildToolbarButton("New Org", e -> onNewOrg()));
-        toolbar.add(buildToolbarButton("New User", e -> onNewUser()));
-        toolbar.add(buildToolbarButton("Export", e -> onExport()));
+        toolbar.add(buildToolbarButton("New Org",        e -> onNewOrg()));
+        toolbar.add(buildToolbarButton("New User",       e -> onNewUser()));
+        toolbar.add(buildToolbarButton("Export",         e -> onExport()));
 
         tabs = new JTabbedPane();
         tabs.setBackground(bgSecondary);
@@ -93,21 +94,21 @@ public class NetworkAdminPanel extends JPanel {
         tabs.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         tabs.setBorder(BorderFactory.createLineBorder(borderColor, 1));
 
-        tabs.addTab("Enterprises", buildEnterpriseTab());
-        tabs.addTab("Users", buildUserTab());
-        tabs.addTab("Work Requests", buildWorkRequestTab());
+        tabs.addTab("Enterprises",    buildEnterpriseTab());
+        tabs.addTab("Users",          buildUserTab());
+        tabs.addTab("Work Requests",  buildWorkRequestTab());
 
         JPanel mainContent = new JPanel(new BorderLayout(0, 0));
         mainContent.setBackground(bgPrimary);
         mainContent.add(toolbar, BorderLayout.NORTH);
-        mainContent.add(tabs, BorderLayout.CENTER);
+        mainContent.add(tabs,    BorderLayout.CENTER);
 
         JPanel top = new JPanel(new BorderLayout(0, 0));
         top.setBackground(bgPrimary);
-        top.add(header, BorderLayout.NORTH);
+        top.add(header,   BorderLayout.NORTH);
         top.add(statsRow, BorderLayout.SOUTH);
 
-        wrapper.add(top, BorderLayout.NORTH);
+        wrapper.add(top,         BorderLayout.NORTH);
         wrapper.add(mainContent, BorderLayout.CENTER);
 
         add(wrapper, BorderLayout.CENTER);
@@ -156,7 +157,6 @@ public class NetworkAdminPanel extends JPanel {
     private void loadEnterprises() {
         DefaultTableModel m = (DefaultTableModel) enterpriseTable.getModel();
         m.setRowCount(0);
-
         m.addRow(new Object[]{ "Magrathea Studios",        "magratheaStudios",       "2", "8", "Purple" });
         m.addRow(new Object[]{ "Starship Titanic Leisure", "starshipTitanicLeisure", "2", "6", "Coral" });
         m.addRow(new Object[]{ "Galactic Broadcasting",    "galacticBroadcasting",   "2", "5", "Blue" });
@@ -166,30 +166,28 @@ public class NetworkAdminPanel extends JPanel {
     private void loadUsers() {
         DefaultTableModel m = (DefaultTableModel) userTable.getModel();
         m.setRowCount(0);
-
-        m.addRow(new Object[]{ "netadmin",  "Network Admin",      "magratheaStudios",       "slartibartfastPictures",        "netadmin@deepthought.com" });
-        m.addRow(new Object[]{ "entadmin",  "Enterprise Admin",   "starshipTitanicLeisure", "magratheaThemeWorlds",          "entadmin@deepthought.com" });
-        m.addRow(new Object[]{ "grpceo",    "Group CEO",          "magratheaStudios",       "slartibartfastPictures",        "grpceo@deepthought.com" });
-        m.addRow(new Object[]{ "orgdir1",   "Org Director",       "galacticBroadcasting",   "infiniteImprobabilityStreaming","orgdir1@deepthought.com" });
-        m.addRow(new Object[]{ "creative1", "Creative Lead",      "magratheaStudios",       "bistromathAnimation",           "creative1@deepthought.com" });
-        m.addRow(new Object[]{ "tech1",     "Technology Lead",    "siriusCybernetics",      "megadodoLicensing",             "tech1@deepthought.com" });
-        m.addRow(new Object[]{ "mktg1",     "Marketing Lead",     "galacticBroadcasting",   "panGalacticBroadcast",          "mktg1@deepthought.com" });
-        m.addRow(new Object[]{ "comply1",   "Compliance Officer", "starshipTitanicLeisure", "milliwaysEntertainment",        "comply1@deepthought.com" });
-        m.addRow(new Object[]{ "analyst1",  "Data Analyst",       "siriusCybernetics",      "hooloovooRetail",               "analyst1@deepthought.com" });
+        m.addRow(new Object[]{ "netadmin",  "Network Admin",      "magratheaStudios",       "slartibartfastPictures",         "netadmin@deepthought.com" });
+        m.addRow(new Object[]{ "entadmin",  "Enterprise Admin",   "starshipTitanicLeisure", "magratheaThemeWorlds",           "entadmin@deepthought.com" });
+        m.addRow(new Object[]{ "grpceo",    "Group CEO",          "magratheaStudios",       "slartibartfastPictures",         "grpceo@deepthought.com" });
+        m.addRow(new Object[]{ "orgdir1",   "Org Director",       "galacticBroadcasting",   "infiniteImprobabilityStreaming", "orgdir1@deepthought.com" });
+        m.addRow(new Object[]{ "creative1", "Creative Lead",      "magratheaStudios",       "bistromathAnimation",            "creative1@deepthought.com" });
+        m.addRow(new Object[]{ "tech1",     "Technology Lead",    "siriusCybernetics",      "megadodoLicensing",              "tech1@deepthought.com" });
+        m.addRow(new Object[]{ "mktg1",     "Marketing Lead",     "galacticBroadcasting",   "panGalacticBroadcast",           "mktg1@deepthought.com" });
+        m.addRow(new Object[]{ "comply1",   "Compliance Officer", "starshipTitanicLeisure", "milliwaysEntertainment",         "comply1@deepthought.com" });
+        m.addRow(new Object[]{ "analyst1",  "Data Analyst",       "siriusCybernetics",      "hooloovooRetail",                "analyst1@deepthought.com" });
     }
 
     private void loadWorkRequests() {
         DefaultTableModel m = (DefaultTableModel) workRequestTable.getModel();
         m.setRowCount(0);
-
-        m.addRow(new Object[]{ "WR-01", "Galactic Odyssey Release",    "Slartibartfast Pictures",         "Megadodo Licensing",      "Licensing",  "Pending" });
-        m.addRow(new Object[]{ "WR-02", "Park Theming — Vogon World",  "Magrathea Studios",               "Magrathea Theme Worlds",  "Content",    "In Review" });
-        m.addRow(new Object[]{ "WR-03", "Streaming Premiere Assets",   "Magrathea Theme Worlds",          "Pan-Galactic Broadcast",  "Broadcast",  "Active" });
-        m.addRow(new Object[]{ "WR-04", "Retail Campaign Q3",          "Hooloovoo Retail",                "Pan-Galactic Broadcast",  "Marketing",  "Pending" });
-        m.addRow(new Object[]{ "WR-05", "Theme World Event Package",   "Magrathea Theme Worlds",          "Milliways Entertainment", "Events",     "Active" });
-        m.addRow(new Object[]{ "WR-06", "Animation Commission",        "Infinite Improbability Streaming","Bistromath Animation",    "Content",    "In Review" });
-        m.addRow(new Object[]{ "WR-07", "Licensing Agreement Renewal", "Megadodo Licensing",              "Hooloovoo Retail",        "Licensing",  "Closed" });
-        m.addRow(new Object[]{ "WR-08", "Guest Complaint Escalation",  "Milliways Entertainment",         "Compliance Officer",      "Compliance", "Pending" });
+        m.addRow(new Object[]{ "WR-01", "Galactic Odyssey Release",    "Slartibartfast Pictures",          "Megadodo Licensing",      "Licensing",  "Pending" });
+        m.addRow(new Object[]{ "WR-02", "Park Theming — Vogon World",  "Magrathea Studios",                "Magrathea Theme Worlds",  "Content",    "In Review" });
+        m.addRow(new Object[]{ "WR-03", "Streaming Premiere Assets",   "Magrathea Theme Worlds",           "Pan-Galactic Broadcast",  "Broadcast",  "Active" });
+        m.addRow(new Object[]{ "WR-04", "Retail Campaign Q3",          "Hooloovoo Retail",                 "Pan-Galactic Broadcast",  "Marketing",  "Pending" });
+        m.addRow(new Object[]{ "WR-05", "Theme World Event Package",   "Magrathea Theme Worlds",           "Milliways Entertainment", "Events",     "Active" });
+        m.addRow(new Object[]{ "WR-06", "Animation Commission",        "Infinite Improbability Streaming", "Bistromath Animation",    "Content",    "In Review" });
+        m.addRow(new Object[]{ "WR-07", "Licensing Agreement Renewal", "Megadodo Licensing",               "Hooloovoo Retail",        "Licensing",  "Closed" });
+        m.addRow(new Object[]{ "WR-08", "Guest Complaint Escalation",  "Milliways Entertainment",          "Compliance Officer",      "Compliance", "Pending" });
     }
 
     private void updateStats() {
@@ -247,12 +245,9 @@ public class NetworkAdminPanel extends JPanel {
         valueLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 26));
         valueLbl.setForeground(textPrimary);
 
-        gbc.gridy = 0;
-        gbc.insets = new Insets(0, 0, 4, 0);
+        gbc.gridy = 0; gbc.insets = new Insets(0, 0, 4, 0);
         card.add(labelLbl, gbc);
-
-        gbc.gridy = 1;
-        gbc.insets = new Insets(0, 0, 0, 0);
+        gbc.gridy = 1; gbc.insets = new Insets(0, 0, 0, 0);
         card.add(valueLbl, gbc);
 
         return card;
@@ -271,7 +266,7 @@ public class NetworkAdminPanel extends JPanel {
         btn.addActionListener(action);
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseEntered(java.awt.event.MouseEvent e) { btn.setBackground(bgSecondary); }
-            @Override public void mouseExited(java.awt.event.MouseEvent e) { btn.setBackground(bgTertiary); }
+            @Override public void mouseExited(java.awt.event.MouseEvent e)  { btn.setBackground(bgTertiary); }
         });
         return btn;
     }

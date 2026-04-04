@@ -13,7 +13,6 @@ import ui.panels.NetworkAdminPanel;
 import ui.panels.EnterpriseAdminPanel;
 import ui.panels.ComplianceOfficerPanel;
 import ui.panels.ReportingPanel;
-import ui.panels.GuestCasinoPanel;
 import ui.panels.GuestBookingsPanel;
 import ui.panels.GuestComplaintsPanel;
 import ui.panels.OrgDirectorPanel;
@@ -37,7 +36,6 @@ import service.SeedService;
 import ui.panels.CasinoOpsPanel;
 import ui.panels.CfoPanel;
 import ui.panels.DataAnalystPanel;
-import ui.panels.GuestLoginPanel;
 
 /**
  * Top-level JFrame — the application window. Owns the CardLayout container and
@@ -71,6 +69,7 @@ public class ApplicationFrame extends JFrame {
     public static final String panelComplianceOfficer = "complianceOfficer";
     public static final String panelDataAnalyst = "dataAnalyst";
     public static final String panelReporting = "reporting";
+    public static final String panelCasinoOps = "casino";
     public static final String panelGuestPortal = "guestPortal";
     public static final String panelGuestBookings = "guestBookings";
     public static final String panelGuestCasino = "guestCasino";
@@ -105,8 +104,8 @@ public class ApplicationFrame extends JFrame {
     }
 
     /**
-    * Initialize the database connection and seed the database if it is empty.
-    */
+     * Initialize the database connection and seed the database if it is empty.
+     */
     private void initDatabase() {
         try {
             JdbcConnectionSource connectionSource = PersistenceService.getInstance().getConnectionSource();
@@ -144,7 +143,7 @@ public class ApplicationFrame extends JFrame {
         register(panelSplash, new SplashPanel(this));
         register(panelStaffLogin, new StaffLoginPanel(this));
         register(panelGuestLogin, new GuestLoginPanel(this));
-        register(panelGuestRegister,  new GuestRegistrationPanel(this));
+        register(panelGuestRegister, new GuestRegistrationPanel(this));
 
         // Staff panels — session + role required
         register(panelNetworkAdmin, new NetworkAdminPanel(this));
@@ -159,12 +158,12 @@ public class ApplicationFrame extends JFrame {
         register(panelReporting, new ReportingPanel(this));
         register(panelAiGuide, new AiGuidePanel(this));
         register(panelCfo, new CfoPanel(this));
+        register(panelCasinoOps, new CasinoOpsPanel(this));
+
         // Guest panels — guest session required
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
-        register(panelGuestBookings,   new GuestBookingsPanel(this));
-        register(panelGuestCasino, new GuestCasinoPanel(this));
-        register("casino", new CasinoOpsPanel(this));
-
+        register(panelGuestBookings, new GuestBookingsPanel(this));
+        register(panelGuestCasino, new CasinoPanel(this));
         register(panelGuestComplaints, new GuestComplaintsPanel(this));
 //        register(panelMap,             new MapPanel(this));
     }
@@ -220,7 +219,8 @@ public class ApplicationFrame extends JFrame {
         }
 
         cardLayout.show(cardContainer, name);
-        // onShow() dispatch — add each panel as it is registered
+
+        // onShow() dispatch
         if (name.equals(panelNetworkAdmin)) {
             ((NetworkAdminPanel) panels.get(panelNetworkAdmin)).onShow();
         }
@@ -237,15 +237,18 @@ public class ApplicationFrame extends JFrame {
             ((DataAnalystPanel) panels.get(panelDataAnalyst)).onShow();
         }
         if (name.equals(panelGuestCasino)) {
-            ((GuestCasinoPanel) panels.get(panelGuestCasino)).onShow();
+            ((CasinoPanel) panels.get(panelGuestCasino)).onShow();
         }
         if (name.equals(panelGuestBookings)) {
-             ((GuestBookingsPanel) panels.get(panelGuestBookings)).onShow();
+            ((GuestBookingsPanel) panels.get(panelGuestBookings)).onShow();
         }
         if (name.equals(panelGuestComplaints)) {
             ((GuestComplaintsPanel) panels.get(panelGuestComplaints)).onShow();
         }
-        if (name.equals("casino")) {
+        if (name.equals(panelGuestLogin)) {
+            ((GuestLoginPanel) panels.get(panelGuestLogin)).onShow();
+        }
+        if (name.equals(panelCasinoOps)) {
             ((CasinoOpsPanel) panels.get("casino")).onShow();
         }
         if (name.equals(panelCfo)) {
@@ -265,9 +268,6 @@ public class ApplicationFrame extends JFrame {
         }
         if (name.equals(panelAiGuide)) {
             ((AiGuidePanel) panels.get(panelAiGuide)).onShow();
-        }
-        if (name.equals(panelGuestLogin)) {
-            ((GuestLoginPanel) panels.get(panelGuestLogin)).onShow();
         }
         if (name.equals(panelGuestRegister)) {
             ((GuestRegistrationPanel) panels.get(panelGuestRegister)).onShow();
@@ -418,31 +418,6 @@ public class ApplicationFrame extends JFrame {
     }
 
     /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
-
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
-
-    /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
@@ -465,7 +440,4 @@ public class ApplicationFrame extends JFrame {
             new ApplicationFrame().setVisible(true);
         });
     }
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    // End of variables declaration//GEN-END:variables
 }
