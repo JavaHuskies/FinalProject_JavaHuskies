@@ -163,7 +163,7 @@ public class ApplicationFrame extends JFrame {
         // Guest panels — guest session required
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
         register(panelGuestBookings, new GuestBookingsPanel(this));
-        register(panelGuestCasino, new CasinoPanel(this));
+        register(panelGuestCasino, new CasinoOpsPanel(this));
         register(panelGuestComplaints, new GuestComplaintsPanel(this));
 //        register(panelMap,             new MapPanel(this));
     }
