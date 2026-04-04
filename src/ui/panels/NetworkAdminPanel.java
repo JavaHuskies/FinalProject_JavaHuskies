@@ -175,7 +175,7 @@ public class NetworkAdminPanel extends JPanel {
 
         mainContent = new JPanel(new CardLayout());
         mainContent.setBackground(bgPrimary);
-
+ 
         JPanel tableView = new JPanel(new BorderLayout(0, 0));
         tableView.setBackground(bgPrimary);
         tableView.add(toolbar, BorderLayout.NORTH);
@@ -254,15 +254,15 @@ public class NetworkAdminPanel extends JPanel {
     private void loadUsers() {
         DefaultTableModel m = (DefaultTableModel) userTable.getModel();
         m.setRowCount(0);
-        m.addRow(new Object[]{ "netadmin",  "networkAdmin",       "magratheaStudios",       "slartibartfastPictures",         "netadmin@deepthought.com" });
-        m.addRow(new Object[]{ "entadmin",  "enterpriseAdmin",    "starshipTitanicLeisure", "magratheaThemeWorlds",           "entadmin@deepthought.com" });
-        m.addRow(new Object[]{ "grpceo",    "groupCeo",           "magratheaStudios",       "slartibartfastPictures",         "grpceo@deepthought.com" });
-        m.addRow(new Object[]{ "orgdir1",   "orgDirector",        "galacticBroadcasting",   "infiniteImprobabilityStreaming", "orgdir1@deepthought.com" });
-        m.addRow(new Object[]{ "creative1", "creativeLead",       "magratheaStudios",       "bistromathAnimation",            "creative1@deepthought.com" });
-        m.addRow(new Object[]{ "tech1",     "technologyLead",     "siriusCybernetics",      "megadodoLicensing",              "tech1@deepthought.com" });
-        m.addRow(new Object[]{ "mktg1",     "marketingLead",      "galacticBroadcasting",   "panGalacticBroadcast",           "mktg1@deepthought.com" });
-        m.addRow(new Object[]{ "comply1",   "complianceOfficer",  "starshipTitanicLeisure", "milliwaysEntertainment",         "comply1@deepthought.com" });
-        m.addRow(new Object[]{ "analyst1",  "dataAnalyst",        "siriusCybernetics",      "hooloovooRetail",                "analyst1@deepthought.com" });
+        m.addRow(new Object[]{ "netadmin",  "Network Admin",      "magratheaStudios",       "slartibartfastPictures",         "netadmin@deepthought.com" });
+        m.addRow(new Object[]{ "entadmin",  "Enterprise Admin",   "starshipTitanicLeisure", "magratheaThemeWorlds",           "entadmin@deepthought.com" });
+        m.addRow(new Object[]{ "grpceo",    "Group CEO",          "magratheaStudios",       "slartibartfastPictures",         "grpceo@deepthought.com" });
+        m.addRow(new Object[]{ "orgdir1",   "Org Director",       "galacticBroadcasting",   "infiniteImprobabilityStreaming", "orgdir1@deepthought.com" });
+        m.addRow(new Object[]{ "creative1", "Creative Lead",      "magratheaStudios",       "bistromathAnimation",            "creative1@deepthought.com" });
+        m.addRow(new Object[]{ "tech1",     "Technology Lead",    "siriusCybernetics",      "megadodoLicensing",              "tech1@deepthought.com" });
+        m.addRow(new Object[]{ "mktg1",     "Marketing Lead",     "galacticBroadcasting",   "panGalacticBroadcast",           "mktg1@deepthought.com" });
+        m.addRow(new Object[]{ "comply1",   "Compliance Officer", "starshipTitanicLeisure", "milliwaysEntertainment",         "comply1@deepthought.com" });
+        m.addRow(new Object[]{ "analyst1",  "Data Analyst",       "siriusCybernetics",      "hooloovooRetail",                "analyst1@deepthought.com" });
     }
 
     private void loadWorkRequests() {
