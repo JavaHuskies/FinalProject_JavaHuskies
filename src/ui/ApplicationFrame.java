@@ -12,6 +12,7 @@ import ui.panels.ComplianceOfficerPanel;
 import ui.panels.CreativeLeadPanel;
 import ui.panels.DataAnalystPanel;
 import ui.panels.EnterpriseAdminPanel;
+import ui.panels.ReportingPanel;
 import ui.panels.GuestBookingsPanel;
 import ui.panels.GuestComplaintsPanel;
 import ui.panels.GuestLoginPanel;
@@ -65,15 +66,16 @@ public class ApplicationFrame extends JFrame {
     public static final String panelTechnologyLead    = "technologyLead";
     public static final String panelMarketingLead     = "marketingLead";
     public static final String panelComplianceOfficer = "complianceOfficer";
-    public static final String panelDataAnalyst       = "dataAnalyst";
-    public static final String panelReporting         = "reporting";
-    public static final String panelGuestPortal       = "guestPortal";
-    public static final String panelGuestBookings     = "guestBookings";
-    public static final String panelGuestCasino       = "guestCasino";
-    public static final String panelGuestComplaints   = "guestComplaints";
-    public static final String panelAiGuide           = "aiGuide";
-    public static final String panelCfo               = "cfo";
-    public static final String panelMap               = "map";
+    public static final String panelDataAnalyst = "dataAnalyst";
+    public static final String panelReporting = "reporting";
+    public static final String panelCasinoOps = "casino";
+    public static final String panelGuestPortal = "guestPortal";
+    public static final String panelGuestBookings = "guestBookings";
+    public static final String panelGuestCasino = "guestCasino";
+    public static final String panelGuestComplaints = "guestComplaints";
+    public static final String panelAiGuide = "aiGuide";
+    public static final String panelCfo = "cfo";
+    public static final String panelMap = "map";
 
     // -------------------------------------------------------------------------
     // Layout components
@@ -101,7 +103,7 @@ public class ApplicationFrame extends JFrame {
     }
 
     /**
-     * Initializes the database connection and seeds the database if empty.
+     * Initialize the database connection and seed the database if it is empty.
      */
     private void initDatabase() {
         try {
@@ -138,9 +140,9 @@ public class ApplicationFrame extends JFrame {
 
     private void initPanels() {
         // Public panels — no session required
-        register(panelSplash,        new SplashPanel(this));
-        register(panelStaffLogin,    new StaffLoginPanel(this));
-        register(panelGuestLogin,    new GuestLoginPanel(this));
+        register(panelSplash, new SplashPanel(this));
+        register(panelStaffLogin, new StaffLoginPanel(this));
+        register(panelGuestLogin, new GuestLoginPanel(this));
         register(panelGuestRegister, new GuestRegistrationPanel(this));
 
         // Staff panels — session + role required
@@ -152,15 +154,16 @@ public class ApplicationFrame extends JFrame {
         register(panelTechnologyLead,    new TechnologyLeadPanel(this));
         register(panelMarketingLead,     new MarketingLeadPanel(this));
         register(panelComplianceOfficer, new ComplianceOfficerPanel(this));
-        register(panelDataAnalyst,       new DataAnalystPanel(this));
-        register(panelReporting,         new ReportingPanel(this));
-        register(panelAiGuide,           new AiGuidePanel(this));
-        register(panelCfo,               new CfoPanel(this));
+        register(panelDataAnalyst, new DataAnalystPanel(this));
+        register(panelReporting, new ReportingPanel(this));
+        register(panelAiGuide, new AiGuidePanel(this));
+        register(panelCfo, new CfoPanel(this));
+        register(panelCasinoOps, new CasinoOpsPanel(this));
 
         // Guest panels — guest session required
 //        register(panelGuestPortal,     new GuestPortalPanel(this));
-        register(panelGuestBookings,   new GuestBookingsPanel(this));
-        register(panelGuestCasino,     new CasinoOpsPanel(this));
+        register(panelGuestBookings, new GuestBookingsPanel(this));
+        register(panelGuestCasino, new CasinoPanel(this));
         register(panelGuestComplaints, new GuestComplaintsPanel(this));
 //        register(panelMap,             new MapPanel(this));
     }
