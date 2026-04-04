@@ -3,35 +3,75 @@ package ui.panels;
 import model.Claims;
 import service.SessionManager;
 import service.ThemeService;
+import util.ValidationUtils;
 import ui.ApplicationFrame;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.UUID;
+import util.ValidationUtils.ValidationResult;
 
+/**
+ * Work area panel for Enterprise Admin, Enterprise President, and COO roles.
+ * Displays enterprise-scoped organization, user, and work request data.
+ * Supports CRUD operations for organizations and users via inline forms.
+ */
 public class EnterpriseAdminPanel extends JPanel {
 
-    private static final Color bgPrimary   = ThemeService.colorBgPrimary;
-    private static final Color bgSecondary = ThemeService.colorBgSecondary;
-    private static final Color bgTertiary  = ThemeService.colorBgTertiary;
-    private static final Color textPrimary = ThemeService.colorTextPrimary;
-    private static final Color textMuted   = ThemeService.colorTextMuted;
-    private static final Color borderColor = ThemeService.colorBorder;
+    // ── Colors ────────────────────────────────────────────────────────────────
+    private static final Color bgPrimary     = ThemeService.colorBgPrimary;
+    private static final Color bgSecondary   = ThemeService.colorBgSecondary;
+    private static final Color bgTertiary    = ThemeService.colorBgTertiary;
+    private static final Color textPrimary   = ThemeService.colorTextPrimary;
+    private static final Color textMuted     = ThemeService.colorTextMuted;
+    private static final Color borderColor   = ThemeService.colorBorder;
 
     private static final String mockTip = "Mock data — replace with PersistenceService query";
 
+    // ── Org-level roles only ──────────────────────────────────────────────────
+    private static final String[] orgRoles = {
+        Claims.roleOrgDirector,
+        Claims.roleCreativeLead,
+        Claims.roleTechnologyLead,
+        Claims.roleMarketingLead,
+        Claims.roleComplianceOfficer,
+        Claims.roleDataAnalyst
+    };
+
+    private static final String[] orgs = {
+        "slartibartfastPictures",
+        "bistromathAnimation",
+        "magratheaThemeWorlds",
+        "milliwaysEntertainment",
+        "infiniteImprobabilityStreaming",
+        "panGalacticBroadcast",
+        "megadodoLicensing",
+        "hooloovooRetail"
+    };
+
+    // ── Frame reference ───────────────────────────────────────────────────────
     private final ApplicationFrame frame;
 
-    private JLabel titleLabel;
-    private JLabel subtitleLabel;
-    private JPanel statsRow;
+    // ── UI components ─────────────────────────────────────────────────────────
+    private JLabel      titleLabel;
+    private JLabel      subtitleLabel;
+    private JPanel      statsRow;
     private JTabbedPane tabs;
+    private JPanel      mainContent;
 
     private JTable orgTable;
     private JTable userTable;
     private JTable workRequestTable;
 
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Constructs the Enterprise Admin work area panel.
+     *
+     * @param frame the parent ApplicationFrame used for panel navigation
+     */
     public EnterpriseAdminPanel(ApplicationFrame frame) {
         this.frame = frame;
         setBackground(bgPrimary);
@@ -39,11 +79,17 @@ public class EnterpriseAdminPanel extends JPanel {
         buildComponents();
     }
 
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
+
+    /**
+     * Called by ApplicationFrame.showPanel() when this panel becomes visible.
+     * Guards the session then loads data.
+     */
     public void onShow() {
         if (!SessionManager.guardAny(
-                Claims.roleEnterpriseAdmin, Claims.roleEntPresident, Claims.roleEntCoo,
-                Claims.roleNetworkAdmin,    Claims.roleSystemAdmin,
-                Claims.roleGroupCeo,        Claims.roleGroupCfo)) {
+                Claims.roleEnterpriseAdmin,
+                Claims.roleEntPresident,
+                Claims.roleEntCoo)) {
             frame.showPanel(ApplicationFrame.panelStaffLogin);
             return;
         }
@@ -51,6 +97,11 @@ public class EnterpriseAdminPanel extends JPanel {
         loadData();
     }
 
+    // ── Build ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Builds all UI components.
+     */
     private void buildComponents() {
         JPanel wrapper = new JPanel(new BorderLayout(0, 16));
         wrapper.setBackground(bgPrimary);
@@ -68,21 +119,21 @@ public class EnterpriseAdminPanel extends JPanel {
         subtitleLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         subtitleLabel.setForeground(textMuted);
 
-        header.add(titleLabel, BorderLayout.NORTH);
+        header.add(titleLabel,    BorderLayout.NORTH);
         header.add(subtitleLabel, BorderLayout.SOUTH);
 
         statsRow = new JPanel(new GridLayout(1, 3, 12, 0));
         statsRow.setBackground(bgPrimary);
         statsRow.setBorder(new EmptyBorder(0, 0, 20, 0));
         statsRow.add(buildStatCard("Organizations", "—"));
-        statsRow.add(buildStatCard("Users", "—"));
+        statsRow.add(buildStatCard("Users",         "—"));
         statsRow.add(buildStatCard("Work Requests", "—"));
 
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         toolbar.setBackground(bgPrimary);
         toolbar.setBorder(new EmptyBorder(0, 0, 12, 0));
-        toolbar.add(buildToolbarButton("New Org",  e -> onNewOrg()));
-        toolbar.add(buildToolbarButton("New User", e -> onNewUser()));
+        toolbar.add(buildToolbarButton("New Org",  e -> showNewOrgForm()));
+        toolbar.add(buildToolbarButton("New User", e -> showNewUserForm()));
         toolbar.add(buildToolbarButton("Export",   e -> onExport()));
 
         tabs = new JTabbedPane();
@@ -90,26 +141,32 @@ public class EnterpriseAdminPanel extends JPanel {
         tabs.setForeground(textMuted);
         tabs.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         tabs.setBorder(BorderFactory.createLineBorder(borderColor, 1));
-
         tabs.addTab("Organizations", buildOrgTab());
-        tabs.addTab("Users", buildUserTab());
+        tabs.addTab("Users",         buildUserTab());
         tabs.addTab("Work Requests", buildWorkRequestTab());
 
-        JPanel mainContent = new JPanel(new BorderLayout(0, 0));
+        mainContent = new JPanel(new CardLayout());
         mainContent.setBackground(bgPrimary);
-        mainContent.add(toolbar, BorderLayout.NORTH);
-        mainContent.add(tabs, BorderLayout.CENTER);
+
+        JPanel tableView = new JPanel(new BorderLayout(0, 0));
+        tableView.setBackground(bgPrimary);
+        tableView.add(toolbar, BorderLayout.NORTH);
+        tableView.add(tabs,    BorderLayout.CENTER);
+
+        mainContent.add(tableView, "tableView");
 
         JPanel top = new JPanel(new BorderLayout(0, 0));
         top.setBackground(bgPrimary);
-        top.add(header, BorderLayout.NORTH);
+        top.add(header,   BorderLayout.NORTH);
         top.add(statsRow, BorderLayout.SOUTH);
 
-        wrapper.add(top, BorderLayout.NORTH);
+        wrapper.add(top,         BorderLayout.NORTH);
         wrapper.add(mainContent, BorderLayout.CENTER);
 
         add(wrapper, BorderLayout.CENTER);
     }
+
+    // ── Table tabs ────────────────────────────────────────────────────────────
 
     private JScrollPane buildOrgTab() {
         String[] cols = { "Organization", "ID", "Users", "Work Requests" };
@@ -144,6 +201,12 @@ public class EnterpriseAdminPanel extends JPanel {
         return sp;
     }
 
+    // ── Data loading ──────────────────────────────────────────────────────────
+
+    /**
+     * Loads mock data scoped to the current user's enterprise.
+     * TODO: replace with real PersistenceService queries scoped by enterpriseId.
+     */
     private void loadData() {
         String eid = SessionManager.getEnterpriseId();
         loadOrgs(eid);
@@ -155,7 +218,6 @@ public class EnterpriseAdminPanel extends JPanel {
     private void loadOrgs(String enterpriseId) {
         DefaultTableModel m = (DefaultTableModel) orgTable.getModel();
         m.setRowCount(0);
-
         m.addRow(new Object[]{ "Slartibartfast Pictures", "slartibartfastPictures", "4", "3" });
         m.addRow(new Object[]{ "Bistromath Animation",    "bistromathAnimation",    "4", "1" });
     }
@@ -163,17 +225,15 @@ public class EnterpriseAdminPanel extends JPanel {
     private void loadUsers(String enterpriseId) {
         DefaultTableModel m = (DefaultTableModel) userTable.getModel();
         m.setRowCount(0);
-
-        m.addRow(new Object[]{ "netadmin",   "Network Admin", "slartibartfastPictures", "netadmin@deepthought.com" });
-        m.addRow(new Object[]{ "creative1",  "Creative Lead", "bistromathAnimation",    "creative1@deepthought.com" });
+        m.addRow(new Object[]{ "netadmin",  "networkAdmin",  "slartibartfastPictures", "netadmin@deepthought.com" });
+        m.addRow(new Object[]{ "creative1", "creativeLead",  "bistromathAnimation",    "creative1@deepthought.com" });
     }
 
     private void loadWorkRequests(String enterpriseId) {
         DefaultTableModel m = (DefaultTableModel) workRequestTable.getModel();
         m.setRowCount(0);
-
-        m.addRow(new Object[]{ "WR-01", "Galactic Odyssey Release", "Slartibartfast Pictures", "Megadodo Licensing", "Licensing", "Pending" });
-        m.addRow(new Object[]{ "WR-02", "Park Theming — Vogon World", "Magrathea Studios", "Magrathea Theme Worlds", "Content", "In Review" });
+        m.addRow(new Object[]{ "WR-01", "Galactic Odyssey Release",   "Slartibartfast Pictures", "Megadodo Licensing",     "Licensing", "Pending" });
+        m.addRow(new Object[]{ "WR-02", "Park Theming — Vogon World", "Magrathea Studios",       "Magrathea Theme Worlds", "Content",   "In Review" });
     }
 
     private void updateStats() {
@@ -186,18 +246,272 @@ public class EnterpriseAdminPanel extends JPanel {
         subtitleLabel.setText("Enterprise: " + SessionManager.getEnterpriseId());
     }
 
-    private void onNewOrg() {
-        JOptionPane.showMessageDialog(this, "New organization form — coming soon.");
+    // ── CRUD forms ────────────────────────────────────────────────────────────
+
+    /**
+     * Renders the New Organization form in the main content area.
+     * Organization is scoped to the current user's enterprise.
+     */
+    private void showNewOrgForm() {
+        JPanel form = buildFormPanel("New Organization");
+
+        JTextField nameField = styledField();
+        JTextField idField   = styledField();
+        idField.setToolTipText("camelCase — e.g. vogonOperations");
+
+        form.add(fieldRow("Organization Name", nameField));
+        form.add(fieldRow("Organization ID",   idField));
+        form.add(buildFormButtons(
+            () -> {
+                String name = nameField.getText().trim();
+                String id   = idField.getText().trim();
+                String eid  = SessionManager.getEnterpriseId();
+
+                if (name.isEmpty() || id.isEmpty()) {
+                    showFormError(form, "All fields are required.");
+                    return;
+                }
+                ValidationResult idCheck = ValidationUtils.requireNonBlank(id, "Organization ID");
+                if (!idCheck.valid) { showFormError(form, idCheck.message); return; }
+                if (id.contains(" ")) { showFormError(form, "Organization ID must have no spaces."); return; }
+
+                // TODO: PersistenceService.getInstance().saveOrganization(new Organization(id, name, eid));
+                showSuccess("Organization '" + name + "' created (pending PersistenceService).");
+                showTableView();
+                loadData();
+            },
+            this::showTableView
+        ));
+
+        showForm(form);
     }
 
-    private void onNewUser() {
-        JOptionPane.showMessageDialog(this, "New user form — coming soon.");
+    /**
+     * Renders the New User form in the main content area.
+     * Role selection is limited to org-level roles.
+     */
+    private void showNewUserForm() {
+        JPanel form = buildFormPanel("New User");
+
+        JTextField        usernameField = styledField();
+        JTextField        emailField    = styledField();
+        JPasswordField    passwordField = new JPasswordField();
+        stylePasswordField(passwordField);
+        JComboBox<String> roleBox       = styledCombo(orgRoles);
+        JComboBox<String> orgBox        = styledCombo(orgs);
+
+        form.add(fieldRow("Username",     usernameField));
+        form.add(fieldRow("Email",        emailField));
+        form.add(fieldRow("Password",     passwordField));
+        form.add(fieldRow("Role",         roleBox));
+        form.add(fieldRow("Organization", orgBox));
+        form.add(buildFormButtons(
+            () -> {
+                String username = usernameField.getText().trim();
+                String email    = emailField.getText().trim();
+                String password = new String(passwordField.getPassword());
+                String role     = (String) roleBox.getSelectedItem();
+                String oid      = (String) orgBox.getSelectedItem();
+                String eid      = SessionManager.getEnterpriseId();
+
+                if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                    showFormError(form, "Username, email, and password are required.");
+                    return;
+                }
+                ValidationResult unCheck = ValidationUtils.requireUsername(username);
+                if (!unCheck.valid) { showFormError(form, unCheck.message); return; }
+                ValidationResult emCheck = ValidationUtils.requireEmail(email);
+                if (!emCheck.valid) { showFormError(form, emCheck.message); return; }
+                ValidationResult pwCheck = ValidationUtils.requireValidPassword(password);
+                if (!pwCheck.valid) { showFormError(form, pwCheck.message); return; }
+
+                String userId = UUID.randomUUID().toString();
+                String pwHash = service.AuthService.getInstance().hashPassword(password);
+
+                // TODO: PersistenceService.getInstance().saveUser(
+                //     new User(userId, username, pwHash, role, oid, eid, email));
+                showSuccess("User '" + username + "' created (pending PersistenceService).");
+                showTableView();
+                loadData();
+            },
+            this::showTableView
+        ));
+
+        showForm(form);
     }
 
+    // ── Form helpers ──────────────────────────────────────────────────────────
+
+    /**
+     * Shows the named form panel in the mainContent CardLayout.
+     *
+     * @param form the form panel to display
+     */
+    private void showForm(JPanel form) {
+        mainContent.add(form, "form");
+        ((CardLayout) mainContent.getLayout()).show(mainContent, "form");
+    }
+
+    /**
+     * Returns to the table view in the mainContent CardLayout.
+     */
+    private void showTableView() {
+        ((CardLayout) mainContent.getLayout()).show(mainContent, "tableView");
+    }
+
+    /**
+     * Builds a titled form panel.
+     *
+     * @param title form heading text
+     * @return configured form JPanel
+     */
+    private JPanel buildFormPanel(String title) {
+        JPanel form = new JPanel();
+        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        form.setBackground(bgPrimary);
+        form.setBorder(new EmptyBorder(24, 80, 24, 80));
+
+        JLabel heading = new JLabel(title);
+        heading.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+        heading.setForeground(textPrimary);
+        heading.setAlignmentX(Component.LEFT_ALIGNMENT);
+        heading.setBorder(new EmptyBorder(0, 0, 20, 0));
+        form.add(heading);
+
+        return form;
+    }
+
+    /**
+     * Builds a label + field row for a form.
+     *
+     * @param label field label text
+     * @param field the input component
+     * @return configured row JPanel
+     */
+    private JPanel fieldRow(String label, JComponent field) {
+        JPanel row = new JPanel(new BorderLayout(12, 0));
+        row.setBackground(bgPrimary);
+        row.setMaximumSize(new Dimension(600, 56));
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row.setBorder(new EmptyBorder(0, 0, 12, 0));
+
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        lbl.setForeground(textMuted);
+        lbl.setPreferredSize(new Dimension(140, 36));
+
+        field.setPreferredSize(new Dimension(340, 36));
+
+        row.add(lbl,   BorderLayout.WEST);
+        row.add(field, BorderLayout.CENTER);
+        return row;
+    }
+
+    /**
+     * Builds the Save and Back button row for a form.
+     *
+     * @param onSave action to run on Save
+     * @param onBack action to run on Back
+     * @return configured button row JPanel
+     */
+    private JPanel buildFormButtons(Runnable onSave, Runnable onBack) {
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        row.setBackground(bgPrimary);
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row.setBorder(new EmptyBorder(8, 0, 0, 0));
+
+        JButton saveBtn = buildToolbarButton("Save",    e -> onSave.run());
+        JButton backBtn = buildToolbarButton("← Back",  e -> onBack.run());
+
+        row.add(saveBtn);
+        row.add(backBtn);
+        return row;
+    }
+
+    /**
+     * Displays an inline error message on the form.
+     *
+     * @param form    the form panel
+     * @param message error text to display
+     */
+    private void showFormError(JPanel form, String message) {
+        for (Component c : form.getComponents()) {
+            if (c instanceof JLabel lbl && "formError".equals(lbl.getName())) {
+                lbl.setText(message);
+                lbl.setVisible(true);
+                return;
+            }
+        }
+        JLabel err = new JLabel(message);
+        err.setName("formError");
+        err.setForeground(new Color(220, 80, 80));
+        err.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+        err.setAlignmentX(Component.LEFT_ALIGNMENT);
+        form.add(err);
+        form.revalidate();
+        form.repaint();
+    }
+
+    /**
+     * Shows a success confirmation dialog.
+     *
+     * @param message success message text
+     */
+    private void showSuccess(String message) {
+        JOptionPane.showMessageDialog(this, message, "Success",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // ── Field factories ───────────────────────────────────────────────────────
+
+    /** Builds a styled text field. */
+    private JTextField styledField() {
+        JTextField f = new JTextField();
+        f.setBackground(bgSecondary);
+        f.setForeground(textPrimary);
+        f.setCaretColor(textPrimary);
+        f.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        f.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(borderColor, 1),
+            new EmptyBorder(4, 8, 4, 8)));
+        return f;
+    }
+
+    /** Styles a password field to match the dark theme. */
+    private void stylePasswordField(JPasswordField f) {
+        f.setBackground(bgSecondary);
+        f.setForeground(textPrimary);
+        f.setCaretColor(textPrimary);
+        f.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        f.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(borderColor, 1),
+            new EmptyBorder(4, 8, 4, 8)));
+    }
+
+    /** Builds a styled combo box. */
+    private JComboBox<String> styledCombo(String[] items) {
+        JComboBox<String> box = new JComboBox<>(items);
+        box.setBackground(bgSecondary);
+        box.setForeground(textPrimary);
+        box.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        return box;
+    }
+
+    // ── Export ────────────────────────────────────────────────────────────────
+
+    /** Handles the Export toolbar action. */
     private void onExport() {
         JOptionPane.showMessageDialog(this, "Export — coming soon.");
     }
 
+    // ── Stat card helpers ─────────────────────────────────────────────────────
+
+    /**
+     * Updates a stat card value by index (0–2).
+     *
+     * @param index stat card position (0-based)
+     * @param value display value to set
+     */
     private void setStatValue(int index, String value) {
         JPanel card = (JPanel) statsRow.getComponent(index);
         for (Component c : card.getComponents()) {
@@ -208,6 +522,15 @@ public class EnterpriseAdminPanel extends JPanel {
         }
     }
 
+    // ── Component builders ────────────────────────────────────────────────────
+
+    /**
+     * Builds a single stat card displaying a metric label and value.
+     *
+     * @param label display label
+     * @param value initial display value — use "—" for placeholder
+     * @return styled JPanel stat card
+     */
     private JPanel buildStatCard(String label, String value) {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(bgSecondary);
@@ -226,17 +549,21 @@ public class EnterpriseAdminPanel extends JPanel {
         valueLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 26));
         valueLbl.setForeground(textPrimary);
 
-        gbc.gridy = 0;
-        gbc.insets = new Insets(0, 0, 4, 0);
+        gbc.gridy = 0; gbc.insets = new Insets(0, 0, 4, 0);
         card.add(labelLbl, gbc);
-
-        gbc.gridy = 1;
-        gbc.insets = new Insets(0, 0, 0, 0);
+        gbc.gridy = 1; gbc.insets = new Insets(0, 0, 0, 0);
         card.add(valueLbl, gbc);
 
         return card;
     }
 
+    /**
+     * Builds a styled toolbar button with hover effect.
+     *
+     * @param label  button display text
+     * @param action ActionListener to wire
+     * @return configured JButton
+     */
     private JButton buildToolbarButton(String label, java.awt.event.ActionListener action) {
         JButton btn = new JButton(label);
         btn.setBackground(bgTertiary);
@@ -250,7 +577,7 @@ public class EnterpriseAdminPanel extends JPanel {
         btn.addActionListener(action);
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseEntered(java.awt.event.MouseEvent e) { btn.setBackground(bgSecondary); }
-            @Override public void mouseExited(java.awt.event.MouseEvent e) { btn.setBackground(bgTertiary); }
+            @Override public void mouseExited(java.awt.event.MouseEvent e)  { btn.setBackground(bgTertiary); }
         });
         return btn;
     }
@@ -272,7 +599,6 @@ public class EnterpriseAdminPanel extends JPanel {
         table.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         table.getTableHeader().setBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, borderColor));
-
         return table;
     }
 
