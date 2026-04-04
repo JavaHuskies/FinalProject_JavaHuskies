@@ -5,26 +5,28 @@ import service.ConfigService;
 import service.PersistenceService;
 import service.SessionManager;
 import service.ThemeService;
-import ui.panels.HeaderPanel;
-import ui.panels.SidebarPanel;
-import ui.panels.SplashPanel;
-import ui.panels.StaffLoginPanel;
-import ui.panels.NetworkAdminPanel;
-import ui.panels.EnterpriseAdminPanel;
+import ui.panels.AiGuidePanel;
+import ui.panels.CasinoOpsPanel;
+import ui.panels.CfoPanel;
 import ui.panels.ComplianceOfficerPanel;
+import ui.panels.CreativeLeadPanel;
+import ui.panels.DataAnalystPanel;
+import ui.panels.EnterpriseAdminPanel;
 import ui.panels.ReportingPanel;
 import ui.panels.GuestBookingsPanel;
 import ui.panels.GuestComplaintsPanel;
-import ui.panels.OrgDirectorPanel;
-import ui.panels.CreativeLeadPanel;
-import ui.panels.TechnologyLeadPanel;
-import ui.panels.MarketingLeadPanel;
-import ui.panels.AiGuidePanel;
 import ui.panels.GuestLoginPanel;
 import ui.panels.GuestRegistrationPanel;
-import ui.panels.CasinoPanel;
-import ui.panels.CfoPanel;
-import ui.panels.DataAnalystPanel;
+import ui.panels.HeaderPanel;
+import ui.panels.MarketingLeadPanel;
+import ui.panels.NetworkAdminPanel;
+import ui.panels.OrgDirectorPanel;
+import ui.panels.ReportingPanel;
+import ui.panels.SidebarPanel;
+import ui.panels.SplashPanel;
+import ui.panels.StaffLoginPanel;
+import ui.panels.TechnologyLeadPanel;
+
 import javax.swing.*;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import java.awt.*;
@@ -33,9 +35,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import service.SeedService;
-import ui.panels.CasinoOpsPanel;
-import ui.panels.CfoPanel;
-import ui.panels.DataAnalystPanel;
 
 /**
  * Top-level JFrame — the application window. Owns the CardLayout container and
@@ -55,17 +54,17 @@ public class ApplicationFrame extends JFrame {
     // -------------------------------------------------------------------------
     // Panel name constants — use these everywhere, never hardcode strings
     // -------------------------------------------------------------------------
-    public static final String panelSplash = "splash";
-    public static final String panelStaffLogin = "staffLogin";
-    public static final String panelGuestLogin = "guestLogin";
-    public static final String panelGuestRegister = "guestRegister";
-    public static final String panelNetworkAdmin = "networkAdmin";
-    public static final String panelEnterpriseAdmin = "enterpriseAdmin";
-    public static final String panelOrgDirector = "orgDirector";
-    public static final String panelWorkRequests = "workRequests";
-    public static final String panelCreativeLead = "creativeLead";
-    public static final String panelTechnologyLead = "technologyLead";
-    public static final String panelMarketingLead = "marketingLead";
+    public static final String panelSplash            = "splash";
+    public static final String panelStaffLogin        = "staffLogin";
+    public static final String panelGuestLogin        = "guestLogin";
+    public static final String panelGuestRegister     = "guestRegister";
+    public static final String panelNetworkAdmin      = "networkAdmin";
+    public static final String panelEnterpriseAdmin   = "enterpriseAdmin";
+    public static final String panelOrgDirector       = "orgDirector";
+    public static final String panelWorkRequests      = "workRequests";
+    public static final String panelCreativeLead      = "creativeLead";
+    public static final String panelTechnologyLead    = "technologyLead";
+    public static final String panelMarketingLead     = "marketingLead";
     public static final String panelComplianceOfficer = "complianceOfficer";
     public static final String panelDataAnalyst = "dataAnalyst";
     public static final String panelReporting = "reporting";
@@ -81,9 +80,9 @@ public class ApplicationFrame extends JFrame {
     // -------------------------------------------------------------------------
     // Layout components
     // -------------------------------------------------------------------------
-    private final CardLayout cardLayout = new CardLayout();
-    private final JPanel cardContainer = new JPanel(cardLayout);
-    private HeaderPanel headerPanel;
+    private final CardLayout cardLayout   = new CardLayout();
+    private final JPanel     cardContainer = new JPanel(cardLayout);
+    private HeaderPanel  headerPanel;
     private SidebarPanel sidebarPanel;
 
     // Registered panels map — name -> panel
@@ -108,7 +107,8 @@ public class ApplicationFrame extends JFrame {
      */
     private void initDatabase() {
         try {
-            JdbcConnectionSource connectionSource = PersistenceService.getInstance().getConnectionSource();
+            JdbcConnectionSource connectionSource =
+                    PersistenceService.getInstance().getConnectionSource();
             SeedService.initialize(connectionSource);
         } catch (Exception e) {
             System.out.println(e);
@@ -121,7 +121,7 @@ public class ApplicationFrame extends JFrame {
     // -------------------------------------------------------------------------
     private void initWindow() {
         ConfigService cfg = ConfigService.getInstance();
-        int mw = cfg.getInt("app.window.min.width", 1024);
+        int mw = cfg.getInt("app.window.min.width",  1024);
         int mh = cfg.getInt("app.window.min.height", 680);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -146,13 +146,13 @@ public class ApplicationFrame extends JFrame {
         register(panelGuestRegister, new GuestRegistrationPanel(this));
 
         // Staff panels — session + role required
-        register(panelNetworkAdmin, new NetworkAdminPanel(this));
-        register(panelEnterpriseAdmin, new EnterpriseAdminPanel(this));
-        register(panelOrgDirector, new OrgDirectorPanel(this));
-//        register(panelWorkRequests,      new WorkRequestPanel(this));
-        register(panelCreativeLead, new CreativeLeadPanel(this));
-        register(panelTechnologyLead, new TechnologyLeadPanel(this));
-        register(panelMarketingLead, new MarketingLeadPanel(this));
+        register(panelNetworkAdmin,      new NetworkAdminPanel(this));
+        register(panelEnterpriseAdmin,   new EnterpriseAdminPanel(this));
+        register(panelOrgDirector,       new OrgDirectorPanel(this));
+//        register(panelWorkRequests,    new WorkRequestPanel(this));
+        register(panelCreativeLead,      new CreativeLeadPanel(this));
+        register(panelTechnologyLead,    new TechnologyLeadPanel(this));
+        register(panelMarketingLead,     new MarketingLeadPanel(this));
         register(panelComplianceOfficer, new ComplianceOfficerPanel(this));
         register(panelDataAnalyst, new DataAnalystPanel(this));
         register(panelReporting, new ReportingPanel(this));
@@ -169,7 +169,7 @@ public class ApplicationFrame extends JFrame {
     }
 
     private void initLayout() {
-        headerPanel = new HeaderPanel(this);
+        headerPanel  = new HeaderPanel(this);
         sidebarPanel = new SidebarPanel(this);
         sidebarPanel.setPreferredSize(new Dimension(200, getHeight()));
 
@@ -178,7 +178,7 @@ public class ApplicationFrame extends JFrame {
 
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(ThemeService.colorBgPrimary);
-        root.add(headerPanel, BorderLayout.NORTH);
+        root.add(headerPanel,  BorderLayout.NORTH);
         root.add(sidebarPanel, BorderLayout.WEST);
         root.add(cardContainer, BorderLayout.CENTER);
 
@@ -221,35 +221,20 @@ public class ApplicationFrame extends JFrame {
         cardLayout.show(cardContainer, name);
 
         // onShow() dispatch
+        if (name.equals(panelStaffLogin)) {
+            ((StaffLoginPanel) panels.get(panelStaffLogin)).onShow();
+        }
+        if (name.equals(panelGuestLogin)) {
+            ((GuestLoginPanel) panels.get(panelGuestLogin)).onShow();
+        }
+        if (name.equals(panelGuestRegister)) {
+            ((GuestRegistrationPanel) panels.get(panelGuestRegister)).onShow();
+        }
         if (name.equals(panelNetworkAdmin)) {
             ((NetworkAdminPanel) panels.get(panelNetworkAdmin)).onShow();
         }
         if (name.equals(panelEnterpriseAdmin)) {
             ((EnterpriseAdminPanel) panels.get(panelEnterpriseAdmin)).onShow();
-        }
-        if (name.equals(panelComplianceOfficer)) {
-            ((ComplianceOfficerPanel) panels.get(panelComplianceOfficer)).onShow();
-        }
-        if (name.equals(panelReporting)) {
-            ((ReportingPanel) panels.get(panelReporting)).onShow();
-        }
-        if (name.equals(panelDataAnalyst)) {
-            ((DataAnalystPanel) panels.get(panelDataAnalyst)).onShow();
-        }
-        if (name.equals(panelGuestCasino)) {
-            ((CasinoPanel) panels.get(panelGuestCasino)).onShow();
-        }
-        if (name.equals(panelGuestBookings)) {
-            ((GuestBookingsPanel) panels.get(panelGuestBookings)).onShow();
-        }
-        if (name.equals(panelGuestComplaints)) {
-            ((GuestComplaintsPanel) panels.get(panelGuestComplaints)).onShow();
-        }
-        if (name.equals(panelGuestLogin)) {
-            ((GuestLoginPanel) panels.get(panelGuestLogin)).onShow();
-        }
-        if (name.equals(panelCasinoOps)) {
-            ((CasinoOpsPanel) panels.get("casino")).onShow();
         }
         if (name.equals(panelCfo)) {
             ((CfoPanel) panels.get(panelCfo)).onShow();
@@ -266,11 +251,26 @@ public class ApplicationFrame extends JFrame {
         if (name.equals(panelMarketingLead)) {
             ((MarketingLeadPanel) panels.get(panelMarketingLead)).onShow();
         }
+        if (name.equals(panelComplianceOfficer)) {
+            ((ComplianceOfficerPanel) panels.get(panelComplianceOfficer)).onShow();
+        }
+        if (name.equals(panelDataAnalyst)) {
+            ((DataAnalystPanel) panels.get(panelDataAnalyst)).onShow();
+        }
+        if (name.equals(panelReporting)) {
+            ((ReportingPanel) panels.get(panelReporting)).onShow();
+        }
         if (name.equals(panelAiGuide)) {
             ((AiGuidePanel) panels.get(panelAiGuide)).onShow();
         }
-        if (name.equals(panelGuestRegister)) {
-            ((GuestRegistrationPanel) panels.get(panelGuestRegister)).onShow();
+        if (name.equals(panelGuestBookings)) {
+            ((GuestBookingsPanel) panels.get(panelGuestBookings)).onShow();
+        }
+        if (name.equals(panelGuestCasino)) {
+            ((CasinoOpsPanel) panels.get(panelGuestCasino)).onShow();
+        }
+        if (name.equals(panelGuestComplaints)) {
+            ((GuestComplaintsPanel) panels.get(panelGuestComplaints)).onShow();
         }
 
         log.fine("Navigated to panel: " + name);
@@ -287,7 +287,7 @@ public class ApplicationFrame extends JFrame {
             showPanel(panelSplash);
             return;
         }
-        String role = SessionManager.getRole();
+        String role   = SessionManager.getRole();
         String target = switch (role) {
             case Claims.roleNetworkAdmin, Claims.roleSystemAdmin, Claims.roleGroupCeo ->
                 panelNetworkAdmin;
@@ -340,7 +340,6 @@ public class ApplicationFrame extends JFrame {
         if (!ConfigService.getInstance().getBool("app.demo.mode.enabled", false)) {
             return;
         }
-
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
                 .addKeyEventDispatcher(e -> {
                     if (e.getID() == KeyEvent.KEY_PRESSED
@@ -369,7 +368,6 @@ public class ApplicationFrame extends JFrame {
             Claims.roleDataAnalyst,
             Claims.roleGuest
         };
-
         String[] orgs = {
             "slartibartfastPictures",
             "bistromathAnimation",
@@ -380,7 +378,6 @@ public class ApplicationFrame extends JFrame {
             "megadodoLicensing",
             "hooloovooRetail"
         };
-
         String[] enterprises = {
             "magratheaStudios",
             "starshipTitanicLeisure",
@@ -388,8 +385,8 @@ public class ApplicationFrame extends JFrame {
             "siriusCybernetics"
         };
 
-        JComboBox<String> roleBox = new JComboBox<>(roles);
-        JComboBox<String> orgBox = new JComboBox<>(orgs);
+        JComboBox<String> roleBox       = new JComboBox<>(roles);
+        JComboBox<String> orgBox        = new JComboBox<>(orgs);
         JComboBox<String> enterpriseBox = new JComboBox<>(enterprises);
 
         JPanel form = new JPanel(new GridLayout(3, 2, 8, 8));
@@ -421,7 +418,6 @@ public class ApplicationFrame extends JFrame {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // Validate config before launching
         if (!ConfigService.getInstance().isLoaded()) {
             JOptionPane.showMessageDialog(null,
                     "config.properties not found.\n"
@@ -430,7 +426,6 @@ public class ApplicationFrame extends JFrame {
                     "Configuration Error", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
-
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
