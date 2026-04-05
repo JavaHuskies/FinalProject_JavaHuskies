@@ -134,6 +134,8 @@ public class EnterpriseAdminPanel extends JPanel {
         toolbar.setBorder(new EmptyBorder(0, 0, 12, 0));
         toolbar.add(buildToolbarButton("New Org",  e -> showNewOrgForm()));
         toolbar.add(buildToolbarButton("New User", e -> showNewUserForm()));
+        toolbar.add(buildToolbarButton("Edit",     e -> onEditSelected()));
+        toolbar.add(buildToolbarButton("Delete",   e -> onDeleteSelected()));
         toolbar.add(buildToolbarButton("Export",   e -> onExport()));
 
         tabs = new JTabbedPane();
@@ -174,6 +176,7 @@ public class EnterpriseAdminPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         orgTable = styledTable(model);
+        orgTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane sp = styledScroll(orgTable);
         sp.setToolTipText(mockTip);
         return sp;
@@ -185,6 +188,7 @@ public class EnterpriseAdminPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         userTable = styledTable(model);
+        userTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane sp = styledScroll(userTable);
         sp.setToolTipText(mockTip);
         return sp;
@@ -196,6 +200,7 @@ public class EnterpriseAdminPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         workRequestTable = styledTable(model);
+        workRequestTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane sp = styledScroll(workRequestTable);
         sp.setToolTipText(mockTip);
         return sp;
@@ -225,14 +230,14 @@ public class EnterpriseAdminPanel extends JPanel {
     private void loadUsers(String enterpriseId) {
         DefaultTableModel m = (DefaultTableModel) userTable.getModel();
         m.setRowCount(0);
-        m.addRow(new Object[]{ "netadmin",  "networkAdmin",  "slartibartfastPictures", "netadmin@deepthought.com" });
-        m.addRow(new Object[]{ "creative1", "creativeLead",  "bistromathAnimation",    "creative1@deepthought.com" });
+        m.addRow(new Object[]{ "netadmin",  "networkAdmin", "slartibartfastPictures", "netadmin@deepthought.com"  });
+        m.addRow(new Object[]{ "creative1", "creativeLead", "bistromathAnimation",    "creative1@deepthought.com" });
     }
 
     private void loadWorkRequests(String enterpriseId) {
         DefaultTableModel m = (DefaultTableModel) workRequestTable.getModel();
         m.setRowCount(0);
-        m.addRow(new Object[]{ "WR-01", "Galactic Odyssey Release",   "Slartibartfast Pictures", "Megadodo Licensing",     "Licensing", "Pending" });
+        m.addRow(new Object[]{ "WR-01", "Galactic Odyssey Release",   "Slartibartfast Pictures", "Megadodo Licensing",     "Licensing", "Pending"   });
         m.addRow(new Object[]{ "WR-02", "Park Theming — Vogon World", "Magrathea Studios",       "Magrathea Theme Worlds", "Content",   "In Review" });
     }
 
@@ -246,7 +251,79 @@ public class EnterpriseAdminPanel extends JPanel {
         subtitleLabel.setText("Enterprise: " + SessionManager.getEnterpriseId());
     }
 
-    // ── CRUD forms ────────────────────────────────────────────────────────────
+    // ── Edit / Delete dispatch ────────────────────────────────────────────────
+
+    /**
+     * Dispatches Edit action based on the active tab.
+     * Prompts the user to select a row if none is selected.
+     * Work Requests tab does not support edit.
+     */
+    private void onEditSelected() {
+        int tabIdx = tabs.getSelectedIndex();
+        switch (tabIdx) {
+            case 0 -> {
+                int row = orgTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("organization"); return; }
+                showEditOrgForm(row);
+            }
+            case 1 -> {
+                int row = userTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("user"); return; }
+                showEditUserForm(row);
+            }
+            case 2 -> JOptionPane.showMessageDialog(this,
+                "Work requests cannot be edited here.",
+                "Not Available", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    /**
+     * Dispatches Delete action based on the active tab.
+     * Prompts the user to select a row if none is selected.
+     * Requires confirmation before deleting.
+     */
+    private void onDeleteSelected() {
+        int tabIdx = tabs.getSelectedIndex();
+        switch (tabIdx) {
+            case 0 -> {
+                int row = orgTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("organization"); return; }
+                String name = (String) orgTable.getValueAt(row, 0);
+                String id   = (String) orgTable.getValueAt(row, 1);
+                if (confirmDelete("organization", name)) {
+                    // TODO: PersistenceService.getInstance().deleteOrganization(id);
+                    ((DefaultTableModel) orgTable.getModel()).removeRow(row);
+                    showSuccess("Organization '" + name + "' deleted (pending PersistenceService).");
+                    updateStats();
+                }
+            }
+            case 1 -> {
+                int row = userTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("user"); return; }
+                String username = (String) userTable.getValueAt(row, 0);
+                if (confirmDelete("user", username)) {
+                    // TODO: PersistenceService.getInstance().deleteUser(username);
+                    ((DefaultTableModel) userTable.getModel()).removeRow(row);
+                    showSuccess("User '" + username + "' deleted (pending PersistenceService).");
+                    updateStats();
+                }
+            }
+            case 2 -> {
+                int row = workRequestTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("work request"); return; }
+                String wrId    = (String) workRequestTable.getValueAt(row, 0);
+                String wrTitle = (String) workRequestTable.getValueAt(row, 1);
+                if (confirmDelete("work request", wrTitle)) {
+                    // TODO: PersistenceService.getInstance().deleteWorkRequest(wrId);
+                    ((DefaultTableModel) workRequestTable.getModel()).removeRow(row);
+                    showSuccess("Work request '" + wrId + "' deleted (pending PersistenceService).");
+                    updateStats();
+                }
+            }
+        }
+    }
+
+    // ── CRUD — Create forms ───────────────────────────────────────────────────
 
     /**
      * Renders the New Organization form in the main content area.
@@ -331,6 +408,118 @@ public class EnterpriseAdminPanel extends JPanel {
                 // TODO: PersistenceService.getInstance().saveUser(
                 //     new User(userId, username, pwHash, role, oid, eid, email));
                 showSuccess("User '" + username + "' created (pending PersistenceService).");
+                showTableView();
+                loadData();
+            },
+            this::showTableView
+        ));
+
+        showForm(form);
+    }
+
+    // ── CRUD — Edit forms ─────────────────────────────────────────────────────
+
+    /**
+     * Renders the Edit Organization form pre-populated from the selected table row.
+     * Enterprise is implicit from the current session.
+     *
+     * @param row selected row index in orgTable
+     */
+    private void showEditOrgForm(int row) {
+        String existingName = (String) orgTable.getValueAt(row, 0);
+        String existingId   = (String) orgTable.getValueAt(row, 1);
+
+        JPanel form = buildFormPanel("Edit Organization");
+
+        JTextField nameField = styledField();
+        JTextField idField   = styledField();
+        nameField.setText(existingName);
+        idField.setText(existingId);
+        idField.setToolTipText("camelCase — e.g. vogonOperations");
+
+        form.add(fieldRow("Organization Name", nameField));
+        form.add(fieldRow("Organization ID",   idField));
+        form.add(buildFormButtons(
+            () -> {
+                String name = nameField.getText().trim();
+                String id   = idField.getText().trim();
+                String eid  = SessionManager.getEnterpriseId();
+
+                if (name.isEmpty() || id.isEmpty()) {
+                    showFormError(form, "All fields are required.");
+                    return;
+                }
+                ValidationResult idCheck = ValidationUtils.requireNonBlank(id, "Organization ID");
+                if (!idCheck.valid) { showFormError(form, idCheck.message); return; }
+                if (id.contains(" ")) { showFormError(form, "Organization ID must have no spaces."); return; }
+
+                // TODO: PersistenceService.getInstance().updateOrganization(existingId, new Organization(id, name, eid));
+                showSuccess("Organization '" + name + "' updated (pending PersistenceService).");
+                showTableView();
+                loadData();
+            },
+            this::showTableView
+        ));
+
+        showForm(form);
+    }
+
+    /**
+     * Renders the Edit User form pre-populated from the selected table row.
+     * Password is not editable here — use a separate reset flow.
+     * Enterprise is implicit from the current session.
+     *
+     * @param row selected row index in userTable
+     */
+    private void showEditUserForm(int row) {
+        String existingUsername = (String) userTable.getValueAt(row, 0);
+        String existingRole     = (String) userTable.getValueAt(row, 1);
+        String existingOrg      = (String) userTable.getValueAt(row, 2);
+        String existingEmail    = (String) userTable.getValueAt(row, 3);
+
+        JPanel form = buildFormPanel("Edit User");
+
+        JTextField        usernameField = styledField();
+        JTextField        emailField    = styledField();
+        JComboBox<String> roleBox       = styledCombo(orgRoles);
+        JComboBox<String> orgBox        = styledCombo(orgs);
+
+        usernameField.setText(existingUsername);
+        emailField.setText(existingEmail);
+        roleBox.setSelectedItem(existingRole);
+        orgBox.setSelectedItem(existingOrg);
+
+        JLabel passwordNote = new JLabel("Password is not editable here.");
+        passwordNote.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 12));
+        passwordNote.setForeground(textMuted);
+        passwordNote.setAlignmentX(Component.LEFT_ALIGNMENT);
+        passwordNote.setBorder(new EmptyBorder(0, 0, 12, 0));
+
+        form.add(fieldRow("Username",     usernameField));
+        form.add(fieldRow("Email",        emailField));
+        form.add(passwordNote);
+        form.add(fieldRow("Role",         roleBox));
+        form.add(fieldRow("Organization", orgBox));
+        form.add(buildFormButtons(
+            () -> {
+                String username = usernameField.getText().trim();
+                String email    = emailField.getText().trim();
+                String role     = (String) roleBox.getSelectedItem();
+                String oid      = (String) orgBox.getSelectedItem();
+                String eid      = SessionManager.getEnterpriseId();
+
+                if (username.isEmpty() || email.isEmpty()) {
+                    showFormError(form, "Username and email are required.");
+                    return;
+                }
+                ValidationResult unCheck = ValidationUtils.requireUsername(username);
+                if (!unCheck.valid) { showFormError(form, unCheck.message); return; }
+                ValidationResult emCheck = ValidationUtils.requireEmail(email);
+                if (!emCheck.valid) { showFormError(form, emCheck.message); return; }
+
+                // TODO: PersistenceService.getInstance().updateUser(
+                //     existingUsername, new User(null, username, null, role, oid, eid, email));
+                showSuccess("User '" + username + "' updated (pending PersistenceService).");
                 showTableView();
                 loadData();
             },
@@ -462,6 +651,34 @@ public class EnterpriseAdminPanel extends JPanel {
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
+    /**
+     * Prompts the user to select a row before performing an action.
+     *
+     * @param entityType human-readable entity type (e.g. "organization", "user")
+     */
+    private void showNoSelectionPrompt(String entityType) {
+        JOptionPane.showMessageDialog(this,
+            "Please select an " + entityType + " from the table first.",
+            "No Selection", JOptionPane.WARNING_MESSAGE);
+    }
+
+    /**
+     * Shows a confirmation dialog before deleting a record.
+     *
+     * @param entityType human-readable entity type (e.g. "organization")
+     * @param name       display name of the record to delete
+     * @return true if the user confirmed deletion
+     */
+    private boolean confirmDelete(String entityType, String name) {
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            "Delete " + entityType + " \"" + name + "\"?\nThis action cannot be undone.",
+            "Confirm Delete",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+        return result == JOptionPane.YES_OPTION;
+    }
+
     // ── Field factories ───────────────────────────────────────────────────────
 
     /** Builds a styled text field. */
@@ -577,7 +794,7 @@ public class EnterpriseAdminPanel extends JPanel {
         btn.addActionListener(action);
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseEntered(java.awt.event.MouseEvent e) { btn.setBackground(bgSecondary); }
-            @Override public void mouseExited(java.awt.event.MouseEvent e)  { btn.setBackground(bgTertiary); }
+            @Override public void mouseExited(java.awt.event.MouseEvent e)  { btn.setBackground(bgTertiary);  }
         });
         return btn;
     }
