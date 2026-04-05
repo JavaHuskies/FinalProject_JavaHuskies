@@ -133,7 +133,11 @@ public class EnterpriseAdminPanel extends JPanel {
         toolbar.setBackground(bgPrimary);
         toolbar.setBorder(new EmptyBorder(0, 0, 12, 0));
         toolbar.add(buildToolbarButton("New Org",  e -> showNewOrgForm()));
+        toolbar.add(buildToolbarButton("Edit Org", e -> showEditOrgForm()));
+        toolbar.add(buildToolbarButton("Delete Org", e -> deleteOrganization()));
         toolbar.add(buildToolbarButton("New User", e -> showNewUserForm()));
+        toolbar.add(buildToolbarButton("Edit User", e -> showEditUserForm()));
+        toolbar.add(buildToolbarButton("Disable User", e -> disableUser()));
         toolbar.add(buildToolbarButton("Export",   e -> onExport()));
 
         tabs = new JTabbedPane();
@@ -339,6 +343,72 @@ public class EnterpriseAdminPanel extends JPanel {
 
         showForm(form);
     }
+    
+    private void showEditUserForm() {
+    int selectedRow = userTable.getSelectedRow();
+    if (selectedRow == -1) {
+        JOptionPane.showMessageDialog(this, "Select a user first.");
+        return;
+    }
+
+    String currentUsername = String.valueOf(userTable.getValueAt(selectedRow, 0));
+    String currentRole     = String.valueOf(userTable.getValueAt(selectedRow, 1));
+    String currentOrg      = String.valueOf(userTable.getValueAt(selectedRow, 2));
+    String currentEmail    = String.valueOf(userTable.getValueAt(selectedRow, 3));
+
+    JPanel form = buildFormPanel("Edit User");
+
+    JTextField usernameField = styledField();
+    JTextField emailField    = styledField();
+    JComboBox<String> roleBox = styledCombo(orgRoles);
+    JComboBox<String> orgBox  = styledCombo(orgs);
+
+    usernameField.setText(currentUsername);
+    emailField.setText(currentEmail);
+    roleBox.setSelectedItem(currentRole);
+    orgBox.setSelectedItem(currentOrg);
+
+    form.add(fieldRow("Username", usernameField));
+    form.add(fieldRow("Email",    emailField));
+    form.add(fieldRow("Role",     roleBox));
+    form.add(fieldRow("Organization", orgBox));
+    form.add(buildFormButtons(
+        () -> {
+            String username = usernameField.getText().trim();
+            String email    = emailField.getText().trim();
+            String role     = (String) roleBox.getSelectedItem();
+            String org      = (String) orgBox.getSelectedItem();
+
+            if (username.isEmpty() || email.isEmpty()) {
+                showFormError(form, "Username and email are required.");
+                return;
+            }
+
+            ValidationResult unCheck = ValidationUtils.requireUsername(username);
+            if (!unCheck.valid) {
+                showFormError(form, unCheck.message);
+                return;
+            }
+
+            ValidationResult emCheck = ValidationUtils.requireEmail(email);
+            if (!emCheck.valid) {
+                showFormError(form, emCheck.message);
+                return;
+            }
+
+            userTable.setValueAt(username, selectedRow, 0);
+            userTable.setValueAt(role, selectedRow, 1);
+            userTable.setValueAt(org, selectedRow, 2);
+            userTable.setValueAt(email, selectedRow, 3);
+
+            showSuccess("User updated.");
+            showTableView();
+        },
+        this::showTableView
+    ));
+
+    showForm(form);
+}
 
     // ── Form helpers ──────────────────────────────────────────────────────────
 
@@ -351,6 +421,97 @@ public class EnterpriseAdminPanel extends JPanel {
         mainContent.add(form, "form");
         ((CardLayout) mainContent.getLayout()).show(mainContent, "form");
     }
+    
+    private void showEditOrgForm() {
+    int selectedRow = orgTable.getSelectedRow();
+    if (selectedRow == -1) {
+        JOptionPane.showMessageDialog(this, "Select an organization first.");
+        return;
+    }
+
+    String currentName = String.valueOf(orgTable.getValueAt(selectedRow, 0));
+    String currentId   = String.valueOf(orgTable.getValueAt(selectedRow, 1));
+
+    JPanel form = buildFormPanel("Edit Organization");
+
+    JTextField nameField = styledField();
+    JTextField idField   = styledField();
+
+    nameField.setText(currentName);
+    idField.setText(currentId);
+
+    form.add(fieldRow("Organization Name", nameField));
+    form.add(fieldRow("Organization ID",   idField));
+    form.add(buildFormButtons(
+        () -> {
+            String name = nameField.getText().trim();
+            String id   = idField.getText().trim();
+
+            if (name.isEmpty() || id.isEmpty()) {
+                showFormError(form, "All fields are required.");
+                return;
+            }
+
+            if (id.contains(" ")) {
+                showFormError(form, "Organization ID must have no spaces.");
+                return;
+            }
+
+            orgTable.setValueAt(name, selectedRow, 0);
+            orgTable.setValueAt(id, selectedRow, 1);
+
+            showSuccess("Organization updated.");
+            showTableView();
+        },
+        this::showTableView
+    ));
+
+    showForm(form);
+}
+    
+    private void deleteOrganization() {
+    int selectedRow = orgTable.getSelectedRow();
+    if (selectedRow == -1) {
+        JOptionPane.showMessageDialog(this, "Select an organization first.");
+        return;
+    }
+
+    String orgName = String.valueOf(orgTable.getValueAt(selectedRow, 0));
+
+    int confirm = JOptionPane.showConfirmDialog(
+        this,
+        "Delete organization: " + orgName + "?",
+        "Confirm Delete",
+        JOptionPane.YES_NO_OPTION
+    );
+
+    if (confirm == JOptionPane.YES_OPTION) {
+        ((DefaultTableModel) orgTable.getModel()).removeRow(selectedRow);
+        showSuccess("Organization deleted.");
+    }
+}
+    
+    private void disableUser() {
+    int selectedRow = userTable.getSelectedRow();
+    if (selectedRow == -1) {
+        JOptionPane.showMessageDialog(this, "Select a user first.");
+        return;
+    }
+
+    String username = String.valueOf(userTable.getValueAt(selectedRow, 0));
+
+    int confirm = JOptionPane.showConfirmDialog(
+        this,
+        "Disable user: " + username + "?",
+        "Confirm Disable",
+        JOptionPane.YES_NO_OPTION
+    );
+
+    if (confirm == JOptionPane.YES_OPTION) {
+        userTable.setValueAt(username + " (Disabled)", selectedRow, 0);
+        showSuccess("User disabled.");
+    }
+}
 
     /**
      * Returns to the table view in the mainContent CardLayout.
