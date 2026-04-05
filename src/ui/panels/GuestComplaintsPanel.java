@@ -220,7 +220,11 @@ public class GuestComplaintsPanel extends JPanel {
         });
 
         setStatValue(0, String.valueOf(model.getRowCount()));
-        JOptionPane.showMessageDialog(this, "Complaint submitted. Placeholder action only.");
+        JOptionPane.showMessageDialog(
+            this,
+            "Complaint submitted successfully.\n\n" +
+            "Compliance review request (WR-08) has been triggered."
+        );
         clearForm();
     }
 

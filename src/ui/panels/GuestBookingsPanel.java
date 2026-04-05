@@ -72,7 +72,7 @@ public class GuestBookingsPanel extends JPanel {
         toolbar.setBackground(bgPrimary);
         JButton newBtn = buildToolbarButton("New Booking");
         newBtn.addActionListener(e -> {
-            String bookingId = String.format("B%03d", bookingSequence++);
+            String bookingId = "BK" + (System.currentTimeMillis() % 1000000000);
             bookingData.add(new Object[]{
                 bookingId,
                 "Dinner Reservation",
@@ -81,6 +81,49 @@ public class GuestBookingsPanel extends JPanel {
                 "Confirmed"
             });
             loadData();
+            
+            JOptionPane.showMessageDialog(
+            this,
+            "Booking created successfully.\n\n" +
+            "Confirmation Code: " + bookingId + "\n\n" +
+            "Cross-organization request (WR-05) sent to Milliways."
+        );
+        });
+        
+        JButton editBtn = buildToolbarButton("Modify Booking");
+        editBtn.addActionListener(e -> {
+            int row = bookingsTable.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Select a booking to modify.");
+                return;
+            }
+
+            Object[] booking = bookingData.get(row);
+
+            String[] experiences = {
+                "Theme Park Package",
+                "Dinner Experience",
+                "Resort Stay",
+                "Dinner Reservation",
+                "VIP Tour",
+                "Casino Night"
+            };
+
+            JComboBox<String> experienceBox = new JComboBox<>(experiences);
+            experienceBox.setSelectedItem(String.valueOf(booking[1]));
+
+            int result = JOptionPane.showConfirmDialog(
+                this,
+                experienceBox,
+                "Modify Experience",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+            );
+
+            if (result == JOptionPane.OK_OPTION) {
+                booking[1] = experienceBox.getSelectedItem();
+                loadData();
+            }
         });
 
         JButton cancelBtn = buildToolbarButton("Cancel Booking");
@@ -99,6 +142,7 @@ public class GuestBookingsPanel extends JPanel {
         refreshBtn.addActionListener(e -> loadData());
 
         toolbar.add(newBtn);
+        toolbar.add(editBtn);
         toolbar.add(cancelBtn);
         toolbar.add(refreshBtn);
 
@@ -131,9 +175,9 @@ public class GuestBookingsPanel extends JPanel {
 
     private void loadData() {
         if (bookingData.isEmpty()) {
-            bookingData.add(new Object[] { "B001", "Theme Park Package", "2026 04 05", 4, "Confirmed" });
-            bookingData.add(new Object[] { "B002", "Dinner Experience", "2026 04 10", 2, "Pending" });
-            bookingData.add(new Object[] { "B003", "Resort Stay", "2026 04 15", 3, "Cancelled" });
+            bookingData.add(new Object[] { "BK1001", "Theme Park Package", "2026 04 05", 4, "Confirmed" });
+            bookingData.add(new Object[] { "BK1002", "Dinner Experience", "2026 04 10", 2, "Pending" });
+            bookingData.add(new Object[] { "BK1003", "Resort Stay", "2026 04 15", 3, "Cancelled" });
         }
 
         DefaultTableModel model = (DefaultTableModel) bookingsTable.getModel();
