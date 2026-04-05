@@ -15,6 +15,7 @@ import ui.ApplicationFrame;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import service.NotificationService;
 
 public class GuestRegistrationPanel extends JPanel {
 
@@ -196,11 +197,16 @@ public class GuestRegistrationPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "You must agree to the terms.");
             return;
         }
+        
+        String verificationToken = "VT" + System.currentTimeMillis();
+        NotificationService.sendVerificationEmail(email, verificationToken);
 
         JOptionPane.showMessageDialog(
-            this,
-            "Registration successful. A verification email will be sent."
-        );
+        this,
+        "Registration successful.\n\n" +
+        "Verification email sent to: " + email + "\n" +
+        "Verification token: " + verificationToken
+    );
         clearForm();
         frame.showPanel(ApplicationFrame.panelGuestLogin);
     }

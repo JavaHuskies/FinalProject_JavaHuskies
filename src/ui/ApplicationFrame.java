@@ -34,6 +34,7 @@ import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import service.NotificationService;
 import service.SeedService;
 
 /**
@@ -123,7 +124,6 @@ public class ApplicationFrame extends JFrame {
         ConfigService cfg = ConfigService.getInstance();
         int mw = cfg.getInt("app.window.min.width",  1024);
         int mh = cfg.getInt("app.window.min.height", 680);
-
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(mw, mh));
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -167,7 +167,7 @@ public class ApplicationFrame extends JFrame {
         register(panelGuestComplaints, new GuestComplaintsPanel(this));
 //        register(panelMap,             new MapPanel(this));
     }
-
+    
     private void initLayout() {
         headerPanel  = new HeaderPanel(this);
         sidebarPanel = new SidebarPanel(this);
@@ -417,7 +417,7 @@ public class ApplicationFrame extends JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) {                
         if (!ConfigService.getInstance().isLoaded()) {
             JOptionPane.showMessageDialog(null,
                     "config.properties not found.\n"

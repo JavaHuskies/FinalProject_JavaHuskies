@@ -81,6 +81,13 @@ public class GuestBookingsPanel extends JPanel {
                 "Confirmed"
             });
             loadData();
+            
+            JOptionPane.showMessageDialog(
+            this,
+            "Booking created successfully.\n\n" +
+            "Confirmation Code: " + bookingId + "\n\n" +
+            "Cross-organization request (WR-05) sent to Milliways."
+        );
         });
         
         JButton editBtn = buildToolbarButton("Modify Booking");
