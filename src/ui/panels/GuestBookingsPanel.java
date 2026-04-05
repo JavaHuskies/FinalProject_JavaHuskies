@@ -72,7 +72,7 @@ public class GuestBookingsPanel extends JPanel {
         toolbar.setBackground(bgPrimary);
         JButton newBtn = buildToolbarButton("New Booking");
         newBtn.addActionListener(e -> {
-            String bookingId = String.format("B%03d", bookingSequence++);
+            String bookingId = "BK" + System.currentTimeMillis();
             bookingData.add(new Object[]{
                 bookingId,
                 "Dinner Reservation",
@@ -80,6 +80,28 @@ public class GuestBookingsPanel extends JPanel {
                 2,
                 "Confirmed"
             });
+            loadData();
+        });
+        
+        JButton editBtn = buildToolbarButton("Modify Booking");
+                editBtn.addActionListener(e -> {
+            int row = bookingsTable.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Select a booking to modify.");
+                return;
+            }
+
+            Object[] booking = bookingData.get(row);
+
+            String newExperience = JOptionPane.showInputDialog(this,
+                "Edit experience:",
+                booking[1]
+            );
+
+            if (newExperience != null && !newExperience.trim().isEmpty()) {
+                booking[1] = newExperience;
+            }
+
             loadData();
         });
 
@@ -99,6 +121,7 @@ public class GuestBookingsPanel extends JPanel {
         refreshBtn.addActionListener(e -> loadData());
 
         toolbar.add(newBtn);
+        toolbar.add(editBtn);
         toolbar.add(cancelBtn);
         toolbar.add(refreshBtn);
 
