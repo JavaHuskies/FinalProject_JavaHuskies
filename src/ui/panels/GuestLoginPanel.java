@@ -23,6 +23,7 @@ import ui.ApplicationFrame;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import service.GuestAccountStore;
 
 public class GuestLoginPanel extends JPanel {
 
@@ -62,13 +63,20 @@ public class GuestLoginPanel extends JPanel {
     }
 
     private void attemptLogin() {
-        String user = usernameField.getText().trim();
-        if (user.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Enter a username.");
-            return;
-        }
-        
-        if (!isVerifiedGuest(user)) {
+    String email = usernameField.getText().trim();
+    if (email.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Enter your email.");
+        return;
+    }
+
+    GuestAccountStore.GuestAccount account = GuestAccountStore.findByEmail(email);
+
+    if (account == null) {
+        JOptionPane.showMessageDialog(this, "Guest account not found. Please register first.");
+        return;
+    }
+
+    if (!account.isEmailVerified()) {
         JOptionPane.showMessageDialog(
             this,
             "Guest account not verified yet. Please verify your email before accessing bookings."
@@ -76,9 +84,9 @@ public class GuestLoginPanel extends JPanel {
         return;
     }
 
-        SessionManager.injectGuestSession(user);
-        frame.routeByRole();
-    }
+    SessionManager.injectGuestSession(email);
+    frame.routeByRole();
+}
 
     public void onShow() {
         usernameField.setText("");

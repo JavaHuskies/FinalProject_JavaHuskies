@@ -16,6 +16,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import service.NotificationService;
+import service.GuestAccountStore;
 
 public class GuestRegistrationPanel extends JPanel {
 
@@ -199,6 +200,18 @@ public class GuestRegistrationPanel extends JPanel {
         }
         
         String verificationToken = "VT" + System.currentTimeMillis();
+        GuestAccountStore.GuestAccount account =
+        new GuestAccountStore.GuestAccount(
+                firstName,
+                lastName,
+                email,
+                phone,
+                address,
+                password,
+                verificationToken
+        );
+
+        GuestAccountStore.save(account);
         NotificationService.sendVerificationEmail(email, verificationToken);
 
         JOptionPane.showMessageDialog(
@@ -207,6 +220,25 @@ public class GuestRegistrationPanel extends JPanel {
         "Verification email sent to: " + email + "\n" +
         "Verification token: " + verificationToken
     );
+        String enteredToken = JOptionPane.showInputDialog(
+            this,
+            "Enter the verification code sent to your email:"
+        );
+
+        if (enteredToken == null || enteredToken.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Verification was not completed.");
+            return;
+        }
+
+        boolean verified = GuestAccountStore.verify(email, enteredToken.trim());
+
+        if (verified) {
+            JOptionPane.showMessageDialog(this, "Email verified successfully.");
+            clearForm();
+            frame.showPanel(ApplicationFrame.panelGuestLogin);
+        } else {
+            JOptionPane.showMessageDialog(this, "Invalid verification code.");
+        }
         clearForm();
         frame.showPanel(ApplicationFrame.panelGuestLogin);
     }
