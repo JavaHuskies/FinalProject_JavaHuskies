@@ -88,6 +88,7 @@ public class NetworkAdminPanel extends JPanel {
     private JPanel      mainContent;
 
     private JTable enterpriseTable;
+    private JTable orgTable;
     private JTable userTable;
     private JTable workRequestTable;
 
@@ -162,6 +163,8 @@ public class NetworkAdminPanel extends JPanel {
         toolbar.add(buildToolbarButton("New Enterprise", e -> showNewEnterpriseForm()));
         toolbar.add(buildToolbarButton("New Org",        e -> showNewOrgForm()));
         toolbar.add(buildToolbarButton("New User",       e -> showNewUserForm()));
+        toolbar.add(buildToolbarButton("Edit",           e -> onEditSelected()));
+        toolbar.add(buildToolbarButton("Delete",         e -> onDeleteSelected()));
         toolbar.add(buildToolbarButton("Export",         e -> onExport()));
 
         tabs = new JTabbedPane();
@@ -170,12 +173,13 @@ public class NetworkAdminPanel extends JPanel {
         tabs.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         tabs.setBorder(BorderFactory.createLineBorder(borderColor, 1));
         tabs.addTab("Enterprises",   buildEnterpriseTab());
+        tabs.addTab("Organizations", buildOrgTab());
         tabs.addTab("Users",         buildUserTab());
         tabs.addTab("Work Requests", buildWorkRequestTab());
 
         mainContent = new JPanel(new CardLayout());
         mainContent.setBackground(bgPrimary);
- 
+
         JPanel tableView = new JPanel(new BorderLayout(0, 0));
         tableView.setBackground(bgPrimary);
         tableView.add(toolbar, BorderLayout.NORTH);
@@ -202,7 +206,20 @@ public class NetworkAdminPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         enterpriseTable = styledTable(model);
+        enterpriseTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane sp = styledScroll(enterpriseTable);
+        sp.setToolTipText(mockTip);
+        return sp;
+    }
+
+    private JScrollPane buildOrgTab() {
+        String[] cols = { "Organization", "ID", "Enterprise" };
+        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+        orgTable = styledTable(model);
+        orgTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JScrollPane sp = styledScroll(orgTable);
         sp.setToolTipText(mockTip);
         return sp;
     }
@@ -213,6 +230,7 @@ public class NetworkAdminPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         userTable = styledTable(model);
+        userTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane sp = styledScroll(userTable);
         sp.setToolTipText(mockTip);
         return sp;
@@ -224,6 +242,7 @@ public class NetworkAdminPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         workRequestTable = styledTable(model);
+        workRequestTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane sp = styledScroll(workRequestTable);
         sp.setToolTipText(mockTip);
         return sp;
@@ -237,6 +256,7 @@ public class NetworkAdminPanel extends JPanel {
      */
     private void loadData() {
         loadEnterprises();
+        loadOrgs();
         loadUsers();
         loadWorkRequests();
         updateStats();
@@ -246,41 +266,54 @@ public class NetworkAdminPanel extends JPanel {
         DefaultTableModel m = (DefaultTableModel) enterpriseTable.getModel();
         m.setRowCount(0);
         m.addRow(new Object[]{ "Magrathea Studios",        "magratheaStudios",       "2", "8", "Purple" });
-        m.addRow(new Object[]{ "Starship Titanic Leisure", "starshipTitanicLeisure", "2", "6", "Coral" });
-        m.addRow(new Object[]{ "Galactic Broadcasting",    "galacticBroadcasting",   "2", "5", "Blue" });
-        m.addRow(new Object[]{ "Sirius Cybernetics",       "siriusCybernetics",      "2", "5", "Teal" });
+        m.addRow(new Object[]{ "Starship Titanic Leisure", "starshipTitanicLeisure", "2", "6", "Coral"  });
+        m.addRow(new Object[]{ "Galactic Broadcasting",    "galacticBroadcasting",   "2", "5", "Blue"   });
+        m.addRow(new Object[]{ "Sirius Cybernetics",       "siriusCybernetics",      "2", "5", "Teal"   });
+    }
+
+    private void loadOrgs() {
+        DefaultTableModel m = (DefaultTableModel) orgTable.getModel();
+        m.setRowCount(0);
+        m.addRow(new Object[]{ "Slartibartfast Pictures",          "slartibartfastPictures",         "magratheaStudios"       });
+        m.addRow(new Object[]{ "Bistromath Animation",             "bistromathAnimation",            "magratheaStudios"       });
+        m.addRow(new Object[]{ "Magrathea Theme Worlds",           "magratheaThemeWorlds",           "starshipTitanicLeisure" });
+        m.addRow(new Object[]{ "Milliways Entertainment",          "milliwaysEntertainment",         "starshipTitanicLeisure" });
+        m.addRow(new Object[]{ "Infinite Improbability Streaming", "infiniteImprobabilityStreaming", "galacticBroadcasting"   });
+        m.addRow(new Object[]{ "Pan-Galactic Broadcast",           "panGalacticBroadcast",           "galacticBroadcasting"   });
+        m.addRow(new Object[]{ "Megadodo Licensing",               "megadodoLicensing",              "siriusCybernetics"      });
+        m.addRow(new Object[]{ "Hooloovoo Retail",                 "hooloovooRetail",                "siriusCybernetics"      });
     }
 
     private void loadUsers() {
         DefaultTableModel m = (DefaultTableModel) userTable.getModel();
         m.setRowCount(0);
-        m.addRow(new Object[]{ "netadmin",  "Network Admin",      "magratheaStudios",       "slartibartfastPictures",         "netadmin@deepthought.com" });
-        m.addRow(new Object[]{ "entadmin",  "Enterprise Admin",   "starshipTitanicLeisure", "magratheaThemeWorlds",           "entadmin@deepthought.com" });
-        m.addRow(new Object[]{ "grpceo",    "Group CEO",          "magratheaStudios",       "slartibartfastPictures",         "grpceo@deepthought.com" });
-        m.addRow(new Object[]{ "orgdir1",   "Org Director",       "galacticBroadcasting",   "infiniteImprobabilityStreaming", "orgdir1@deepthought.com" });
+        m.addRow(new Object[]{ "netadmin",  "Network Admin",      "magratheaStudios",       "slartibartfastPictures",         "netadmin@deepthought.com"  });
+        m.addRow(new Object[]{ "entadmin",  "Enterprise Admin",   "starshipTitanicLeisure", "magratheaThemeWorlds",           "entadmin@deepthought.com"  });
+        m.addRow(new Object[]{ "grpceo",    "Group CEO",          "magratheaStudios",       "slartibartfastPictures",         "grpceo@deepthought.com"    });
+        m.addRow(new Object[]{ "orgdir1",   "Org Director",       "galacticBroadcasting",   "infiniteImprobabilityStreaming", "orgdir1@deepthought.com"   });
         m.addRow(new Object[]{ "creative1", "Creative Lead",      "magratheaStudios",       "bistromathAnimation",            "creative1@deepthought.com" });
-        m.addRow(new Object[]{ "tech1",     "Technology Lead",    "siriusCybernetics",      "megadodoLicensing",              "tech1@deepthought.com" });
-        m.addRow(new Object[]{ "mktg1",     "Marketing Lead",     "galacticBroadcasting",   "panGalacticBroadcast",           "mktg1@deepthought.com" });
-        m.addRow(new Object[]{ "comply1",   "Compliance Officer", "starshipTitanicLeisure", "milliwaysEntertainment",         "comply1@deepthought.com" });
-        m.addRow(new Object[]{ "analyst1",  "Data Analyst",       "siriusCybernetics",      "hooloovooRetail",                "analyst1@deepthought.com" });
+        m.addRow(new Object[]{ "tech1",     "Technology Lead",    "siriusCybernetics",      "megadodoLicensing",              "tech1@deepthought.com"     });
+        m.addRow(new Object[]{ "mktg1",     "Marketing Lead",     "galacticBroadcasting",   "panGalacticBroadcast",           "mktg1@deepthought.com"     });
+        m.addRow(new Object[]{ "comply1",   "Compliance Officer", "starshipTitanicLeisure", "milliwaysEntertainment",         "comply1@deepthought.com"   });
+        m.addRow(new Object[]{ "analyst1",  "Data Analyst",       "siriusCybernetics",      "hooloovooRetail",                "analyst1@deepthought.com"  });
     }
 
     private void loadWorkRequests() {
         DefaultTableModel m = (DefaultTableModel) workRequestTable.getModel();
         m.setRowCount(0);
-        m.addRow(new Object[]{ "WR-01", "Galactic Odyssey Release",    "Slartibartfast Pictures",          "Megadodo Licensing",      "Licensing",  "Pending" });
+        m.addRow(new Object[]{ "WR-01", "Galactic Odyssey Release",    "Slartibartfast Pictures",          "Megadodo Licensing",      "Licensing",  "Pending"   });
         m.addRow(new Object[]{ "WR-02", "Park Theming — Vogon World",  "Magrathea Studios",                "Magrathea Theme Worlds",  "Content",    "In Review" });
-        m.addRow(new Object[]{ "WR-03", "Streaming Premiere Assets",   "Magrathea Theme Worlds",           "Pan-Galactic Broadcast",  "Broadcast",  "Active" });
-        m.addRow(new Object[]{ "WR-04", "Retail Campaign Q3",          "Hooloovoo Retail",                 "Pan-Galactic Broadcast",  "Marketing",  "Pending" });
-        m.addRow(new Object[]{ "WR-05", "Theme World Event Package",   "Magrathea Theme Worlds",           "Milliways Entertainment", "Events",     "Active" });
+        m.addRow(new Object[]{ "WR-03", "Streaming Premiere Assets",   "Magrathea Theme Worlds",           "Pan-Galactic Broadcast",  "Broadcast",  "Active"    });
+        m.addRow(new Object[]{ "WR-04", "Retail Campaign Q3",          "Hooloovoo Retail",                 "Pan-Galactic Broadcast",  "Marketing",  "Pending"   });
+        m.addRow(new Object[]{ "WR-05", "Theme World Event Package",   "Magrathea Theme Worlds",           "Milliways Entertainment", "Events",     "Active"    });
         m.addRow(new Object[]{ "WR-06", "Animation Commission",        "Infinite Improbability Streaming", "Bistromath Animation",    "Content",    "In Review" });
-        m.addRow(new Object[]{ "WR-07", "Licensing Agreement Renewal", "Megadodo Licensing",               "Hooloovoo Retail",        "Licensing",  "Closed" });
-        m.addRow(new Object[]{ "WR-08", "Guest Complaint Escalation",  "Milliways Entertainment",          "Compliance Officer",      "Compliance", "Pending" });
+        m.addRow(new Object[]{ "WR-07", "Licensing Agreement Renewal", "Megadodo Licensing",               "Hooloovoo Retail",        "Licensing",  "Closed"    });
+        m.addRow(new Object[]{ "WR-08", "Guest Complaint Escalation",  "Milliways Entertainment",          "Compliance Officer",      "Compliance", "Pending"   });
     }
 
     private void updateStats() {
         setStatValue(0, String.valueOf(enterpriseTable.getRowCount()));
-        setStatValue(1, "8");
+        setStatValue(1, String.valueOf(orgTable.getRowCount()));
         setStatValue(2, String.valueOf(userTable.getRowCount()));
         setStatValue(3, String.valueOf(workRequestTable.getRowCount()));
     }
@@ -289,7 +322,96 @@ public class NetworkAdminPanel extends JPanel {
         subtitleLabel.setText("Deep Thought Entertainment Group");
     }
 
-    // ── CRUD forms ────────────────────────────────────────────────────────────
+    // ── Edit / Delete dispatch ────────────────────────────────────────────────
+
+    /**
+     * Dispatches Edit action based on the active tab.
+     * Prompts the user to select a row if none is selected.
+     * Work Requests tab does not support edit.
+     */
+    private void onEditSelected() {
+        int tabIdx = tabs.getSelectedIndex();
+        switch (tabIdx) {
+            case 0 -> {
+                int row = enterpriseTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("enterprise"); return; }
+                showEditEnterpriseForm(row);
+            }
+            case 1 -> {
+                int row = orgTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("organization"); return; }
+                showEditOrgForm(row);
+            }
+            case 2 -> {
+                int row = userTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("user"); return; }
+                showEditUserForm(row);
+            }
+            case 3 -> JOptionPane.showMessageDialog(this,
+                "Work requests cannot be edited here.",
+                "Not Available", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    /**
+     * Dispatches Delete action based on the active tab.
+     * Prompts the user to select a row if none is selected.
+     * Requires confirmation before deleting.
+     */
+    private void onDeleteSelected() {
+        int tabIdx = tabs.getSelectedIndex();
+        switch (tabIdx) {
+            case 0 -> {
+                int row = enterpriseTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("enterprise"); return; }
+                String name = (String) enterpriseTable.getValueAt(row, 0);
+                String id   = (String) enterpriseTable.getValueAt(row, 1);
+                if (confirmDelete("enterprise", name)) {
+                    // TODO: PersistenceService.getInstance().deleteEnterprise(id);
+                    ((DefaultTableModel) enterpriseTable.getModel()).removeRow(row);
+                    showSuccess("Enterprise '" + name + "' deleted (pending PersistenceService).");
+                    updateStats();
+                }
+            }
+            case 1 -> {
+                int row = orgTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("organization"); return; }
+                String name = (String) orgTable.getValueAt(row, 0);
+                String id   = (String) orgTable.getValueAt(row, 1);
+                if (confirmDelete("organization", name)) {
+                    // TODO: PersistenceService.getInstance().deleteOrganization(id);
+                    ((DefaultTableModel) orgTable.getModel()).removeRow(row);
+                    showSuccess("Organization '" + name + "' deleted (pending PersistenceService).");
+                    updateStats();
+                }
+            }
+            case 2 -> {
+                int row = userTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("user"); return; }
+                String username = (String) userTable.getValueAt(row, 0);
+                if (confirmDelete("user", username)) {
+                    // TODO: PersistenceService.getInstance().deleteUser(username);
+                    ((DefaultTableModel) userTable.getModel()).removeRow(row);
+                    showSuccess("User '" + username + "' deleted (pending PersistenceService).");
+                    updateStats();
+                }
+            }
+            case 3 -> {
+                int row = workRequestTable.getSelectedRow();
+                if (row < 0) { showNoSelectionPrompt("work request"); return; }
+                String wrId    = (String) workRequestTable.getValueAt(row, 0);
+                String wrTitle = (String) workRequestTable.getValueAt(row, 1);
+                if (confirmDelete("work request", wrTitle)) {
+                    // TODO: PersistenceService.getInstance().deleteWorkRequest(wrId);
+                    ((DefaultTableModel) workRequestTable.getModel()).removeRow(row);
+                    showSuccess("Work request '" + wrId + "' deleted (pending PersistenceService).");
+                    updateStats();
+                }
+            }
+        }
+    }
+
+    // ── CRUD — Create forms ───────────────────────────────────────────────────
 
     /**
      * Renders the New Enterprise form in the main content area.
@@ -333,9 +455,9 @@ public class NetworkAdminPanel extends JPanel {
     private void showNewOrgForm() {
         JPanel form = buildFormPanel("New Organization");
 
-        JTextField nameField       = styledField();
-        JTextField idField         = styledField();
-        JComboBox<String> entBox   = styledCombo(enterprises);
+        JTextField nameField     = styledField();
+        JTextField idField       = styledField();
+        JComboBox<String> entBox = styledCombo(enterprises);
 
         form.add(fieldRow("Organization Name", nameField));
         form.add(fieldRow("Organization ID",   idField));
@@ -376,13 +498,13 @@ public class NetworkAdminPanel extends JPanel {
 
         JPanel form = buildFormPanel("New User");
 
-        JTextField         usernameField = styledField();
-        JTextField         emailField    = styledField();
-        JPasswordField     passwordField = new JPasswordField();
+        JTextField        usernameField = styledField();
+        JTextField        emailField    = styledField();
+        JPasswordField    passwordField = new JPasswordField();
         stylePasswordField(passwordField);
-        JComboBox<String>  roleBox       = styledCombo(availableRoles);
-        JComboBox<String>  entBox        = styledCombo(enterprises);
-        JComboBox<String>  orgBox        = styledCombo(orgs);
+        JComboBox<String> roleBox       = styledCombo(availableRoles);
+        JComboBox<String> entBox        = styledCombo(enterprises);
+        JComboBox<String> orgBox        = styledCombo(orgs);
 
         form.add(fieldRow("Username",     usernameField));
         form.add(fieldRow("Email",        emailField));
@@ -410,12 +532,176 @@ public class NetworkAdminPanel extends JPanel {
                 ValidationResult pwCheck = ValidationUtils.requireValidPassword(password);
                 if (!pwCheck.valid) { showFormError(form, pwCheck.message); return; }
 
-                String userId   = UUID.randomUUID().toString();
-                String pwHash   = service.AuthService.getInstance().hashPassword(password);
+                String userId = UUID.randomUUID().toString();
+                String pwHash = service.AuthService.getInstance().hashPassword(password);
 
                 // TODO: PersistenceService.getInstance().saveUser(
                 //     new User(userId, username, pwHash, role, oid, eid, email));
                 showSuccess("User '" + username + "' created (pending PersistenceService).");
+                showTableView();
+                loadData();
+            },
+            this::showTableView
+        ));
+
+        showForm(form);
+    }
+
+    // ── CRUD — Edit forms ─────────────────────────────────────────────────────
+
+    /**
+     * Renders the Edit Enterprise form pre-populated from the selected table row.
+     *
+     * @param row selected row index in enterpriseTable
+     */
+    private void showEditEnterpriseForm(int row) {
+        String existingName = (String) enterpriseTable.getValueAt(row, 0);
+        String existingId   = (String) enterpriseTable.getValueAt(row, 1);
+
+        JPanel form = buildFormPanel("Edit Enterprise");
+
+        JTextField nameField = styledField();
+        JTextField idField   = styledField();
+        nameField.setText(existingName);
+        idField.setText(existingId);
+        idField.setToolTipText("camelCase — e.g. vogonConstructors");
+
+        form.add(fieldRow("Enterprise Name", nameField));
+        form.add(fieldRow("Enterprise ID",   idField));
+        form.add(buildFormButtons(
+            () -> {
+                String name = nameField.getText().trim();
+                String id   = idField.getText().trim();
+
+                if (name.isEmpty() || id.isEmpty()) {
+                    showFormError(form, "All fields are required.");
+                    return;
+                }
+                ValidationResult idCheck = ValidationUtils.requireNonBlank(id, "Enterprise ID");
+                if (!idCheck.valid) { showFormError(form, idCheck.message); return; }
+                if (id.contains(" ")) { showFormError(form, "Enterprise ID must have no spaces."); return; }
+
+                // TODO: PersistenceService.getInstance().updateEnterprise(existingId, new Enterprise(id, name));
+                showSuccess("Enterprise '" + name + "' updated (pending PersistenceService).");
+                showTableView();
+                loadData();
+            },
+            this::showTableView
+        ));
+
+        showForm(form);
+    }
+
+    /**
+     * Renders the Edit Organization form pre-populated from the selected table row.
+     *
+     * @param row selected row index in orgTable
+     */
+    private void showEditOrgForm(int row) {
+        String existingName = (String) orgTable.getValueAt(row, 0);
+        String existingId   = (String) orgTable.getValueAt(row, 1);
+        String existingEnt  = (String) orgTable.getValueAt(row, 2);
+
+        JPanel form = buildFormPanel("Edit Organization");
+
+        JTextField        nameField = styledField();
+        JTextField        idField   = styledField();
+        JComboBox<String> entBox    = styledCombo(enterprises);
+        nameField.setText(existingName);
+        idField.setText(existingId);
+        entBox.setSelectedItem(existingEnt);
+
+        form.add(fieldRow("Organization Name", nameField));
+        form.add(fieldRow("Organization ID",   idField));
+        form.add(fieldRow("Enterprise",        entBox));
+        form.add(buildFormButtons(
+            () -> {
+                String name = nameField.getText().trim();
+                String id   = idField.getText().trim();
+                String eid  = (String) entBox.getSelectedItem();
+
+                if (name.isEmpty() || id.isEmpty()) {
+                    showFormError(form, "All fields are required.");
+                    return;
+                }
+                ValidationResult idCheck = ValidationUtils.requireNonBlank(id, "Organization ID");
+                if (!idCheck.valid) { showFormError(form, idCheck.message); return; }
+                if (id.contains(" ")) { showFormError(form, "Organization ID must have no spaces."); return; }
+
+                // TODO: PersistenceService.getInstance().updateOrganization(existingId, new Organization(id, name, eid));
+                showSuccess("Organization '" + name + "' updated (pending PersistenceService).");
+                showTableView();
+                loadData();
+            },
+            this::showTableView
+        ));
+
+        showForm(form);
+    }
+
+    /**
+     * Renders the Edit User form pre-populated from the selected table row.
+     * Password is not editable here — use a separate reset flow.
+     *
+     * @param row selected row index in userTable
+     */
+    private void showEditUserForm(int row) {
+        String existingUsername = (String) userTable.getValueAt(row, 0);
+        String existingRole     = (String) userTable.getValueAt(row, 1);
+        String existingEnt      = (String) userTable.getValueAt(row, 2);
+        String existingOrg      = (String) userTable.getValueAt(row, 3);
+        String existingEmail    = (String) userTable.getValueAt(row, 4);
+
+        boolean isNetworkLevel = SessionManager.hasAnyRole(
+            Claims.roleNetworkAdmin, Claims.roleSystemAdmin, Claims.roleGroupCeo);
+        String[] availableRoles = isNetworkLevel ? allRoles : orgRoles;
+
+        JPanel form = buildFormPanel("Edit User");
+
+        JTextField        usernameField = styledField();
+        JTextField        emailField    = styledField();
+        JComboBox<String> roleBox       = styledCombo(availableRoles);
+        JComboBox<String> entBox        = styledCombo(enterprises);
+        JComboBox<String> orgBox        = styledCombo(orgs);
+
+        usernameField.setText(existingUsername);
+        emailField.setText(existingEmail);
+        roleBox.setSelectedItem(existingRole);
+        entBox.setSelectedItem(existingEnt);
+        orgBox.setSelectedItem(existingOrg);
+
+        JLabel passwordNote = new JLabel("Password is not editable here.");
+        passwordNote.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 12));
+        passwordNote.setForeground(textMuted);
+        passwordNote.setAlignmentX(Component.LEFT_ALIGNMENT);
+        passwordNote.setBorder(new EmptyBorder(0, 0, 12, 0));
+
+        form.add(fieldRow("Username",     usernameField));
+        form.add(fieldRow("Email",        emailField));
+        form.add(passwordNote);
+        form.add(fieldRow("Role",         roleBox));
+        form.add(fieldRow("Enterprise",   entBox));
+        form.add(fieldRow("Organization", orgBox));
+        form.add(buildFormButtons(
+            () -> {
+                String username = usernameField.getText().trim();
+                String email    = emailField.getText().trim();
+                String role     = (String) roleBox.getSelectedItem();
+                String eid      = (String) entBox.getSelectedItem();
+                String oid      = (String) orgBox.getSelectedItem();
+
+                if (username.isEmpty() || email.isEmpty()) {
+                    showFormError(form, "Username and email are required.");
+                    return;
+                }
+                ValidationResult unCheck = ValidationUtils.requireUsername(username);
+                if (!unCheck.valid) { showFormError(form, unCheck.message); return; }
+                ValidationResult emCheck = ValidationUtils.requireEmail(email);
+                if (!emCheck.valid) { showFormError(form, emCheck.message); return; }
+
+                // TODO: PersistenceService.getInstance().updateUser(
+                //     existingUsername, new User(null, username, null, role, oid, eid, email));
+                showSuccess("User '" + username + "' updated (pending PersistenceService).");
                 showTableView();
                 loadData();
             },
@@ -495,8 +781,8 @@ public class NetworkAdminPanel extends JPanel {
     /**
      * Builds the Save and Back button row for a form.
      *
-     * @param onSave  action to run on Save
-     * @param onBack  action to run on Back
+     * @param onSave action to run on Save
+     * @param onBack action to run on Back
      * @return configured button row JPanel
      */
     private JPanel buildFormButtons(Runnable onSave, Runnable onBack) {
@@ -505,8 +791,8 @@ public class NetworkAdminPanel extends JPanel {
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
         row.setBorder(new EmptyBorder(8, 0, 0, 0));
 
-        JButton saveBtn = buildToolbarButton("Save", e -> onSave.run());
-        JButton backBtn = buildToolbarButton("← Back", e -> onBack.run());
+        JButton saveBtn = buildToolbarButton("Save",    e -> onSave.run());
+        JButton backBtn = buildToolbarButton("← Back",  e -> onBack.run());
 
         row.add(saveBtn);
         row.add(backBtn);
@@ -545,6 +831,34 @@ public class NetworkAdminPanel extends JPanel {
     private void showSuccess(String message) {
         JOptionPane.showMessageDialog(this, message, "Success",
                 JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Prompts the user to select a row before performing an action.
+     *
+     * @param entityType human-readable entity type (e.g. "enterprise", "user")
+     */
+    private void showNoSelectionPrompt(String entityType) {
+        JOptionPane.showMessageDialog(this,
+            "Please select an " + entityType + " from the table first.",
+            "No Selection", JOptionPane.WARNING_MESSAGE);
+    }
+
+    /**
+     * Shows a confirmation dialog before deleting a record.
+     *
+     * @param entityType human-readable entity type (e.g. "enterprise")
+     * @param name       display name of the record to delete
+     * @return true if the user confirmed deletion
+     */
+    private boolean confirmDelete(String entityType, String name) {
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            "Delete " + entityType + " \"" + name + "\"?\nThis action cannot be undone.",
+            "Confirm Delete",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+        return result == JOptionPane.YES_OPTION;
     }
 
     // ── Field factories ───────────────────────────────────────────────────────
@@ -662,7 +976,7 @@ public class NetworkAdminPanel extends JPanel {
         btn.addActionListener(action);
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseEntered(java.awt.event.MouseEvent e) { btn.setBackground(bgSecondary); }
-            @Override public void mouseExited(java.awt.event.MouseEvent e)  { btn.setBackground(bgTertiary); }
+            @Override public void mouseExited(java.awt.event.MouseEvent e)  { btn.setBackground(bgTertiary);  }
         });
         return btn;
     }
